@@ -1,0 +1,126 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/qtip/jquery.qtip.min.js"));
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery.hotkeys.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/js/qtip/jquery.qtip.min.css"));
+$this->headLink()->appendStylesheet($this->baseUrl('assets/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css'));
+$request_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+$user = Zend_Auth::getInstance()->getIdentity();
+?>
+<?php if(in_array($request_action, array("index","search"))): /* searches across multiple vendor files */ ?>
+<h3>Search By Category</h3>
+<ul class="leftmenu">
+    <li<?php echo $this->selected == 'contact' ? ' class="current"' : ''; ?>><a rel="contact" href="<?php echo $this->baseUrl("admin/vendors/contact/id/{$this->id}"); ?>" class="file">Contact</a></li>
+    <li<?php echo $this->selected == 'correspondence' ? ' class="current"' : ''; ?>><a rel="correspondence" href="<?php echo $this->baseUrl("admin/vendors/correspondence/id/{$this->id}"); ?>" class="file">Correspondence</a></li>
+    <li<?php echo $this->selected == 'operations' ? ' class="current"' : ''; ?>><a rel="operations" href="<?php echo $this->baseUrl("admin/vendors/operations/id/{$this->id}"); ?>" class="file">Operations</a></li>
+    <li<?php echo $this->selected == 'clients' ? ' class="current"' : ''; ?>><a rel="clients" href="<?php echo $this->baseUrl("admin/vendors/clients/id/{$this->id}"); ?>" class="file">Clients</a></li>
+    <li<?php echo $this->selected == 'lisc-agreements' ? ' class="current"' : ''; ?>><a rel="lisc-agreements" href="<?php echo $this->baseUrl("admin/vendors/lisc-agreements/id/{$this->id}"); ?>" class="file">Lisc. Agreements</a></li>
+    <li<?php echo $this->selected == 'actions' ? ' class="current"' : ''; ?>><a rel="actions" href="<?php echo $this->baseUrl("admin/vendors/actions/id/{$this->id}"); ?>" class="file">Action</a></li>
+    <?php if ($user->account_type == 1){?><li<?php echo $this->selected == 'payments' ? ' class="current"' : ''; ?>><a rel="payments" href="<?php echo $this->baseUrl("admin/vendors/payments/id/{$this->id}"); ?>" class="file">Payments</a></li><?php }?>
+    <li<?php echo $this->selected == 'notes' ? ' class="current"' : ''; ?>><a rel="notes" href="<?php echo $this->baseUrl("admin/vendors/notes/id/{$this->id}"); ?>" class="file">Notes</a></li>
+    <li<?php echo $this->selected == 'docs' ? ' class="current"' : ''; ?>><a rel="docs" href="<?php echo $this->baseUrl("admin/vendors/docs/id/{$this->id}"); ?>" class="file">Docs</a></li>
+    <li<?php echo $this->selected == 'invoices' ? ' class="current"' : ''; ?>><a rel="invoices" href="<?php echo $this->baseUrl("admin/vendors/invoices/id/{$this->id}"); ?>" class="file">Invoices</a></li>
+    <li<?php echo $this->selected == 'web-profile' ? ' class="current"' : ''; ?>><a rel="web-profile" href="<?php echo $this->baseUrl("admin/vendors/web-profile/id/{$this->id}"); ?>" class="file">Web Profile</a></li>
+</ul>
+<?php else: /* searches within a specific vendor file. */ ?>
+<ul class="leftmenu">
+    <li<?php echo $this->selected == 'contact' ? ' class="current"' : ''; ?>><a rel="contact" href="<?php echo $this->baseUrl("admin/vendors/contact/id/{$this->id}"); ?>" class="file">Contact</a></li>
+    <li<?php echo $this->selected == 'correspondence' ? ' class="current"' : ''; ?>><a rel="correspondence" href="<?php echo $this->baseUrl("admin/vendors/correspondence/id/{$this->id}"); ?>" class="file">Correspondence</a></li>
+    <li<?php echo $this->selected == 'operations' ? ' class="current"' : ''; ?>><a rel="operations" href="<?php echo $this->baseUrl("admin/vendors/operations/id/{$this->id}"); ?>" class="file">Operations</a></li>
+    <li<?php echo $this->selected == 'clients' ? ' class="current"' : ''; ?>><a rel="clients" href="<?php echo $this->baseUrl("admin/vendors/clients/id/{$this->id}"); ?>" class="file">Clients</a></li>
+    <li<?php echo $this->selected == 'lisc-agreements' ? ' class="current"' : ''; ?>><a rel="lisc-agreements" href="<?php echo $this->baseUrl("admin/vendors/lisc-agreements/id/{$this->id}"); ?>" class="file">Lisc. Agreements</a></li>
+    <li<?php echo $this->selected == 'actions' ? ' class="current"' : ''; ?>><a rel="actions" href="<?php echo $this->baseUrl("admin/vendors/actions/id/{$this->id}"); ?>" class="file">Action</a></li>
+    <?php if ($user->account_type == 1){?><li<?php echo $this->selected == 'payments' ? ' class="current"' : ''; ?>><a rel="payments" href="<?php echo $this->baseUrl("admin/vendors/vendor-payments/id/{$this->id}"); ?>" class="file">Payments</a></li><?php }?>
+    <li<?php echo $this->selected == 'notes' ? ' class="current"' : ''; ?>><a rel="notes" href="<?php echo $this->baseUrl("admin/vendors/notes/id/{$this->id}"); ?>" class="file">Notes</a></li>
+    <li<?php echo $this->selected == 'docs' ? ' class="current"' : ''; ?>><a rel="docs" href="<?php echo $this->baseUrl("admin/vendors/docs/id/{$this->id}"); ?>" class="file">Docs</a></li>
+    <li<?php echo $this->selected == 'invoices' ? ' class="current"' : ''; ?>><a rel="invoices" href="<?php echo $this->baseUrl("admin/vendors/invoices/id/{$this->id}"); ?>" class="file">Invoices</a></li>
+    <li<?php echo $this->selected == 'product-info' ? ' class="current"' : ''; ?>><a rel="product-info" href="<?php echo $this->baseUrl("admin/vendors/product-info/id/{$this->id}"); ?>" class="file">Product Info</a></li>
+    <li<?php echo $this->selected == 'financial-info' ? ' class="current"' : ''; ?>><a rel="financial-info" href="<?php echo $this->baseUrl("admin/vendors/financial-info/id/{$this->id}"); ?>" class="file">Financial Info</a></li>
+<!--    <li<?php echo $this->selected == 'designs' ? ' class="current"' : ''; ?>><a rel="designs" href="<?php echo $this->baseUrl("admin/design/all/vendor/{$this->id}/start_date//end_date/"); ?>" class="file">Designs</a></li>-->
+    <li<?php echo $this->selected == 'reports' ? ' class="current"' : ''; ?>><a rel="reports" href="<?php echo $this->baseUrl("admin/reports/get-reports/vendor_id/{$this->id}"); ?>" class="file">Royalty Reports</a></li>
+    <li<?php echo $this->selected == 'web-profile' ? ' class="current"' : ''; ?>><a rel="web-profile" href="<?php echo $this->baseUrl("admin/vendors/web-profile/id/{$this->id}"); ?>" class="file">Web Profile</a></li>
+
+</ul>
+<?php endif; ?>
+
+<div class="hidden">
+    <div id="vendor_quick_searcher">
+        <input type="text" size="25" style="padding:7px" id="vendor_quick_search_text"/>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var action="<?php echo $request_action; ?>";
+    $(function(){
+        init_hot_keys();
+        $('a#quick_search').on('click',function(){
+            $(this).qtip({
+                content: {
+                    text: $("#vendor_quick_searcher"),
+                    title: {
+                        text: 'Quick Vendor Select'
+                    }
+                },
+                position: {
+                    my: 'left middle', // Use the corner...
+                    at: 'right middle' // ...and opposite corner
+                },
+                show: {
+                    event: false,
+                    ready: true
+                },
+                hide: 'unfocus',
+                style: {
+                    classes: 'ui-tooltip-shadow ui-tooltip-1'
+                }
+            });
+
+            setTimeout(function(){
+                init_vendor_lookup();
+                $("#vendor_quick_search_text")[0].focus()
+            },
+            300);
+        });
+
+
+    });
+
+    function init_hot_keys(){
+        $(document).bind('keydown', 'alt+f3', function(){
+            $('a#quick_search').click();
+        });
+    }
+
+    function init_vendor_lookup(){
+        $("#vendor_quick_search_text").bind("keydown", autoCompleteKeyDown).autocomplete({
+            source: site_url+"/admin/vendors/ajax-search-vendor",
+            minLength: 2,
+            autoFocus: true,
+            select: function( event, ui ) {
+                if(action=='index'){
+                    window.location.href=site_url+'/admin/vendors/contact/id/'+ui.item.vid
+                }else{
+                    window.location.href=site_url+'/admin/vendors/'+action+'/id/'+ui.item.vid
+                }
+            }
+        });
+    }
+
+    function autoCompleteKeyDown(e){
+        if (e.keyCode === 27) {
+            $('a#quick_search').focus();
+            $('a#quick_search').qtip('api').hide();
+        }
+    }
+
+</script>
+<style type="text/css">
+    .ui-menu-item{
+
+    }
+    .ui-corner-all{
+        -moz-border-radius:0;
+        -webkit-border-radius:0;
+        border-radius:0;
+        font-size: 12px;
+    }
+</style>

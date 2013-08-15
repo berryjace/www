@@ -1,0 +1,96 @@
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Search By Operations</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" >
+                <?php
+                foreach ($this->user_status as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<hr size="1"/>
+
+<form action="" method="POST" enctype="multipart/form-data" id="search-operations-form">
+    <input type="hidden" name="search_type" value="operations" />  
+    <div class="form_container_left">    
+        <div class="one_half omega">
+            <?php echo $this->form->vendor_type; ?>
+        </div>
+        <div class="two_fifth alpha"></div>
+        <div class="one_half omega">
+            <?php echo $this->form->insurance_received; ?>
+        </div>
+        <div class="two_fifth alpha">
+            <?php echo $this->form->insurance_expire; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->insurance_company; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->have_late_fee; ?>
+        <div class="clear"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <?php echo $this->form->insurance_contact; ?>
+        <?php echo $this->form->insurance_phone; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <?php echo $this->form->vendor_reporting_type; ?>
+    <?php echo $this->form->vendor_royalty_structure; ?>
+    <?php echo $this->form->vendor_products; ?>
+    <?php echo $this->form->vendor_recommendation_to_client; ?>
+    <?php echo $this->form->default_note_to_vendor; ?>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black detail_button">Search</button>
+</form>
+<script type="text/javascript">
+    var status = 'all';
+    $(function(){
+        $("#search-operations-form").on('submit',function(){
+            console.log('Clicked Submit button: ' + status);
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'all';
+            }
+            window.parent.executeSearch($(this).serialize()+'&vendor_status='+status,'Search Vendors By Operations','operations');
+            return false; 
+        });
+        $("#vendor_products").css('height', 40);
+        $("#vendor_recommendation_to_client").css('height', 40);
+        $("#default_note_to_vendor").css('height', 40);       
+    });
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });
+</script>
+<style type="text/css">
+    textarea{
+        height:20px;
+    }
+    input.date{
+        /*        background: url(<?php //echo $this->baseUrl();   ?>/assets/images/icons/calendar-blue.png) white 162px 3px no-repeat;   */
+    }    
+    #insurance_received, #insurance_expire{
+        width:155px;
+    } 
+    .vendor_types{
+        display:block;
+        float:left;
+        margin:4px 10px 0 0!important;
+    }
+    #ui-datepicker-div{
+        display:none;
+    }
+    .textarea{
+        width:810px;
+    }    
+</style>

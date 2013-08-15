@@ -1,0 +1,196 @@
+<?php 
+$set = $this->set;
+echo' <form action="tests" method="post" id="form">';
+$current_year = Date("Y");
+        $years = range($current_year + 1, $current_year - 5);
+        $year_dropdown_vals = array();
+        $year_dropdown_vals['0']='All';
+        foreach ($years as $year) {
+            $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 0);
+        }
+
+        if(isset($_REQUEST["year"]))
+		$year_selected = $_REQUEST["year"];
+	else
+		$year_selected = "All";
+        echo $this->formLabel("year", "Fiscal Year ");
+        echo $this->formSelect("year", "$year_selected", array('class' => 'filters'), $year_dropdown_vals);
+        echo str_repeat("&nbsp;", 2);
+
+        echo $this->formLabel("quarter", "Quarter ");
+        echo $this->formSelect("quarter", $_REQUEST["quarter"], array('class' => 'filters'), array("" => "All", "1" => "Q1", "2" => "Q2", "3" => "Q3", "4" => "Q4"));
+	echo str_repeat("&nbsp;", 2);
+	echo "<input type='hidden' id='export' name='export' value='0'>";
+?>
+<a href="javascript:{}" onclick="document.getElementById('export').value='0';document.getElementById('form').submit(); return false;" class="iconlink">
+<img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/settings.png" class="mgright5" alt=""> <span>Generate Report</span>
+</a>
+<a href="javascript:{}" onclick="document.getElementById('export').value='1';document.getElementById('form').submit(); return false;" class="iconlink">
+<img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/settings.png" class="mgright5" alt=""> <span>Generate Report</span>
+</a>
+</form>
+<table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+        <thead>
+        <tr role="row">
+            <th>Vendor</th>
+            <?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="1") {?><th colspan="3">Q1</th> <?php } else {?> <th colspan="3">&nbsp</th> <?php } ?>
+            <?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="2") {?><th colspan="3">Q2</th> <?php } else {?> <th colspan="3">&nbsp</th> <?php } ?>
+            <?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="3") {?><th colspan="3">Q3</th> <?php } else {?> <th colspan="3">&nbsp</th> <?php } ?>
+            <?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="4") {?><th colspan="3">Q4</th> <?php } else {?> <th colspan="3">&nbsp</th> <?php } ?>
+        </tr>
+        </thead>
+        <tbody>
+<tr>
+<td></td>
+<?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="1") {?><td>Client</td><td>Affinity</td><td>Total</td><?php } else {?> <td colspan="3">&nbsp</td> <?php } ?>
+<?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="2") {?><td class='add_seperator'>Client</td><td>Affinity</td><td>Total</td><?php } else {?> <td class='add_seperator'>&nbsp</td><td>&nbsp</td><td>&nbsp</td> <?php } ?>
+<?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="3") {?><td class='add_seperator'>Client</td><td>Affinity</td><td>Total</td><?php } else {?> <td class='add_seperator'>&nbsp</td><td>&nbsp</td><td>&nbsp</td> <?php } ?>
+<?php if($_REQUEST["quarter"]==""||$_REQUEST["quarter"]=="4") {?><td class='add_seperator'>Client</td><td>Affinity</td><td>Total</td><?php } else {?> <td class='add_seperator'>&nbsp</td><td>&nbsp</td><td>&nbsp</td> <?php } ?>
+</tr>
+<?php
+//var_dump($set);
+if(isset($set)&&!empty($set)){
+$alt=false;
+$row=1;
+foreach ($set as $key=>$item)
+{
+	?>
+	<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; if($row==count($set))
+                        echo " last";
+?>">
+        <td><?php echo $key ?></td>
+	<?php
+	$i=0;//controles where black seperator line comes in
+	$c=0;
+	foreach ($item as $value){
+		echo "<td class='";
+		if($i==3){
+			$i=1;
+			echo "add_seperator ";
+		}
+        	else {
+			$i++;
+		}
+		echo "' align='center'>";
+		if($_REQUEST["quarter"]==""||($_REQUEST["quarter"]=="1"&&$c<3)||($_REQUEST["quarter"]=="2"&&$c>=3&&$c<6)||($_REQUEST["quarter"]=="3"&&$c>=6&&$c<9)||($_REQUEST["quarter"]=="4"&&$c>=9&&$c<12))
+		{
+			if($value != 0)
+				echo "$".$value;
+			else
+				echo "-";
+		}
+		echo "</td>";
+		$c++;
+	}
+$row++;
+?>
+                </tr>
+<?php 
+}
+}
+else{
+echo "<tr><td colspan=13' align='center'>No Records found</td></tr>";
+}
+$total = $set['Total Amount Per Quarter'][4];
+$total += $set['Total Amount Per Quarter'][7];
+$total += $set['Total Amount Per Quarter'][10];
+$total += $set['Total Amount Per Quarter'][13];
+if($_REQUEST["quarter"]=="")
+	echo "<tr><td>Total Amount For All Quarters</td><td  colspan='12'>$".$total."</td></tr>";
+?>
+<script>
+    $(function(){
+
+	$('.updater').on('click', function(e){
+	    e.preventDefault();
+	    var answer = confirm("Please make sure to update the corresponding invoice to reflect the changes made here. Are you sure you want to edit this payment record?")
+	    if (answer){
+		makeEditable($(this));
+	    }
+
+	});
+    });
+    function makeEditable(obj)
+    {
+	var id = $(obj).attr('data-id');
+	var td1 = $(obj).parents('tr').find('td.late_paid');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td1.html());
+	td1.html(inp);
+	var td2 = $(obj).parents('tr').find('td.amount_paid');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td2.html());
+	td2.html(inp);
+	var td3 = $(obj).parents('tr').find('td.adv_paid');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td3.html());
+	td3.html(inp);
+	var td4 = $(obj).parents('tr').find('td.sharing');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td4.html());
+	td4.html(inp);
+	var td5 = $(obj).parents('tr').find('td.percent_amc');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td5.html());
+	td5.html(inp);
+	var td6 = $(obj).parents('tr').find('td.action_edit');
+	var inp = '<a href="javascript:void(0);" onclick="updatePaymentLineItem(this)" class="saver" data-id="'+id+'">Save<a>';
+	//inp.val(td6.html());
+	td6.html(inp);
+	$(obj).remove();
+
+    }
+    function updatePaymentLineItem(obj)
+    {
+	var id = $(obj).attr('data-id');
+	var tr = $(obj).parents('tr');
+	var late_paid1 = tr.find('td.late_paid');
+	var inp = late_paid1.find('input[type="text"]');
+	var late_paid = $(inp).val();
+	var amount_paid1 = tr.find('td.amount_paid');
+	var inp = amount_paid1.find('input[type="text"]');
+	var amount_paid = $(inp).val();
+	var adv_paid1 = tr.find('td.adv_paid');
+	var inp = adv_paid1.find('input[type="text"]');
+	var adv_paid = $(inp).val();
+	var sharing1 = tr.find('td.sharing');
+	var inp = sharing1.find('input[type="text"]');
+	var sharing = $(inp).val();
+	var percent_amc1 = tr.find('td.percent_amc');
+	var inp = percent_amc1.find('input[type="text"]');
+	var percent_amc = $(inp).val();
+	var actionEdit = tr.find('td.action_edit');
+
+	$.ajax({
+	    'url'	:   site_url+"/admin/vendors/update-vendor-payment-line-items/id/"+id+"/late_paid/"+late_paid+"/amount_paid/"+amount_paid+"/adv_paid/"+adv_paid+"/sharing/"+sharing+"/percent_amc/"+percent_amc,
+	    'type'	:   'POST',
+	    dataType: 'json',
+
+	    'success':  function(response){
+		var amcAmount = response.amcAmount;
+		var subTotal = response.subTotal;
+		tr.find('td.amcAmount').html(amcAmount);
+		tr.find('td.subTotal').html(subTotal);
+	    }
+
+	});
+
+	late_paid1.html(late_paid);
+	amount_paid1.html(amount_paid);
+	adv_paid1.html(adv_paid);
+	sharing1.html(sharing);
+	percent_amc1.html(percent_amc);
+
+	actionEdit.html(' <a href="javascript:void(0);" onclick="makeEditable(this)"  class="updater" data-id="'+id+'">Edit<a>');
+    }
+</script>
+<style>
+.add_seperator
+{
+border-left: 1px solid rgb(0, 0, 0) !important;
+}
+.last td
+{
+border-top: 1px solid rgb(0, 0, 0) !important;
+}
+</style>

@@ -1,0 +1,124 @@
+<h2>Edit Contact</h2>
+<hr size="1" noshade />
+
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">    
+    <?php echo $this->form->editContact; ?>
+    <div class="spacer"></div>                
+    <div class="form_container_left">
+        <div class="one_third">
+            <?php echo $this->form->sal; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->first_name; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->last_name; ?>
+        </div>
+        <div class="clear"></div>                
+        <?php echo $this->form->title; ?>  
+        <?php //echo $this->form->address_line1; ?>        
+        <div class="one_third">
+            <?php //echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php //echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php //echo $this->form->zipcode; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->email; ?>
+        <div class="spacer"></div>                
+        <button type="submit" id="submitEdit" class="button button_black detail_button" style="float: left;">Submit</button>
+
+        <div class="clear"></div>
+    </div>
+   
+   <div style="float: left; margin-left: 10px; color: red;"> 
+    <div id="validate_phone"> </div>
+  
+    <div id="validate_mobile"> </div>
+    
+    <div id="validate_fax"> </div>
+   
+  
+    </div>
+    
+    <div class="form_container_right">
+    
+        <?php echo $this->form->phone; ?>
+        <?php //echo $this->form->phone_ext; ?>
+        <?php echo $this->form->mobile; ?>
+        <?php //echo $this->form->fax; ?>
+        <?php echo $this->form->contact_type; ?>
+    
+      </div>
+    
+ 
+    
+ 
+    <div class="clear"></div>
+    
+    <div class="one">        
+<!--        <button type="submit" id="submitEdit" class="button button_black detail_button" style="float: left;">Submit</button>-->
+    </div>
+    <div class="clear"></div>
+</form>
+<style type="text/css">
+    #first_name, #last_name, #city, #state, #zipcode, #sal{
+        width:110px;
+    }    
+</style>    
+<script type="text/javascript">
+ $(document).ready( function($) {    
+    if(('<?php echo $this->msg; ?>') !=""){      
+        window.parent.execute_parent('<?php echo $this->msg; ?>');
+    }    
+ });
+ 
+ 
+    var REG_EXP = /\(?([0-9]{3})\)?([ ]?)([0-9]{3})([-]?)([0-9]{4})/;
+             $(document).on('blur', '#phone', function(){         
+                 if($('#phone').val() != ""){
+                     if(REG_EXP.test($('#phone').val()) == false){
+                         $('#validate_phone').html('Phone format must be (xxx) xxx-xxxx');
+                     }
+                     else{
+                         $('#validate_phone').html('');
+                     }
+                 }
+                 else{
+                     $('#validate_phone').html('');
+                 }
+            });
+            
+           var REG_EXP = /\(?([0-9]{3})\)?([ ]?)([0-9]{3})([-]?)([0-9]{4})/;
+                    $(document).on('blur', '#mobile', function(){         
+                        if($('#phone').val() != ""){
+                            if(REG_EXP.test($('#mobile').val()) == false){
+                                $('#validate_mobile').html('Mobile format must be (xxx) xxx-xxxx');
+                            }
+                            else{
+                                $('#validate_mobile').html('');
+                            }
+                        }
+                        else{
+                            $('#validate_mobile').html('');
+                        }
+            });
+            
+               var REG_EXP = /\(?([0-9]{3})\)?([ ]?)([0-9]{3})([-]?)([0-9]{4})/;
+	                       $(document).on('blur', '#fax', function(){         
+	                           if($('#phone').val() != ""){
+	                               if(REG_EXP.test($('#fax').val()) == false){
+	                                   $('#validate_mobile').html('Fax format must be (xxx) xxx-xxxx');
+	                               }
+	                               else{
+	                                   $('#validate_fax').html('');
+	                               }
+	                           }
+	                           else{
+	                               $('#validate_fax').html('');
+	                           }
+            });
+</script>

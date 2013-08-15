@@ -1,0 +1,187 @@
+<?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+<div class="leftalign">
+    <a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>" class="iconlink<?php echo ($action === "history") ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "history" ? 'white' : 'black'; ?>/settings.png" class="mgright5" alt="" /><span>Royalty Report History</span></a> &nbsp;
+    <!-- <a href="<?php echo $this->baseUrl("vendor/royalty/sale-revenue"); ?>" class="iconlink<?php echo ($action === "sale-revenue") ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "sale-revenue" ? 'white' : 'black'; ?>/plus.png" class="mgright5" alt="" /><span>Add Sale Revenue</span></a> -->
+</div>
+<div class="spacer clear"></div>
+
+<?php
+/**
+ * procedures/
+ * 1. Get the last quarter.
+ * 2. See if royalty report is submitted/pending/done etc.
+ * 3. See if it's within grace period
+ * 4. Show the message
+ */
+if (sizeof($this->last_quarter_submissions)) {
+    foreach ($this->last_quarter_submissions as $submission) {
+        if ($submission->status == "Pending Review") {
+            echo '
+    <div class="notification msgalert">
+        <a class="close"></a>
+        You have submitted your quarterly report for reivew. The report is pending review by the Admin. You will be notified as soon as your report is approved.
+    </div>
+                ';
+        }
+    }
+} else {
+    $qaurters = BL_AMC::$quarters;
+    $submission_year = (BL_AMC::getLastQarter() == 1) ? (date("Y") - 1) : date("Y");
+    $last_day_num = $qaurters[BL_AMC::getLastQarter()];
+    $last_day_num['end'] = ($last_day_num['end'] == 365) ? 0 : $last_day_num['end'];
+    $last_day_num['end'] = $last_day_num['end'] + BL_AMC::GRACE;
+    $last_date = DateTime::createFromFormat('z Y', strval($last_day_num['end']) . ' ' . strval($submission_year));
+    $today = new DateTime();
+    $past_due=($today->diff($last_date, false)->days>0) ? " and it's past ".$today->diff($last_date, false)->days." days " : "";
+
+    if($today < $last_date) {
+
+	echo '
+    <div class="notification msginfo">
+	<a class="close"></a>
+	Note: Your quarterly royalty report is now due. Your royalty report should be submitted by <b>' . $last_date->format("M d, Y") . ' '.'</b>
+    </div>
+	    ';
+    } else  {
+	echo '
+    <div class="notification msginfo">
+	<a class="close"></a>
+	Note: You have a royalty report that is overdue. Your royalty report should have been submitted by <b>'. $last_date->format("M d, Y").'</b>
+    </div>
+	    ';
+    }
+}
+?>
+<?php
+/**
+ *
+  Show this alert if the Vendor has a royalty report due for the previous quarter. Again, every Vendor has 37 days after the end of their quarter to submit their royalty report.
+  So for Q1, the quarter ends on Sept 31. All Vendors must submit  Q1 royalty report by November 7.
+  For Q2, the quarter ends on December 31. All Vendors must submit  Q2 royalty report by Feb 6.
+  For Q3, the quarter ends on March 31. All Vendors must submit  Q3 royalty report by May 7.
+  For Q4, the quarter ends on June 30. All Vendors must submit  Q4 royalty report by August  6.
+  So the alert shows up:
+  if (Vendor status is current) & (Vendor has not submitted royalty report for previous quarter) & (Current date is < submission cut off date for the quarter).
+ */
+?>
+
+<h4>
+    You can submit a report in one of three ways. Please select one of the options below:
+</h4>
+<?php if(!empty($this->savedReportsCount)) {?>
+<div class="notification msginfo">
+    <a class="close"></a>
+	Note: You have not completely submitted royalty report for the quarter. To complete submitting your report, please <a href="<?php echo $this->baseUrl("vendor/royalty/list-saved"); ?>">click here</a>.
+</div>
+<?php } ?>
+<ol class="report_submit_options">
+    <li><a href="<?php echo $this->baseUrl("vendor/royalty/submit"); ?>">Submit</a> a report online by filling out a form. <?php if(!empty($this->savedReportsCount)){?>  (<a href="<?php echo $this->baseUrl("vendor/royalty/list-saved"); ?>"><?php echo $this->savedReportsCount?> Saved</a>)<?php } ?> </li>
+    <li><a href="<?php echo $this->baseUrl("assets/files/royaltyreport.pdf"); ?>" target="_blank">Download</a> our standard reporting PDF template, fill it out and upload the completed file back <a class="fancybox-pop"  href="<?php echo $this->baseUrl("vendor/royalty/popup-upload"); ?>">here</a>. </li>
+    <li>Upload your own sales revenue report for the quarter <a class="fancybox-pop" href="<?php echo $this->baseUrl("vendor/royalty/popup-upload"); ?>">here</a></li>
+</ol>
+<br />
+
+<form class="form" id="history_form">
+    <h4>The following are all the royalty reports that were submitted to Greek Licensing for fiscal year <span id="fiscal_year_cont"></span>.</h4><br />
+    <div class="form_default">
+        <div class="four_fifth">
+            <?php
+            $current_year = Date("Y");
+            $current_month = Date("m");
+            
+           // if ($current_month < 7) $current_year --;
+            $years = range($current_year + 1, $current_year - 5);
+            $year_dropdown_vals = array();
+            foreach ($years as $year) {
+                $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 2);
+            }
+            echo $this->formLabel("fiscal_year", "Fiscal Year");
+            echo $this->formSelect("fiscal_year", "", array(), $year_dropdown_vals);
+            ?>
+            <button type="submit" class="button_black" id="view_history">Go</button> &nbsp; &nbsp;
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+</form>
+<br />
+<div class="one_half" id="report_history_container"></div><div class="clear"></div>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+    .form_default label {float:none;}
+    .report_submit_options{margin:20px 0 0 20px;}
+    .report_submit_options a{
+        text-decoration: underline;
+    }
+</style>
+
+<script type="text/javascript">
+	$(document).on('ready', function(){
+		$('#fiscal_year>option[value="<?php echo ($current_month<7)? $current_year-1 . "-" . substr($current_year, 2):$current_year . "-" . substr($current_year + 1, 2)?>"]').attr("selected", true);
+	});
+
+            
+    $(function(){
+        setTimeout(show_royalty_report_history, 500);
+        $('#view_history').on('click',function(){
+            show_royalty_report_history();
+            return false;
+        });
+        $(document).on("click", ".fancybox-pop", function(){
+            $obj=$(this);
+            $.fancybox({
+                'width'                 : 600,
+                'height'                : 420,
+                'href'                  : $obj.attr('href'),
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 10,
+                'overlayColor'          : '#FFF',
+                'type'                  : 'iframe',
+                'speedIn'               : 100,
+                'speedOut'              : 100
+            });
+            return false;
+        });
+    })
+
+    function show_royalty_report_history(){
+        $("#fiscal_year_cont").text($("#fiscal_year").val());
+        $.ajax({
+            type : 'post',
+            url : site_url+"/vendor/royalty/ajax-get-report-history",
+            data : $("#history_form").serialize(),
+            success : function(response){
+                $("#report_history_container").html(response);
+		var pendings = $("#report_history_container").find('td:contains("Pending Review")').length;
+		if(pendings > 0) {
+		 /*   var pendingAlert = '<div class="notification msginfo">'+
+					    '<a class="close"></a>'+
+					    'You have submitted your quarterly report for reivew. The report is pending review by the Admin. <br/>You will be notified as soon as your report is approved.'+
+					'</div>'
+
+		    $('.content_wrapper').find('h4:first').after(pendingAlert);// */
+		}
+
+            }
+        });
+    }
+
+    function close_upload_dialog(fiscal_year, quarter, submission_hash){
+//        $.fancybox.close();
+		var type = <?php echo $this->licenseType;?>;
+
+		if (type == 1){
+		
+       	 	window.location.href = site_url+"/vendor/royalty/sale-revenue/year/"+fiscal_year+"/quarter/"+quarter+'/submission_hash/'+submission_hash;
+		} else {
+			window.location.href = site_url+"/vendor/royalty/sale-revenue-type2/year/"+fiscal_year+"/quarter/"+quarter+"/submission_hash/"+submission_hash;
+		}
+    }
+
+</script>

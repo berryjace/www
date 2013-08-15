@@ -1,0 +1,26 @@
+<?php
+//print_r($this->usage_guide);
+?>
+<style type="text/css">    
+      .left_div{width:15%; float: left; font-size: 12px; float: left;}
+      .right_div{width:80%; font-size: 12px; float: left;}
+      .div_scroll{overflow: auto; }
+</style>
+<div style='float:left; width: 100%; height: 100%;'>
+    <div class="one" style="padding:15px;">
+        <div class="left_div"><b>Guide name:</b></div>
+        <div class="right_div">
+            <span><?php echo $this->usage_guide->guide_name; ?></span>
+            <br />
+            <?php if($this->usage_guide->guide_url != ''){ ?>
+            <img src="<?php echo $this->baseUrl("/assets/images/").$this->usage_guide->guide_type.".png"; ?>" />
+            <span style="font-size: 10px; font-weight: normal; color: black;"><?php echo $this->usage_guide->guide_url; ?></span>
+            <?php } ?>
+        </div>
+    </div>       
+    <div class="one" style="padding:15px;">
+        <div class="left_div"><b>Guide details:</b></div>
+        <div class="right_div div_scroll"><?php echo $this->usage_guide->guide_content; ?></div>        
+    </div>            
+</div>
+

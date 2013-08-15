@@ -1,0 +1,45 @@
+<?php echo $this->form; ?>
+<script type="text/javascript">
+    $(function(){
+        $("#correspondence_form").on('submit',function(){
+            if($.trim($("#note").val())==""){
+                alert('Please write a Correspondence Note');
+                $("#note")[0].focus();
+            }else{
+                $.ajax({
+                    url:site_url+'/admin/clients/ajax-save-correspondence/',
+                    dataType:'json',
+                    data : $('#correspondence_form').serialize()+'&cid='+<?php echo $this->client->id; ?>,
+                    type:'post',
+                    success:function(e){                   
+                        <?php if ($this->is_popup == "yes"): ?>
+                            window.parent.$.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        <?php else: ?>
+                            $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        <?php endif; ?>
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                            $('#correspondence_form')[0].reset();
+                        }
+                        $('#note').val('');
+                    }
+                });
+            }
+            return false;            
+        });
+<?php if (sizeof($this->correspondence)): 
+        if (!is_null($this->correspondence->note_time)) {
+            $note_time = ( (int) $this->correspondence->note_time->format("Y") > 0 ? $this->correspondence->note_time->format("M d, Y H:i A") : 'N/A');
+        } else {
+            $note_time = 'N/A';
+        }
+?>        
+            $('label[for=subject]').prepend('<h3><b><?php echo $this->client->organization_name; ?></b></h3>Date : <?php echo "  ".$note_time; ?><hr size="1" />');
+<?php endif; ?>
+    });
+</script>
+<style type="text/css">
+    .text,.textarea{
+        width:420px;
+    }
+</style>

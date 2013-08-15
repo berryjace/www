@@ -1,0 +1,151 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'clients', 'id' => $this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>       
+        </div>
+    </div>
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="lic-clients-data-table">
+    <thead>
+        <tr>
+            <th class="head1" width="10%">Lic #</th>
+            <th class="head1" width="25%">Client Name</th>
+            <th class="head1" width="20%">Licensing Status</th>
+            <th class="head1" width="15%" >Renewal Fee</th>
+            <th class="head1" width="10%">Sharing</th>
+            <th class="head1" width="10%">Action</th>
+        </tr>            
+    </thead>
+</table>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+
+     jQuery.fn.dataTableExt.oSort['string-case-asc'] = function(x, y){
+        console.log("log");
+        return ((x < y)? -1 : ((x > y)? 1: 0));
+    };
+
+    jQuery.fn.dataTableExt.oSort['string-case-desc'] = function(x, y){
+        return ((x < y)? 1 : ((x > y)? -1: 0));
+    };
+    
+    $(window).bind('load',function(){
+        oTable=$('#lic-clients-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 25,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-clients/id/<?php echo $this->vendor->id; ?>',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Clients:"                
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumns":[
+                { "bSortable": true, "sType": 'string' }, 
+                { "bSortable": true, "sType": 'string' }, 
+                { "bSortable": true, "sType": 'string' }, 
+                { "bSortable": true, "sType": 'string' }, 
+                { "bSortable": true, "sType": 'string' }, 
+                { "bSortable": false}],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }            
+        } ); 
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_clients_link();
+    });    
+
+   
+    
+    function init_clients_link(){
+        $(document).on('click','a.clients_link',function(){
+            $id=$(this).attr('rel');
+            console.log($id);
+            $.fancybox({
+                'width'                 : '28%',
+                'height'                : '72%',
+                'href'                  :  site_url+"/admin/vendors/edit-lic-clients/id/"+$id,                    
+                'type'                  : 'iframe',
+                'transitionIn'         : 'elastic',
+                'transitionOut'        : 'elastic',
+                'padding'               : 20,
+                'speedIn'               : 50,
+                'speedOut'              : 50,
+                'overlayColor'          : '#FFF'
+                //                'title'                 : '<h3>Edit Clients</h3>',
+                //                'titlePosition'        : 'inside'
+            });        
+            return false;
+        });                         
+    }    
+
+    function close_popup(){
+        $.fancybox.close();
+    }
+
+    function execute_refresh(message){
+        close_popup();
+        $.jGrowl(message); 
+        oTable.fnDraw();
+        return false;
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+    
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }    
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+</style>   

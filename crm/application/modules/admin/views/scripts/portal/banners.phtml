@@ -1,0 +1,127 @@
+<a href="<?php echo $this->baseUrl("admin/portal/add-banner"); ?>" class="iconlink"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" class="mgright5" alt=""  > <span>Add a Banner</span></a>
+<br />
+<div style="display: none">
+</div>
+<br />
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="banners-data-table">
+    <thead>
+        <tr>
+            <th class="head1">Banner</th>
+            <th class="head0">Name</th>
+            <th class="head1">Location</th>
+            <th class="head1">Added on</th>            
+            <th class="head1">Status</th>
+            <th class="head1">Start Date</th>
+            <th class="head1">End Date</th>            
+            <th class="head1">Action</th>            
+        </tr>            
+    </thead>
+</table>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#banners-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 10,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/portal/ajax-get-banners',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Banners:"                
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 0,4,5 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                
+            }            
+        } ); 
+        init_action_links();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+    });    
+    
+    function init_action_links(){
+        $(document).on('click','a.fancy',function(){
+            $src=$(this).find("img").attr("src").replace("thumbs/_thumb","thumbs/_thumb2");
+            $.fancybox({
+                'href'                  : $src,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'autoScale'        : true,
+                'autoDimensions'    :   true,
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'image',
+                'changeSpeed'           : 0,            
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });      
+            return false;
+        });
+        
+        $(document).on('click','a.view_clients',function(){
+            banner_id=$(this).attr('rel');
+            $.fancybox({
+                'href'                  : site_url+'/admin/portal/ajax-get-banner-clients/id/'+banner_id,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'autoScale'        : true,
+                'autoDimensions'    :   true,
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,            
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });      
+            return false;
+        });
+        
+        $(document).on('click','a.delete',function(){
+            if(confirm("Are you sure to delete this banner ?")){
+                return true;
+            }
+            return false;
+        })
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+    
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }    
+    #banners-data-table td{
+        vertical-align: middle;   
+    }    
+</style>   

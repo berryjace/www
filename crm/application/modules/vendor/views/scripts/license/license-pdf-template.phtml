@@ -1,0 +1,98 @@
+<table>
+<tr>
+      <td width="50%">
+      Affinity Consultants <br>
+      3231-C Business Park Drive <br>
+      #300 <br>
+      Vista,CA 92081 <br>
+      accounting@affinity-consultants.com <br>
+      </td>
+      <td width="50%" align="right" font>
+        <font size="18">
+          <b>
+            INVOICE
+          </b>
+        </font>
+      </td>
+    </tr>
+</table>
+<body>
+<table width= "500px">
+<tr>
+      <td width="50%" style="border:1px solid black">
+Bill To: <br><br>
+  <?php echo $this->organization_name; ?><br>
+  <?php echo $this->address1; ?><br>
+  <?php echo $this->city.", ".$this->state." ".$this->zip; ?><br>
+      </td>
+<td></td>
+      <td width="50%">
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td width="50%" style="border:1px solid black">
+Date:<br>
+<?php
+echo date("m/d/Y");
+?>
+</td>
+<td width="50%" style="border:1px solid black">
+Invoice #:
+</td>
+</tr>
+<tr>
+<td width="50%" style="border:1px solid black">
+Term: <br>
+Net 15 days
+</td>
+<td width="50%" style="border:1px solid black">
+Due Date:<br>
+<?php
+$due_date = mktime(0,0,0,date("m"),date("d")+15,date("Y"));
+echo date("m/d/Y",$due_date)
+?>
+</td>
+</tr>
+<tr>
+<td><br></td>
+</tr>
+<tr>
+<td width="50%" style="border:1px solid black">
+Amt Due:
+</td>
+<td width="50%" style="border:1px solid black">
+<?php echo $this->BUtils()->getCurrency(count($this->organizations)*$this->vendorFee); ?>
+</td>
+</tr>
+<tr>
+<td width="50%" style="border:1px solid black">
+Amt. Enclosed:
+</td>
+<td width="50%" style="border:1px solid black">
+
+</td>
+</tr>
+</table>
+
+      </td>
+    </tr>
+</table>
+<table width="100%">
+    <tr width="100%">
+        <td><b>Greek Organization</b></td>
+<!--        <td><b>Symbol</b></td>-->
+        <td><b>Amount</b></td>
+    </tr>    
+    <?php $count = 1; ?>
+    <?php foreach ($this->organizations as $organization): ?>
+        <tr width="100%">
+            <td><?php echo $organization; ?></td>
+<!--            <td><?php //echo $this->greek_org[$i]; ?></td>-->
+            <td><?php echo $this->BUtils()->getCurrency($this->vendorFee); ?></td>
+        </tr>        
+    <?php endforeach; ?>
+    <tr width="100%">
+<!--        <td>&nbsp;</td>-->
+        <td><b>Total</b></td>
+        <td><b><?php echo $this->BUtils()->getCurrency(count($this->organizations)*$this->vendorFee); ?></b></td>
+    </tr>   
+</table>

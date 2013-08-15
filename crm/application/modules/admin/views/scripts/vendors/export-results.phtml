@@ -1,0 +1,105 @@
+<h3>Export <b><?php echo  ucfirst(strtolower($this->search_type)); ?></b> Results to Excel &nbsp; &nbsp; (Select Fields)</h3>
+<hr size="1" />
+<div class="spacer"></div>
+<form name="export_form" id="export_form">
+    <?php if ($this->search_type == "contact"): ?>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="u.organization_name" /> Company Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="u.company_email" /> Company Email</label></div>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="u.user_status" /> Company Status</label></div>
+    <?php elseif ($this->search_type == "correspondence"): ?>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.company_email" /> Company Email</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.organization_name" /> Vendor Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vc.subject" /> Subject</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vc.note" /> Note</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vc.note_time" /> Created At</label></div>
+
+    <?php elseif($this->search_type == "operations"): ?>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.company_email" /> Company Email</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.organization_name" /> Vendor Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.insurance_contact" /> Insurance Contact</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.insurance_company" /> Insurance Company</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.vendor_products" /> Vendor Products</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.insurance_phone" /> Insurance Phone</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.vendor_royalty_structure" /> Vendor Royalty</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.vendor_recommendation_to_client" /> Vendor Recommendation</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.default_note_to_vendor" /> Note</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.vendor_type" /> Vendor Type</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vo.have_late_fee" /> Late Fee</label></div>
+    <?php elseif($this->search_type == "clients"): ?>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.company_email" /> Company Email</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.organization_name" /> Vendor Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="c.organization_name" /> Client Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.id" /> License Num</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.status" /> Client Status</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.default_renewal_fee" /> Renewal Fee</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.sharing" /> Sharing</label></div>
+    <?php elseif($this->search_type == "lisc-agreements"): ?>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.company_email" /> Company Email</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.organization_name" /> Vendor Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="c.organization_name" /> Client Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.id" /> License Num</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.status" /> Client Status</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.default_renewal_fee" /> Renewal Fee</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.sharing" /> Sharing</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.vendor_type" /> Vendor Type</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.royalty_description" /> Royalty Description</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="l.grant_of_license" /> Grant of License</label></div>
+    <?php elseif($this->search_type == "web-profile"): ?>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.organization_name" /> Vendor Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.address1" /> Address 1</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.address2" /> Address 2</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.city" /> City</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.state" /> State</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.zip" /> Zip</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.email" /> Email</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.phone1" /> Phone 1</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.phone2" /> Phone 2</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.fax" /> Fax</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.web_page" /> Web</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.product_offered" /> Product Offered</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="vp.company_discripction" /> Company Description</label></div>
+    <?php endif; ?>
+        <div class="spacer"></div>
+        <hr size="1"/>
+        <div class="spacer"></div>
+            <!--Common Users Contact Information-->
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.organization_name" /> Vendor Name</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.address_line1" /> Address 1</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.address_line2" /> Address 2</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.city" /> City</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.state" /> State</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.zipcode" /> Zip</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.phone" /> Phone 1</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.phone2" /> Phone 2</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.fax" /> Fax</label></div>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.website" /> Web page</label></div>
+	<div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.user_code" /> Vendor ID</label></div>
+        <div class="one_third"><label><input type="checkbox" name="export_fields[]" value="v.id" /> All Contacts</label></div>
+    <input type="hidden" name="labels" id="labels" value="" />
+</form>
+<div class="clear"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<button type="button" class="button button_brown" id="check">Check All</button>&nbsp;
+<button type="button" class="button button_brown" id="uncheck">Uncheck All</button>&nbsp;
+<button type="button" class="button button_green" id="export">Export</button>
+
+<script type="text/javascript">
+    $(window).on('load',function(){
+        $('input[name^=export_fields]').attr('checked','checked');
+    });
+    $(document).on('click','#check',function(){
+        $('input[name^=export_fields]').attr('checked','checked');
+    });
+    $(document).on('click','#uncheck',function(){
+        $('input[name^=export_fields]').removeAttr('checked');
+    });
+    $(document).on('click','#export',function(){
+        all_values="";
+        $('input[name^=export_fields]:checked').each(function(){
+            all_values+=$(this).val().split(".")[1]+"~"+$.trim($(this).parent().text())+"||";
+        });
+        $("#labels").val(all_values);
+        window.parent.export_result($('#export_form').serialize());
+    });
+</script>

@@ -1,0 +1,264 @@
+<?php    
+    $errorsMessages = $this->form->getMessages();
+//    print_r($errorsMessages);   
+?>
+<div id="view-content">
+    <h4>Licensing Application </h4>
+    <div class="one"><img src="<?php echo $this->baseUrl('assets')?>/images/application_steps_5.png" alt="Step5" /></div>
+    <div class="spacer clear"></div>
+
+    <div class="form_default">
+    <fieldset>
+    <legend>5. Checkout</legend>
+    <div class="one">[<b><?php echo $this->BUtils()->getCurrency(count($this->clients)*$this->vendorFee); ?></b>] Licensing Application Fee </div>
+    <div class="clear"></div>
+    
+    <div class="spacer clear"></div>
+
+    <div class="one">You have selected to apply for a licensing agreement with [<b><?php echo count($this->clients); ?></b>] organizations.</div>
+    <div class="spacer clear"></div>        
+    
+    <form id="form5" name="form5" action="<?php echo $this->baseUrl('/vendor/license/apply-pay'); ?>" >
+
+        <?php foreach ($this->clients as $client){ ?>
+        <div class="one">
+            <div class="one_fourth"><?php  echo $client['organization_name']; ?></div>
+            <div class="one_sixth"><?php echo $client['greek_name'] != '' ? $client['greek_name'] : '-'; ?></div>
+            <div class="one_sixth textAlign"><?php echo $this->BUtils()->getCurrency($this->vendorFee);?></div>
+        </div>
+        <div class="clear"></div>
+        <?php } ?>
+
+        <div class="one">
+            <div class="one_fourth">&nbsp;</div>
+            <div class="one_sixth">Total:</div>
+            <div class="one_sixth textAlign"><b><?php echo $this->BUtils()->getCurrency(count($this->clients)*$this->vendorFee ); //$currency->toCurrency(count($this->clients)*$this->vendorFee); ?></b></div>
+        </div>
+        <div class="spacer clear"></div>        
+        
+        <?php 
+            if(isset ($this->message)){
+                echo $this->message;
+            }
+            else{                
+        ?>                
+
+        <div class="one" style="display: none;">
+            <?php echo $this->form->amount_total; ?>
+        </div>
+        
+        <div class="one">
+            <div class="one_third leftalign"> <span class="lebel">Enter your bank account #:</span></div>
+            <div class="txtinput"> 
+                <span class="errors" id="bank_acc_no_msg">
+                <?php
+                    if(isset($errorsMessages['bank_acc_no']['isEmpty']))
+                        echo $errorsMessages['bank_acc_no']['isEmpty'].'<br />';                       
+                    if(isset($errorsMessages['bank_acc_no']['notDigits']))
+                        echo $errorsMessages['bank_acc_no']['notDigits'].'<br />';                     
+                ?>  
+                </span>
+                <span class="floatleft"><?php echo $this->form->bank_acc_no; ?></span>
+                <span class="bank_info"><img src="<?php echo $this->baseUrl("assets/images/info.png"); ?>" /></span>
+            </div>
+        </div>        
+        <div class="spacer clear"></div>
+
+        <div class="one">
+            <div class="one_third leftalign"> <span class="lebel">Re-enter your bank account #:</span></div>
+            <div class="txtinput">
+                <span class="errors" id="bank_acc_no_re_msg">
+                <?php
+                    if(isset($errorsMessages['bank_acc_no_re']['isEmpty']))
+                        echo $errorsMessages['bank_acc_no_re']['isEmpty'].'<br />';
+                    if(isset($errorsMessages['bank_acc_no_re']['notDigits']))
+                        echo $errorsMessages['bank_acc_no_re']['notDigits'].'<br />';
+                    if(isset($errorsMessages['bank_acc_no_re']['notEqual']))
+                        echo 'Bank account '.$errorsMessages['bank_acc_no_re']['notEqual'].'<br />'; 
+                ?>
+                </span>
+                <?php echo $this->form->bank_acc_no_re; ?>                            
+            </div>
+        </div>        
+        <div class="spacer clear"></div>
+        
+        <div class="one">
+            <div class="one_third leftalign"> <span class="lebel">Enter your bank routing #:</span></div>
+            <div class="txtinput">
+                <span class="errors" id="bank_routing_msg">
+                <?php
+                    if(isset($errorsMessages['bank_routing']['isEmpty']))
+                        echo $errorsMessages['bank_routing']['isEmpty'].'<br />';
+                    if(isset($errorsMessages['bank_routing']['notDigits']))
+                        echo $errorsMessages['bank_routing']['notDigits'].'<br />';
+                ?>                         
+                </span>
+                <span class="floatleft"><?php echo $this->form->bank_routing; ?></span>
+                <span class="bank_info"><img src="<?php echo $this->baseUrl("assets/images/info.png"); ?>" /></span>
+            </div>
+        </div>        
+        <div class="spacer clear"></div>
+        
+        <div class="one">
+            <div class="one_third leftalign"> <span class="lebel">Re-enter your bank routing #:</span></div>
+            <div class="txtinput">
+                <span class="errors" id="bank_routing_re_msg">
+                <?php
+                    if(isset($errorsMessages['bank_routing_re']['isEmpty']))
+                        echo $errorsMessages['bank_routing_re']['isEmpty'].'<br />';
+                    if(isset($errorsMessages['bank_routing_re']['notDigits']))
+                        echo $errorsMessages['bank_routing_re']['notDigits'].'<br />';
+                    if(isset($errorsMessages['bank_routing_re']['notEqual']))
+                        echo 'Bank routing '.$errorsMessages['bank_routing_re']['notEqual'].'<br />'; 
+                ?>
+                </span>
+                <?php echo $this->form->bank_routing_re; ?>            
+            </div>
+        </div>        
+        <div class="spacer clear"></div>
+        
+        <div class="one">      
+            <div class="one_third leftalign"> <span class="lebel">Billing option #:</span></div>
+            <div class="one txtinput">
+                <span class="errors">
+                <?php
+                    if(isset ($errorsMessages['billing_options']['isEmpty']))
+                        echo $errorsMessages['billing_options']['isEmpty'].'<br />';
+                ?>
+                </span>
+                <span class="floatleft"><?php echo $this->form->billing_options; ?></span>
+            </div>
+        </div>
+        <div class="spacer clear"></div>
+        <?php } ?>
+        
+        <div class="spacer clear"></div>
+        <div class="one">
+            <div class="one_third rightalign">&nbsp;</div>
+            <div class="one_third">
+                <?php $session = new Zend_Session_Namespace('default'); ?>
+                <button type="button" class="button button_blue detail_button" onclick="previousToPart4('<?php echo $session->client_id; ?>')">Previous</button>
+                <button type="button" class="button button_blue detail_button" id="submit_button">Submit</button>                
+            </div>
+        </div>                        
+        <div class="spacer clear"></div>
+    </form>
+    </fieldset>
+    </div>    
+</div>
+<div id="dialog-confirm" class="notified-class" title="" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+<style type="text/css">
+.lebel {
+    color: #42251B;
+    font-weight: bold;
+    line-height: 28px;
+}
+
+.rightalign {
+    text-align: right;
+}
+
+.errors{
+    color: red;
+    list-style: none;
+}
+.clear{clear: both;}
+.padding5{padding: 3px;}
+.text{ width: 300px; }
+.form5_date {
+    background: url("<?php echo $this->baseUrl("assets"); ?>/images/amc_icon_allevents.png") no-repeat scroll 110px 3px #FFFFFF;
+    height: 18px;
+    padding-right: 30px;
+    width: 100px;
+}
+.textAlign{text-align: right;}
+.bank_info{float: left; margin:3px 0px 0px 3px; cursor: pointer;}
+.ui-widget-content {
+    background: url("images/ui-bg_fine-grain_10_eceadf_60x60.png") repeat scroll 50% 50% #ECEADF;
+    border: 1px solid #D9D6C4;
+    color: #1F1F1F;
+}
+</style>
+
+<script type="text/javascript" >
+        //jQuery.noConflict();           
+    function previousToPart4(uid){
+        //uid=$(this).attr("id");
+        jQuery.ajax({
+            dataType: 'html',
+            beforeSend: function() { $('#wait1').show(); },
+            complete: function() { $('#wait1').hide(); },
+            success: function(data){appendContentWrapper(data)},
+            type: 'GET',
+            url: '<?php echo $this->url(array('controller' => 'license', 'action' => 'apply4')); ?>?prev=yes&uid='+uid
+        });
+    }
+    
+    function submit_form(){
+        var $form = $('#form5');
+        jQuery.ajax({
+            type: 'POST',
+            beforeSend: function() { $('#wait1').show(); },
+            complete: function() { $('#wait1').hide(); },
+            url: $form.attr( 'action' ),
+            data: $form.serialize(),
+            success: function( response ) {                                        
+                appendContentWrapper(response);
+            }
+        });
+        return false;
+    }        
+    
+    $(document).on('click', '#submit_button', function(){              
+        var radio = $('input:radio[name=billing_options]:checked').val();        
+        if(radio == 'check'){                 
+//            var bank_acc_no = $("#bank_acc_no").val();
+//            var bank_acc_no_re = $("#bank_acc_no_re").val(); 
+//            var bank_routing = $("#bank_routing").val();
+//            var bank_routing_re = $("#bank_routing_re").val();
+//            if((bank_acc_no != '') && (bank_acc_no_re != '' && (bank_routing != '') && (bank_routing_re != ''))){               
+                var message = "Please be aware that your application will be considered incomplete until your application fee payment is received. Do you wish to continue?";
+                $("#dialog-confirm").text(message);
+                $( "#dialog:ui-dialog" ).dialog( "destroy" );
+                $( "#dialog-confirm" ).dialog({
+                    resizable: false,
+                    width: 640,
+                    height:'auto',
+                    modal: true,
+                    title: "Confirmation",
+                    buttons: {
+                        "Continue": function() {                                                                      
+                            submit_form();
+                            $( this ).dialog( "close" ); 
+                        },
+                        "Cancel": function() {                    
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                });
+//            }
+//            else{
+//                submit_form();
+//            }            
+        }    
+        else{            
+            submit_form();
+        }        
+    });      
+    
+    $(document).on('click', '.bank_info', function(){
+        var link = site_url+"/assets/images/check.gif";
+        loadInfoView(link);        
+    });
+       
+    function loadInfoView(thisItem){
+        $.fancybox({
+            'overlayShow'	: true,
+            'href'            : thisItem,  
+            'transitionIn'	: 'elastic',
+            'transitionOut'	: 'elastic'
+        });
+    }                      
+</script>

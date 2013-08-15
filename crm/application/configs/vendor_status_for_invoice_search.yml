@@ -1,0 +1,14 @@
+## YAML Template.
+---
+All : All
+Current: Current
+Cancelled: Cancelled
+Potential: Potential
+One-Time: One-Time
+Non-Producing: Non-Producing
+Suspected: Suspected
+Illegal: Illegal
+Out of business: Out of business
+Lost: Lost
+Pending: Pending
+Registered: Registered

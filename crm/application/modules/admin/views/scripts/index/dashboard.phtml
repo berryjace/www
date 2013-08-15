@@ -1,0 +1,101 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('index/sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<h2>Most Recent Licenses</h2>
+<div class="spacer"></div>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="licenses-data-table">
+    <thead>
+        <tr>
+            <th class="head0">Vendor Name</th>
+            <th class="head1">Applying with</th>
+            <th class="head0">Submitted on</th>
+            <th class="head1">Status</th>
+        </tr>            
+    </thead>
+</table>
+<div class="hidden">
+    <span class="aphabetical_filters">
+        <?php
+        foreach (range('A', 'Z') as $char) {
+            echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+        }
+        ?>
+    </span>
+</div>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#licenses-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 25,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/index/ajax-get-licenses-dt/',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Vendors:"                
+            },
+            "aaSorting": [[2,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 3 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }            
+        } ); 
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();
+        init_license_link();
+    });    
+    
+    function init_vendor_link(){
+        $(document).on("click", "a.vendor_link", function(){ 
+            window.location.href=site_url+"/admin/vendors/contact/id/"+$(this).attr('rel');
+        });
+    }
+
+    function init_license_link(){
+        $(document).on("click", "a.lic_link", function(){ 
+            window.location.href=site_url+"/admin/vendors/license-review/id/"+$(this).attr('rel');
+        });
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+    
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+</style>   

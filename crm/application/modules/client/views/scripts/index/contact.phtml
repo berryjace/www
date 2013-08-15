@@ -1,0 +1,82 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('layout/sidebar-calendar.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('index/sub-menu-bar.phtml', array('selected' => 'index'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+
+<div class="notification msginfo">
+    <!--<a class="close"></a>-->
+    The following information is used to generate license agreements on behalf of your organization. If you would like to change any of the information, please <a href="http://www.greeklicensing.com/contact" target="_blank">contact</a> Affinity Marketing.
+
+</div>
+
+<form action="" method="POST"  id="<?php echo $this->form->getName(); ?>">
+    <div class="left_container">
+        <?php echo $this->form->name; ?>
+        <?php echo $this->form->greek_letters; ?>
+        <?php // echo $this->form->description; ?>
+        <?php echo $this->form->contact_person; ?>
+        <?php echo $this->form->email; ?>
+        <?php echo $this->form->web_address; ?>
+        <?php echo $this->form->phone; ?>
+        <?php echo $this->form->fax; ?>    
+    </div>
+    <div class="right_container">
+        <?php echo $this->form->address1; ?>
+        <?php echo $this->form->address2; ?>
+        <?php echo $this->form->city; ?>
+        <?php echo $this->form->state; ?>
+        <?php echo $this->form->zip; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+  <!--   <button type="submit" id="submitAddClient" class="button button_black detail_button">Save</button>
+</form>
+
+<script type="text/javascript">
+    validated=false;
+        $(function(){
+    
+            $('input, select').attr('disabled', 'disabled')
+                .css({
+                    "color":"#333333",
+                    "background-color":"silver"
+                });
+    
+            $("#addClient").on('submit',function(){
+                $form=$(this);
+                if(!validated){
+                    $.ajax({
+                        type: 'post',
+                        data : $("#addClient").serialize(),
+                        dataType: 'json',
+                        success: function(e){
+                            $valid=$.isEmptyObject(e) ? true : false;
+                            if(!$valid){
+                                $form.find('.error').removeClass('error');
+                                $form.find('.js_gen_errors').remove();
+                                for(var i in e){
+                                    $.map( e[i], function(val, k) {
+                                        $('input[name='+i+']').addClass('error')
+                                        .after('<ul class="errors js_gen_errors"><li>'+val+'</li></ul>');
+                                    });
+                                }
+                                return false;
+                            }else{
+                                validated=true;
+                                $form.find('.error').removeClass('error');
+                                $form.find('.js_gen_errors').remove();
+                                $form[0].submit();
+                                return true;
+                            }
+                        }
+                    });
+                    return false;
+                }
+            })
+    });
+</script>

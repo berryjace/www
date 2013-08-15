@@ -1,0 +1,117 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'reports', 'id' => $this->vendor_id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>
+        </div>
+    </div>
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<h1>
+    <button class="button exporter button_green fancybox-pop"
+	    rel="<?php
+echo $this->url(
+	array(
+    'module' => 'vendor',
+    'controller' => 'royalty',
+    'action' => 'popup-upload',
+    'vendor_id' => $this->vendor_id), false, true)
+?>">Upload</button>
+</h1>   <br />
+<table class="dyntable sTable2 dataTable">
+    <thead>
+	<tr>
+	    <th class="colorBlack" >Quarter - Year</th>
+	    <th class="colorBlack">Review Status</th>
+	    <th class="colorBlack">Detail Report(s)</th>
+	    <th class="colorBlack">Summary Report</th>
+	    <th class="colorBlack">Email Sent</th>
+	</tr>
+    </thead>
+    <tbody>
+	<?php if (count($this->records) > 0) { ?>
+
+
+
+	<?php foreach ($this->records as $record) { ?>
+
+	    <tr>
+		<td>Q<?php echo $record->quarter . ' ' . $record->year ?></td>
+		<td>
+		    <?php if ($record->status == 'Pending Review') { ?>
+	    	    <a href="<?php echo $this->baseUrl('/admin/reports/summary/id/' . $record->id . '/submission_hash/' . $record->submission_hash) ?>"><?php echo $record->status ?></a>
+		    <?php } else { ?>
+			<?php echo $record->status ?>
+		    <?php } ?>
+		</td>
+		<td><?php
+	    //Zend_Debug::dump($this->detailReports);
+	    if (count($this->detailReports) > 0 && array_key_exists($record->submission_hash, $this->detailReports)) {
+		foreach ($this->detailReports[$record->submission_hash] as $detailReport) {
+			    ?>
+			    <a href="<?php echo $this->baseUrl($detailReport) ?>" target="_blank">
+				<?php echo basename($this->baseUrl($detailReport)) ?>
+			    </a><br/>
+			<?php } ?>
+		    <?php } ?>
+		</td>
+		<td>
+		    <?php if (isset($this->summaryReports[$record->submission_hash])) { ?>
+	    	    <a href="<?php echo $this->baseUrl($this->summaryReports[$record->submission_hash][0]) ?>" target="_blank">
+	    		<img src="<?php echo $this->baseUrl('/assets/images/icons/pdf_icon_small.gif') ?>"
+	    		     alt="<?php echo basename($this->summaryReports[$record->submission_hash][0]) ?>"/>
+	    	    </a>
+		    <?php } ?>
+		</td>
+		<td><?php echo ($record->email_date != '') ? $record->email_date->format('m-d-Y') : 'N/A' ?>
+		</td>
+	    </tr>
+
+	<?php } ?>
+
+    <?php } else { ?>
+        <tr>
+	    <td colspan="5" >No Records Found!</td>
+        </tr>
+    <?php } ?>
+    </tbody>
+</table>
+
+<script type="text/javascript">
+
+    $(function(){
+        $(document).on("click", ".fancybox-pop", function(){
+            $obj=$(this);
+            $.fancybox({
+                'width'                 : 600,
+                'height'                : 400,
+                'href'                  : $obj.attr('rel'),
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 10,
+                'overlayColor'          : '#FFF',
+                'type'                  : 'iframe',
+                'speedIn'               : 100,
+                'speedOut'              : 100
+            });
+            return false;
+        });
+    })
+    function close_upload_dialog(fiscal_year, quarter, vendor_id, submission_hash){
+	//        $.fancybox.close();
+        window.location.href = site_url+"/vendor/royalty/sale-revenue/year/"+fiscal_year+"/quarter/"+quarter+'/vendor_id/'+vendor_id+'/submission_hash/'+submission_hash;
+    }
+</script>

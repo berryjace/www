@@ -1,0 +1,550 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Documentation | Mandy Lane Premium Admin Template by Mienard Lumaad (mlumaad)</title>
+<style type="text/css">
+body { background: #333; font-size: 13px; font-family: "Segoe UI", Arial, Helvetica, sans-serif; }
+h1 { font-size: 22px; } h2 { font-size: 18px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; } h3 { font-size: 16px; } h4 { font-size: 14px; }
+a,a:active { color: #069; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrapper { background: #fff; width: 980px; margin: 20px auto; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
+.wrapperinner { padding: 20px; line-height: 21px; }
+.tcmenu { padding: 0 20px; color: #999; }
+pre { border: 1px solid #ccc; padding: 10px; background: #eee; overflow: auto; }
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+  <div class="wrapperinner">
+    	<p>"Mandy Lane Premium Admin Template" Documentation v1.0 </p>
+        <h1>HighFive Landing Page Template</h1> 
+		<p>Created: 11/29/2011 By: Mienard Lumaad (mlumaad)</p> 
+
+<p>Thank you for downloading my theme. If you have any questions that are beyond the scope of this help file, please feel free to email via our contact page here. Thanks so much! </p>
+
+		<h2>Table of Contents</h2>
+        
+        <ol class="tcmenu">
+        	<li><a href="#htmlstructure">HTML Structure</a></li>
+            <li><a href="#cssfiles">CSS Files &amp; Structure</a></li>
+            <li><a href="#javascript">Javascript</a>
+            	<ul>
+                	<li><a href="#calendar">Calendar</li>
+                    <li><a href="#colorpicker">Color Picker</a></li>
+					<li><a href="#">Date Picker</a></li>
+                    <li><a href="#growl">Growl Notification</a></li>
+                    <li><a href="#tabs">Tabs</a></li>
+                    <li><a href="#accordion">Accordion</a></li>
+                    <li><a href="#alert">Custom Alert Box</a></li>
+                    <li><a href="#slider">Slider</a></li>
+                    <li><a href="#submenu">Sub Menu</a></li>
+                    <li><a href="#colorbox">Color Box</a></li>
+                    <li><a href="#charts">Charts</a></li>
+                    <li><a href="#file">File Manager</a></li>
+                    <li><a href="#validation">Form Validation</a></li>
+                    <li><a href="#editor">WYSIWYG Editor</a></li>
+                </ul>
+            </li>
+            <li><a href="#php">PHP Code Explanation</a></li>
+            <li><a href="#credits">Sources &amp; Credits</a></li>
+        </ol>
+        
+        <br />
+        
+        <h2 id="htmlstructure">1. HTML Structure</h2>
+        
+        <p>This theme is a flexible layout with up to six columns. All of the information within the header area is nested within a div with a class of <strong>"header"</strong>.</p>
+        <pre>
+&lt;div class=&quot;header&quot;&gt;
+  
+  &lt;form id=&quot;search&quot; action=&quot;&quot; method=&quot;POST&quot;&gt;
+  	&lt;input type=&quot;text&quot; name=&quot;keyword&quot; /&gt; &lt;button class=&quot;searchbutton&quot;&gt;&lt;/button&gt;
+  &lt;/form&gt;
+  
+  &lt;div class=&quot;topheader&quot;&gt;
+  	&lt;ul class=&quot;notebutton&quot;&gt;
+  		&lt;li class=&quot;note&quot;&gt; ... &lt;/li&gt;
+	&lt;/ul&gt;
+  &lt;/div&gt;&lt;!--topheader--&gt;
+  
+  &lt;!---logo---&gt;
+  &lt;a href=&quot;&quot;&gt;&lt;img src=&quot;images/logo2.png&quot; alt=&quot;Logo&quot; /&gt;&lt;/a&gt;
+  
+  &lt;div class=&quot;tabmenu&quot;&gt;
+	...
+  &lt;/div&gt;&lt;!--tabmenu--&gt;
+  
+  &lt;div class=&quot;accountinfo&quot;&gt;
+  	...
+  &lt;/div&gt;&lt;!--accountinfo--&gt;
+  
+&lt;/div&gt;&lt;!--header--&gt;
+        </pre>
+        
+        <p>All of the information within the left area is nested within a div with a class of <strong>"sidebar"</strong>.</p>
+		
+        <pre>
+&lt;div class=&quot;sidebar&quot;&gt;
+   &lt;div id=&quot;accordion&quot;&gt;
+      &lt;h3 class=&quot;open&quot;&gt;Main Navigation&lt;/h3&gt;
+      &lt;div class=&quot;content&quot; style=&quot;display: block;&quot;&gt;
+         &lt;ul class=&quot;leftmenu&quot;&gt;
+            &lt;li&gt; ... &lt;/li&gt;
+         &lt;/ul&gt;
+      &lt;/div&gt;
+   &lt;/div&gt;
+   //// additional content here
+&lt;/div&gt;&lt;!--sidebar--&gt;
+</pre>
+<br />
+	<h3>Grid</h3>
+    
+    <p><strong>File:</strong> <em>grid.html</em></p>
+    
+	<p>All of the information within the main area is nested within a div with a class of <strong>"maincontent"</strong>. You can divide it by columns if you like by using the following tags listed below</p>
+    
+    <h4>Two Columns</h4>
+    <pre>&lt;div class=&quot;one_half&quot;&gt; content here... &lt;/div&gt;
+&lt;div class=&quot;one_half last&gt; content here ... &lt;/div&gt;</pre>
+	
+    <h4>Three Columns</h4>
+    <pre>&lt;div class=&quot;one_third&quot;&gt; content here ... &lt;/div&gt;
+&lt;div class=&quot;one_third&quot;&gt; content here ... &lt;/div&gt;
+&lt;div class=&quot;one_third last&quot;&gt; content here ... &lt;/div&gt;</pre>
+
+	<p>This theme also allows up to 6 columns by using a class of <strong>two_third, one_fourth, three_fourth, one_fifth, four_fifth, one_sixth and five_sixth</strong>. You can also create 2 columns using a combination of <strong>two_third</strong> and <strong>one_third</strong>. Make sure to add a class name of <strong>"last"</strong> to prevent your page messed up</p>
+    
+    <br />
+    
+    <h3>Widget Box</h3>
+    
+    <p><strong>Files:</strong> <em>dashboard.html, elements.html</em></p>
+    
+    <p>This theme have 2 widget box styles by using a class name of <strong>widgetbox</strong> and <strong>widgetbox2</strong>. The html code for widget box should be like in below:</p>
+    
+    <pre>
+&lt;div class=&quot;widgetbox&quot;&gt;
+   &lt;h3&gt;&lt;span&gt;Title goes here ... &lt;/span&gt;&lt;/h3&gt;
+   &lt;div class=&quot;content&quot;&gt;
+      content goes here ...
+   &lt;/div&gt;&lt;!-- content --&gt;
+&lt;/div&gt;&lt;!-- widgetbox --&gt;</pre>
+
+	<br />
+    
+    <h3>Sub Menu</h3>
+    <p><strong>Files:</strong> <em>users.html, gallery.html</em></p>
+    <p>You can use submenu anywhere in the page by using the following code below:</p>
+    <pre>
+&lt;ul class=&quot;submenu&quot;&gt;
+   &lt;li class=&quot;current&quot;&gt;&lt;a href=&quot;&quot;&gt;All (2430)&lt;/a&gt;&lt;/li&gt;
+   &lt;li&gt;&lt;a href=&quot;&quot;&gt;Active (2000)&lt;/a&gt;&lt;/li&gt;
+   &lt;li&gt;&lt;a href=&quot;&quot;&gt;Inactive (430)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</pre>
+
+<br />
+
+	<h3>Progress Bars</h3>
+    <p><strong>Files:</strong> <em>dashboard.html, reports.html</em></p>
+    <p>This template have two types of progress bar by using the class name <strong>"bar"</strong> and <strong>"bar2"</strong> inside a class name of <em><strong>progress</strong></em>.</p>
+    
+    <pre>
+&lt;div class=&quot;progress&quot;&gt;
+   Storage
+   &lt;div class=&quot;bar2&quot;&gt;
+      &lt;div class=&quot;value bluebar&quot; style=&quot;width: 60%;&quot;&gt;&lt;small&gt;60%&lt;/small&gt;&lt;/div&gt;
+   &lt;/div&gt;
+&lt;/div&gt;&lt;!--progress--&gt;</pre>
+
+	<br />
+
+	<h2 id="cssfiles">2. CSS Files &amp; Structure</h2>
+    
+    <p>This template contains some general styling, such as anchor tag colors, font-sizes, etc. Keep in mind, that these values might be overridden somewhere else in the file. Below is what css styles are arranged in <strong><em>style.css</em></strong>. CSS files are located in folder <em><strong>/css</strong></em>.</p>
+    
+<pre>
+1. General Styles
+2. Notification messages
+3. Login Page
+4. Top Header
+5. Tab Menu
+6. Side Bar
+7. Columns
+8. Main content styles
+9. Buttons
+10. Widget Box
+11. Progress Bar
+12. Sub Menu
+13. Form Styling
+14. Standard Table
+15. Pagination
+16. Gallery
+17. Elements
+18. Icons
+19. Invoice
+20. Custom Styles
+</pre>
+
+<br />
+
+	<h2 id="javascript">3. Javascript</h2>
+    
+    <p>This theme imports a total of 25 Javascript files. </p>
+    
+    <h4>Custom</h4>
+    <p><strong>Folder:</strong> <em>js/custom/</em> - 6 scripts for doing the animation, effects, functionality, etc.</p>
+	<ul class="list">
+    	<li><strong>calendar.js</strong> - a required script used for calendar.html page</li>
+        <li><strong>elements.js</strong> - a custom script required for elements.html page</li>
+        <li><strong>gallery.js</strong> - a custom script required for gallery.html</li>
+        <li><strong>general.js</strong> - a custom script required in all pages for the header, sidebar menu, login page, etc.</li>
+        <li><strong>reports.js</strong> - a custom script required for reports.html</li>
+        <li><strong>users.js</strong> - a custom script requited for users.html</li>
+    </ul>
+    
+    <h4>Plugins</h4>
+	<p><strong>Folder:</strong> <em>js/plugins/</em> - 19 scripts used for the plugins</p>
+    <ul>
+    	<li><strong>wysiwyg/ - 6 scripts used for wysiwyg editor</strong>
+        	<ul>
+            	<li>jquery.wysiwyg.js</li>
+                <li>wysiwyg.colorpicker.js</li>
+                <li>wysiwyg.cssWrap.js</li>
+                <li>wysiwyg.image.js</li>
+                <li>wysiwyg.link.js</li>
+                <li>wysiwyg.table.js</li>
+            </ul>
+        </li>
+        <li><strong>colorpicker.js</strong> - a script for colorpicker</li>
+        <li><strong>elfinder.min.js</strong> - a script for file manager</li>
+        <li><strong>excanvas.min.js</strong> - a script used for charts intended for IE</li>
+        <li><strong>fullcalendar.min.js</strong> - a script used for calendar</li>
+        <li><strong>jquery.alerts.js</strong> - for custom alert boxes</li>
+        <li><strong>jquery.colorbox-min.js</strong> - for lightbox type used in viewing images</li>
+        <li><strong>jquery.flot.min.js &amp; jquery.flot.pie.min.js</strong> - a script for charts used in reports</li>
+        <li><strong>jquery.jgrowl.js</strong> - a script for notification messages</li>
+        <li><strong>jquery.validate.min.js</strong> - a requireed script for validating a form</li>
+        <li><strong>jquery-1.7.min.js</strong> - a js framework required in all of the plugins and custom js</li>
+        <li><strong>jquery-ui-1.8.16.custom.min.js</strong> - a script for ui effects, animation, datepicker, etc.</li>
+    </ul>
+    
+    <p>Before using any of the plugins above in your page, make sure to add the jQuery in your head.</p>
+    
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery-1.7.min.js&quot;&gt;&lt;/script&gt;</pre>
+    <br />
+    
+    <h3 id="calendar">Calendar</h3>
+    
+    <p>This template uses <a href="http://arshaw.com/fullcalendar/"><strong>FullCalendar v1.5.2</strong></a> by Adam Shaw. You can read the full documentation for this calendar to <a href="http://arshaw.com/fullcalendar/docs/">http://arshaw.com/fullcalendar/docs/</a></p>
+    <p>To add the calendar in your page, simply add the following code below into your head tag.</p>
+<pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/fullcalendar.min.js&quot;&gt;&lt;/script&gt;<br />&lt;script type=&quot;text/javascript&quot; src=&quot;js/custom/calendar.js&quot;&gt;&lt;/script&gt;
+</pre>
+<p>Add the code below anywhere you want the calendar to appear.</p>
+<pre>&lt;div id=&quot;calendar&quot;&gt;&lt;/div&gt;</pre>
+<pre>&lt;div id='external-events'&gt;<br />	&lt;div class='external-event'&gt;My friend's birthday event&lt;/div&gt;<br />	&lt;div class='external-event'&gt;My wedding&lt;/div&gt;<br />	&lt;div class='external-event'&gt;Company party&lt;/div&gt;<br />	&lt;div class='external-event'&gt;Island hopping event&lt;/div&gt;<br />	&lt;div class='external-event'&gt;Fun run event&lt;/div&gt;<br />&lt;/div&gt; </pre>
+	
+    <br />
+    <h3 id="colorpicker">Color Picker</h3>
+    
+    <p>This template uses <a href="www.eyecon.ro">ColorPicker</a> by Stefan Petre. You can visit <a href="www.eyecon.ro">www.eyecon.ro</a> to use more of the options and methods for this plugin.
+    <p>To add colorpicker in your page, simply add the below code into your head tag</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.colorbox-min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery('#colorpicker').ColorPicker({
+       onSubmit: function(hsb, hex, rgb, el) {
+          jQuery(el).val(hex);
+             jQuery(el).ColorPickerHide();
+          },
+       onBeforeShow: function () {
+          jQuery(this).ColorPickerSetColor(this.value);
+       }
+    }).bind('keyup', function(){ jQuery(this).ColorPickerSetColor(this.value);});
+});
+&lt;/script&gt;</pre>
+
+	<p>After you add the above code in your head, simply add the html code below anywhere you like the colopicker to display.</p>
+    
+    <pre>&lt;input id=&quot;colorpicker&quot; type=&quot;text&quot; /&gt;</pre>
+    
+    <br />
+    
+    <h3 class="datepicker">Datepicker</h3>
+    
+    <p>Datepicker is part of the <a href="http://jqueryui.com">jQuery UI</a> plugin. To add this in your page a below code is added in the head.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery-ui-1.8.16.custom.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery( &quot;#datepicker&quot; ).datepicker();
+});
+&lt;/script&gt;
+
+//add this anywhere in your page
+&lt;input id=&quot;datepicker&quot; type=&quot;text&quot; class=&quot;width50&quot; /&gt;</pre>
+    
+    <br />
+    <h3 id="growl">Growl Notification</h3>
+    <p>This template uses growl notification (jGrowl) by Stan Lemon. You can use growl in any events of your scripts to display notification. You can use growl by adding the code below.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.jgrowl.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	//you can insert the below code in any events like click, hover,submit, focus, etc.
+	jQuery.jGrowl(&quot;Hello world!&quot;);
+});
+&lt;/script&gt;</pre>
+
+
+	<br />
+    
+    <h3 id="tabs">Tabs</h3>
+    
+    <p>Tabs is part of the <a href="http://jqueryui.com">jQuery UI</a> plugin. To add this in your page a below code is added in the head.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery-ui-1.8.16.custom.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery( &quot;#tabs&quot; ).tabs();
+});
+&lt;/script&gt;
+
+//add this anywhere in your page
+&lt;div id=&quot;tabs&quot;&gt;
+	&lt;ul&gt;
+		&lt;li&gt;&lt;a href=&quot;#tabs-1&quot;&gt;Sample Tab A&lt;/a&gt;&lt;/li&gt;
+		&lt;li&gt;&lt;a href=&quot;#tabs-2&quot;&gt;Sample Tab B&lt;/a&gt;&lt;/li&gt;
+		&lt;li&gt;&lt;a href=&quot;#tabs-3&quot;&gt;Sample Tab C&lt;/a&gt;&lt;/li&gt;
+	&lt;/ul&gt;
+	&lt;div id=&quot;tabs-1&quot;&gt; ... &lt;/div&gt;
+	&lt;div id=&quot;tabs-2&quot;&gt; ... &lt;/div&gt;
+	&lt;div id=&quot;tabs-3&quot;&gt; ... &lt;/div&gt;
+&lt;/div&gt;&lt;!-- #tabs --&gt;</pre>
+
+    <br />
+    
+    <h3 id="accordion">Accordion</h3>
+    
+    <p>Accordion is part of the <a href="http://jqueryui.com">jQuery UI</a> plugin. To add this in your page a below code is added in the head.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery-ui-1.8.16.custom.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery( &quot;.accordion&quot; ).accordion();
+});
+&lt;/script&gt;
+
+//add this anywhere in your page
+&lt;div class=&quot;accordion&quot;&gt;
+	&lt;h3&gt;Title here&lt;/h3&gt;
+	&lt;div&gt; content goes here... &lt;/div&gt;
+	&lt;h3&gt;Title here&lt;/h3&gt;
+	&lt;div&gt; content goes here... &lt;/div&gt;
+	&lt;h3&gt;Title here&lt;/h3&gt;
+	&lt;div&gt; content goes here... &lt;/div&gt;
+&lt;/div&gt;&lt;!-- accordion --&gt;</pre>
+
+
+	<br />
+    
+    <h3 id="alert">Custom Alert Box</h3>
+    
+    <p>This template uses custom alert boxes by <a href="http://abeautifulsite.net/">Cory S.N. LaViska</a>. To use this plugin, simply add the line of code below into your head.</p>
+    <p>Usage:</p>
+    <p>jAlert( message, [title, callback] )<br />
+      		jConfirm( message, [title, callback] )<br />
+    jPrompt( message, [value, title, callback] )</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.alerts.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery('button').click(function(){<br />		jAlert('This is a custom alert box', 'Alert Dialog');<br />	});
+});
+&lt;/script&gt;
+
+//add this anywhere on your page
+&lt;button&gt;Click me to view custom alert&lt;/button&gt;</pre>
+
+    <br />
+    
+    <h3 id="slider">Slider</h3>
+    
+    <p>Slider is part of the <a href="http://jqueryui.com">jQuery UI</a> plugin. More options available in jQuery UI website. To add this in your page a below code is added in the head.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery-ui-1.8.16.custom.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery(&quot;#slider&quot;).slider({value: 40});
+});
+&lt;/script&gt;
+
+//add this anywhere in your page
+&lt;div id=&quot;slider&quot;&gt;&lt;/div&gt;</pre>
+
+<br />
+
+	<h3 id="submenu">Sub Menu</h3>
+    
+    <p>You can add sub menu anywhere in your page by adding the javascript code below</p>
+    <pre>&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery('.submenu a').click(function(){
+		var id = jQuery(this).attr('href');
+		jQuery('.submenu a').each(function(){
+			jQuery(this).parent().removeClass('current');
+			jQuery(jQuery(this).attr('href')).hide();
+		});
+		jQuery(this).parent().addClass('current');
+		jQuery(id).fadeIn();
+	});
+});
+&lt;/script&gt;
+
+//add this anywhere in your page
+&lt;ul class=&quot;submenu&quot;&gt;
+	&lt;li class=&quot;current&quot;&gt;&lt;a href=&quot;#gridview&quot;&gt;Grid View&lt;/a&gt;&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;#listview&quot;&gt;List View&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div id=&quot;gridview&quot;&gt; ... &lt;/div&gt;
+&lt;div id=&quot;listview&quot;&gt; .. &lt;/div&gt;</pre>
+
+	<br />
+    <h3 id="colorbox">Drop Down Menu</h3>
+    <p>
+    	This theme supports drop down menu to top menu of header by using this javascript code below.
+    </p>
+    
+    <pre>
+jQuery(&quot;.subnav&quot;).css({display: &quot;none&quot;}); // Opera Fix<br />	jQuery(&quot;.tabmenu li&quot;).hover(function(){<br />		jQuery(this).find('ul:first').css({visibility: &quot;visible&quot;,display: &quot;none&quot;}).show(400);<br />	},function(){<br />		jQuery(this).find('ul:first').css({visibility: &quot;hidden&quot;});<br />	});  </pre>
+	
+    <p>Drop menu is using a line of styles below.</p>
+    
+    <pre>.tabmenu ul li .subnav { <br />	position: absolute; min-width: 200px; top: 39px; left: 0; display: none; z-index: 100; border: 1px solid #6785b0; border-bottom: 0; }<br />.tabmenu ul li .subnav li { display: block; float: none; background: none; }<br />.tabmenu ul li .subnav li a { display: block; background: #83a3ca; border-bottom: 1px solid #6785b0; color: #fff; }<br />.tabmenu ul li .subnav li:last-child a { background: #83a3ca; }<br />.tabmenu ul li .subnav li a:hover { background: #7293c1; color: #fff; }<br />.tabmenu ul li .subnav a span { padding: 5px 15px; text-transform: capitalize; text-shadow: 1px 1px #6785b0; }<br />.tabmenu ul li.current .subnav { border-color: #ccc; border-top: 0; }<br />.tabmenu ul li.current .subnav li a { background: #eee; border-bottom: 1px solid #ccc; color: #333; }<br />.tabmenu ul li.current .subnav li a:hover { background: #c8d9ed; }<br />.tabmenu ul li.current .subnav li a span { text-shadow: 1px 1px #f7f7f7; }
+</pre>
+    
+    
+    <br />
+    <h3 id="colorbox">ColorBox</h3>
+    <p>This theme uses ColorBox by Jack Moore to view images in lightbox. You can use colorbox by adding the code below.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.colorbox-min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+	jQuery(&quot;.thumb&quot;).colorbox();
+&lt;/script&gt;
+
+//sample
+&lt;div class=&quot;thumb&quot;&gt;
+	&lt;a href=&quot;images/assets/thumb/large/thumb1.png&quot; class=&quot;view&quot;&gt;View Image&lt;/a&gt;
+&lt;/div&gt;</pre>
+
+<br />
+
+	<h3 id="chart">Charts</h3>
+    
+    <p>This template uses <a href="http://code.google.com/p/flot/">Flot</a> to create chart for your reports or anywhere on your page. To use this plugin just add the line of code below.</p>
+    
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.flot.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.flot.pie.min.js&quot;&gt;&lt;/script&gt;</pre>
+
+	<p>To know how this theme implemented the flot you can open the file <strong>reports.js</strong> at <strong>js/custom/</strong> folder.</p>
+    <p>To know more how to use this plugin you can visit the page at <a href="http://code.google.com/p/flot/">http://code.google.com/p/flot/</a></p>
+
+	<br />
+    <h3 id="file">File Manager</h3>
+    <p>This theme uses <a href="http://elrte.org/elfinder">ElFinder File Manager</a> to create a file manager anywhere in the page, simply by adding a line of code below in your head tag.</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/elfinder.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function() {
+	jQuery('#fileManager').elfinder({
+		url : 'php/connector.php',
+	})
+});
+&lt;/script&gt;</pre>
+
+	<p>You can browse other custom scripts in <strong>users.js</strong> and <strong>general.js</strong> for the left menu top header, etc.</p>
+    
+    <br />
+    
+    <h3 id="validation">Form Validation</h3>
+    
+    <p>This template uses form validation by <a href="http://bassistance.de/jquery-plugins/jquery-plugin-validation/">Jörn Zaefferer</a>. To use this plugin, simply add the line of code below</p>
+    <pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/jquery.validate.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function(){
+	jQuery(&quot;#form&quot;).validate({
+		rules: {
+			name: &quot;required&quot;,
+			email: {
+				required: true,
+				email: true,
+			},
+			occupation: &quot;required&quot;
+		},
+		messages: {
+			name: &quot;Please enter your name&quot;,
+			email: &quot;Please enter a valid email address&quot;,
+			occupation: &quot;Please select your occupation&quot;
+		}
+	});
+});
+&lt;/script&gt;
+
+&lt;form id=&quot;form&quot; action=&quot;&quot; method=&quot;post&quot;&gt; ... &lt;/form&gt;</pre>
+    
+    <br />
+    
+    <h3 id="editor">WYSIWYG Editor</h3>
+    <p>This template uses WYSIWYG Editor by <a href="https://github.com/akzhan/jwysiwyg">https://github.com/akzhan/jwysiwyg</a>. We use this plugin by adding the line of code below.</p>
+	<pre>&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/wysiwyg/jquery.wysiwyg.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/wysiwyg/wysiwyg.image.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/wysiwyg/wysiwyg.link.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;js/plugins/wysiwyg/wysiwyg.table.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+jQuery(document).ready(function() {
+	jQuery('#wysiwyg').wysiwyg();
+});
+&lt;/script&gt;
+
+&lt;textarea id=&quot;wysiwyg&quot; cols=&quot;130&quot; rows=&quot;15&quot;&gt;&lt;/textarea&gt; </pre>
+    
+    <br />
+    
+    <h2 id="php">PHP Code Explanation</h2>
+    
+    <p>I am using PHP files required in order to use the ElFinder File Manager. Open the file <strong>php/connector.php</strong>. Go to <strong>line 30</strong> and change the following line of code below</p>
+    <pre>$opts = array(
+	'root'            =&gt; '../files',			// path to root directory
+	'URL'             =&gt; 'http://yourdomain/files/',	// root directory URL
+	'rootAlias'       =&gt; 'Home',				// display this instead of root directory name<br /></pre>
+    
+    <br />
+    
+    <h2 id="credits">Sources &amp; Credits</h2>
+    
+    <p>I've used the following images, icons or other files as listed. </p>
+    
+    <ul>
+    	<li><a href="http://iconsweets.com/">IconSweets</a> - Free Icons by YummyGum</li>
+        <li><a href="http://iconsweets2.com">IconSweets2</a> - Even more free icons by YummyGum</li>
+        <li><a href="http://www.iconfinder.com/search/?q=iconset%3Aquartz">Quartz</a> by <a href="http://www.graphicrating.com/">Andy Gongea</a></li>
+        <li><a href="http://www.graphicrating.com/">Diagram Icon set</a> by <a href="http://www.doublejdesign.co.uk/">Double J Design</a></li>
+        <li><a href="http://jquery.com">jQuery</a> by John Resig</li>
+        <li><a href="http://jqueryui.com">jQuery UI</a></li>
+        <li><a href="https://github.com/akzhan/jwysiwyg">WYSIWYG</a></li>
+        <li><a href="http://www.eyecon.ro/colorpicker/">ColorPicker</a> by Stefan Petre</li>
+        <li><a href="http://elrte.org/elfinder">ElFinder File Manager for web</a></li>
+        <li><a href="http://www.google.com.ph/url?sa=t&amp;rct=j&amp;q=elfinder&amp;source=web&amp;cd=1&amp;ved=0CBsQFjAA&amp;url=http%3A//elrte.org/elfinder&amp;ei=G8bhToeCObD5mAXr_YjxBA&amp;usg=AFQjCNG-MJ_GoNB4gqV4Uv5wDJMa1yK1kA&amp;sig2=2ripaJaI4041uiWaniTVlg&amp;cad=rja">FullCalendar v1.5.2</a> by Adam Shaw</li>
+        <li><a href="http://abeautifulsite.net/">jQuery Alert Dialogs Plugin</a> by Cory S.N. LaViska</li>
+        <li><a href="http://jacklmoore.com/colorbox/">ColorBox v1.3.18</a></li>
+        <li><a href="http://code.google.com/p/flot/">Flot Chart</a></li>
+        <li><a href="http://stanlemon.net/24">jGrowl 1.2.6</a> by Stan Lemon</li>
+        <li><a href="http://bassistance.de/jquery-plugins/jquery-plugin-validation/">jQuery Validation</a> by Jörn Zaefferer</li>
+        <li>Droid Sans Front by Google Fonts</li>
+    </ul>
+    
+    
+    <p>Once again, thank you so much for purchasing this theme. As I said at the beginning, I'd be glad to help you if you have any questions relating to this theme. No guarantees, but I'll do my best to assist. If you have a more general question relating to the themes on ThemeForest, you might consider visiting the forums and asking your question in the "Item Discussion" section.</p>
+    
+    Mienard Lumaad (mlumaad)
+    
+	<br /><br />
+    </div><!-- wrapperinner -->
+</div><!-- wrapper -->
+</body>
+</html>

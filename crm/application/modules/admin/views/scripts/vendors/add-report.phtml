@@ -1,0 +1,242 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<?php
+$this->headTitle('Add Quarterly Report');
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery-ui/jquery-ui-timepicker-addon.js"));
+$errorsMessages = $this->form->getMessages();
+?>
+<h3>Add Royalty Report</h3>
+<form action="" method="POST" enctype="multipart/form-data" id="royalty_report_form">
+<div id="view-content">
+    <div class="vendor_div">
+        <?php 
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if(!sizeof($errorsMessages) && !sizeof($this->my_errors)) {
+               echo "<div class='success'>Report(s) added successfully</div>";
+            } else if(!sizeof($errorsMessages) && $this->added > 0) {
+               echo "<div class='success'>".$this->added." report(s) added</div>";
+               echo "<div class='errors'>Please fill the highlighted box(es) with correct data</div>";
+            } else {
+               echo "<div class='errors'>Please fill the highlighted box(es) with correct data</div>";
+            }
+        }
+        ?>
+    <table width="250">
+        <tr>
+            <td>Vendor</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->vendor_name->setValue(@$this->formdata['vendor_name'])->setAttrib('style',isset($errorsMessages['vendor_id']) ? 'border-color:#ff0000' : '')?><?php echo $this->form->vendor_id->setValue(@$this->formdata['vendor_id'])?></td>
+        </tr>
+        <tr>
+            <td>
+             <table width="100%">
+                <tr>
+                    <td width="10%">Year</td>
+                    <td>Quarter</td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->form->report_year->setValue(@$this->formdata['report_year'])?></td>
+                    <td><?php echo $this->form->quarter->setValue(@$this->formdata['quarter'])?></td>
+                </tr>
+             </table>
+            </td>
+        </tr>
+        <?php if($this->by != 'sales') {?>
+        <tr>
+            <td>Greek Organization</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->greek_client_name->setAttrib('size', '40')->setValue(@$this->formdata['greek_client_name'][0])->setAttrib('style',isset($this->my_errors[0]['greek_client_id']) ? 'border-color:#ff0000' : '')?><?php echo $this->form->greek_client_id->setValue(@$this->formdata['greek_client_id'][0])?></td>
+        </tr>
+        <?php }?>
+    </table>
+    </div>
+    <table width="100%" class="report_table">
+       <thead>
+        <tr>
+            <td>
+                <table width="<?php echo $this->by == 'sales' ? '980' : '835'?>">
+                    <tr>
+                        <td width="6">&nbsp;</td>
+                        <td width="175">Product Sold To</td>
+                        <td width="102">Invoice Date</td>
+                        <td width="85">Invoice<br /> Number</td>
+                        <td width="295">Product Description</td>
+                        <td width="55">QTY</td>
+                        <td width="55">Price/ unit</td>
+                        <td width="55">Gross<br />Sales</td>
+                        <?php if($this->by == 'sales') {?>
+                        <td width="145">Greek Org</td>
+                        <?php }?>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+       </thead>
+        <tr>
+            <td>
+                <?php if(sizeof($this->formdata) && (sizeof($errorsMessages) || sizeof($this->my_errors))) {?>
+                    <?php
+                    foreach($this->formdata['product_sold_to'] as $k=>$product_sold_to) {
+                        if(!sizeof($errorsMessages) && !sizeof($this->my_errors[$k])) {
+                            continue;
+                        }
+                        @$row++;
+                    //foreach($this->my_errors as $k=>$this->my_errors[$k]) {
+                    //sizeof($this->my_errors[$k]['product_sold_to']) ? $this->form->product_sold_to->getAttrib('product_sold_to');
+                    ?>
+                <div class="report_form">
+                  <table width="<?php echo $this->by == 'sales' ? '980' : '835'?>">
+                    <tr>
+                        <td width="6"><?php echo $row > 1 ? '<a href="javascript:;" class="remove_row">X</a>' : "&nbsp;&nbsp;"?></td>
+                        <td width="175">
+                            <?php echo $this->form->product_sold_to->setValue(@$this->formdata['product_sold_to'][$k])->setAttrib('style',isset($this->my_errors[$k]['product_sold_to']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <td width="102">
+                            <?php echo $this->form->invoice_date->setAttrib('id', 'invoice_date_'.$k)->setValue(@$this->formdata['invoice_date'][$k])->setAttrib('style',isset($this->my_errors[$k]['invoice_date']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <td width="85">
+                            <?php echo $this->form->invoice_number->setValue(@$this->formdata['invoice_number'][$k])->setAttrib('style',isset($this->my_errors[$k]['invoice_number']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <td width="295">
+                            <?php echo $this->form->product_description->setValue(@$this->formdata['product_description'][$k])->setAttrib('style',isset($this->my_errors[$k]['product_description']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <td width="55">
+                            <?php echo $this->form->quantity->setValue(@$this->formdata['quantity'][$k])->setAttrib('style',isset($this->my_errors[$k]['quantity']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <td width="55">
+                            <?php echo $this->form->price_per_unit->setValue(@$this->formdata['price_per_unit'][$k])->setAttrib('style',isset($this->my_errors[$k]['price_per_unit']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <td width="55">
+                            <?php echo $this->form->gross_sales->setValue(@$this->formdata['gross_sales'][$k])->setAttrib('style',isset($this->my_errors[$k]['gross_sales']) ? 'border-color:#ff0000' : '')?>
+                        </td>
+                        <?php if($this->by == 'sales') {?>
+                        <td width="145">
+                            <?php echo $this->form->greek_client_name->setValue(@$this->formdata['greek_client_name'][$k])->setAttrib('style',isset($this->my_errors[$k]['greek_client_id']) ? 'border-color:#ff0000' : '')?><?php echo $this->form->greek_client_id->setValue(@$this->formdata['greek_client_id'][$k])?>
+                        </td>
+                        <?php }?>
+                    </tr>
+                  </table>
+                </div>
+                    <?php }?>
+                <?php } else {?>
+                <div class="report_form">
+                  <table width="<?php echo $this->by == 'sales' ? '980' : '835'?>">
+                    <tr>
+                        <td width="6">&nbsp;&nbsp</td>
+                        <td width="175"><?php echo $this->form->product_sold_to?></td>
+                        <td width="102"><?php echo $this->form->invoice_date?></td>
+                        <td width="85"><?php echo $this->form->invoice_number?></td>
+                        <td width="295"> <?php echo $this->form->product_description?></td>
+                        <td width="55"><?php echo $this->form->quantity?></td>
+                        <td width="55"><?php echo $this->form->price_per_unit?></td>
+                        <td width="55"><?php echo $this->form->gross_sales?></td>
+                        <?php if($this->by == 'sales') {?>
+                        <td width="145"><?php echo $this->form->greek_client_name?><?php echo $this->form->greek_client_id?></td>
+                        <?php }?>
+                    </tr>
+                  </table>
+                </div>
+                <?php }?>
+            </td>
+        </tr>
+    </table>	
+</div>
+<div class="report_button_div">
+    <?php echo $this->form->submit_quarterly?>
+    <?php echo $this->form->save?>
+    <?php echo $this->form->addmore?>
+</div>
+</form>
+
+<script type="text/javascript">
+$(window).load(function(){
+    var i = <?php echo sizeof($this->my_errors) ? $k : 0?>;
+    $('#addmore').click(function(){
+       i++; 
+       $('.report_form:first').find('[id^=invoice_date_]').datepicker("destroy").end()
+           .clone().insertAfter(".report_form:last")
+           .find('td.errors').removeClass('errors').end()
+           .find('input[type=text]').val('').removeAttr('style').end()
+           .find('#invoice_date_0').removeAttr('id').attr('id', 'invoice_date_'+i).end()
+           .find('td:first').html('<a href="javascript:;" class="remove_row">X</a>').end();
+    });
+    $(document).on('click', 'a.remove_row', function(){
+       $(this).parents('div[class^=report_form]').remove();
+    });
+    $(document).on('focus', '[id^=invoice_date_]', function(){
+       $(this).datepicker({dateFormat:"mm/dd/yy", minYear:'<?php echo date('Y', strtotime('-10years'))?>', maxDate:0, changeMonth:true, changeYear:true});
+    });
+   
+    $(document).on( "focus", '#greek_client_name', function() {
+        $( this ).autocomplete({
+            minLength: 0,
+            source: [<?php echo $this->greek_names;?>],
+            focus: function( event, ui ) {
+                    $(this).val( ui.item.label );
+                    return false;
+            },
+            select: function( event, ui ) {
+                    $(this).val( ui.item.label );
+                    $(this).next().val( ui.item.value );
+                    //$(this).parents('div[class^=report_form]').find("input[name^=greek_client_id]" ).val( ui.item.value );
+                    return false;
+            }
+        });
+        
+    });
+    var wordlist = [<?php echo $this->vendor_names;?>];
+    wordlist.sort();
+    $( '#vendor_name' ).autocomplete({
+        minLength: 1,
+        source: function(req, responseFn) {
+                  var re = $.ui.autocomplete.escapeRegex(req.term);
+                  var matcher = new RegExp( "^" + re, "i" );
+                  var a = $.grep( wordlist, function(item,index){
+                      return matcher.test(item.label);
+                  });
+                  responseFn( a );
+        },
+        focus: function( event, ui ) {
+                $(this).val( ui.item.label );
+                return false;
+        },
+        select: function( event, ui ) {
+                $(this).val( ui.item.label );
+                $(this).next().val( ui.item.value );
+                //$(this).parents('div[class^=report_form]').find("input[name^=greek_client_id]" ).val( ui.item.value );
+                return false;
+        }
+    });
+});
+
+</script>
+<style type="text/css">
+    table.report_table, table.report_table td {padding:0px;margin:0px}
+    div.errors {color:#ff0000;}
+    div.success {color:green;}
+    .vendor_div {padding-left:10px;}
+    .report_button_div {padding-left:12px;}
+    input.date {width:65px;background-position: 78px 3px}
+    .vendor_div .text, .report_form .text {width:auto;}
+    table.report_table thead td {font-size:11px;font-weight:bold;vertical-align:bottom;text-align: center}
+    .ui-autocomplete-loading { background: white url('/amc/assets/images/loading.gif') right center no-repeat; }
+    .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+    }
+    /* IE 6 doesn't support max-height
+     * we use height instead, but this forces the menu to always be this tall
+     */
+    * html .ui-autocomplete {
+            height: 200px;
+    }
+</style>

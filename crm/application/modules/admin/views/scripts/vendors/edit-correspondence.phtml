@@ -1,0 +1,52 @@
+<?php
+$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+//$this->headScript()->appendFile($this->baseUrl("assets/js/jquery-ui/timepicker/jquery-ui-timepicker-addon-1.0.1.js"));
+//$this->headScript()->appendFile($this->baseUrl("assets/js/jquery-ui/timepicker/jquery-ui-sliderAccess.js"));
+//$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/timepicker/jquery-ui-timepicker-addon.css"));
+?>
+
+<div id="view-content">
+    <h2>Edit Vendor Correspondence</h2>
+    <div class="spacer clear"></div>
+    <hr size="1" noshade />
+    <div class="spacer clear"></div>
+
+    <div class="one">
+        <form name="edit_correspondence_form" method="POST" action="" >
+            <?php echo $this->form->subject; ?>
+            <?php echo $this->form->note; ?>
+            <div class="one_half">
+                <?php echo $this->form->note_time; ?>
+            </div>            
+            <div class="one_third">
+                <div class="spacer"></div>
+                <div class="spacer"></div>
+                <?php echo $this->form->Save; ?>
+            </div>            
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function(){
+        //$("#note_time").datepicker(); 
+        var notetime = $('#note_time').val().split(" ");
+        var date = notetime[0];
+        var time = notetime[1].split(":");
+        //alert(notetime[0] +' -- H: '+ time[0]+' -- M: '+ time[1]+' -- S: '+ time[2]);
+        $('#note_time').datetimepicker({  
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            showButtonPanel: true,
+            showSecond: true,
+            defaultDate: $.datepicker.parseDate("yy-m-d",  date ),
+            hour: time[0],
+            minute: time[1],
+            second: time[2],
+            timeFormat: 'hh:mm:ss'              
+        });
+       
+        if('<?php echo $this->message; ?>' != ""){
+            window.parent.execute_refresh('<?php echo $this->message; ?>');
+        }        
+    });        
+</script>

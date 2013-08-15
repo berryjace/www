@@ -1,0 +1,26 @@
+<h3>Usage Guide Details</h3>
+<hr size="1" noshade />
+
+<div class="one">
+    <div class="left_div"><b>Title:</b></div>
+    <div class="right_div">
+        <span><?php echo $this->usage_guide->guide_name; ?></span>
+        <br />
+        <?php if($this->usage_guide->guide_url != ''){ ?>
+        <img src="<?php echo $this->baseUrl("/assets/images/").$this->usage_guide->guide_type.".png"; ?>" /><br />
+        <span style="font-size: 10px; font-weight: normal; color: black;"><?php echo $this->usage_guide->guide_url; ?></span>        
+        <?php } ?>
+    </div>        
+</div>       
+<div class="spacer clear"></div>
+
+<div class="one">
+    <div class="left_div"><b>Details:</b></div>
+    <div class="right_div div_scroll"><?php echo $this->usage_guide->guide_content; ?></div>        
+</div>            
+
+<style type="text/css">    
+  .left_div{float: left; font-size: 12px;}
+  .right_div{float: left; font-size: 12px; margin-left: 10px;}
+  .div_scroll{overflow: auto;}
+</style>

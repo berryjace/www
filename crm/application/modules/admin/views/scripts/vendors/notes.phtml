@@ -1,0 +1,181 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'notes', 'id' => $this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>       
+        </div>
+    </div>      
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<?php echo $this->partial('vendors/notes-form-partial.phtml', array('form' => $this->form, 'vendor' => $this->vendor)); ?>
+
+<div class="spacer"></div>
+
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="notes-data-table">
+    <thead>
+        <tr>
+            <th class="head1" width="15%">Date</th>
+            <th class="head0" width="72%">Note</th>
+            <th class="head1" width="13%">Action</th>
+        </tr>            
+    </thead>
+</table>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .ui-tooltip-content{
+        font-size:110%;
+        line-height: 150%
+    }
+    .ui-tooltip, .qtip{
+        max-width: 500px; 
+    }
+    textarea#description{width: 750px;}
+</style> 
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        
+        $(document).on('click', 'a.note_details', event_functions.note_details);
+        $(document).on('click', 'a.edit_notes', event_functions.edit_notes);
+        $(document).on('click', 'a.delete_note', event_functions.delete_note);
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            init_dataTable();
+        },
+        note_details : function(){
+            var $url = site_url+"/admin/vendors/notes-details/note-id/"+ $(this).attr('rel');            
+            loadPopupView($url, 750, 465);            
+        },
+        edit_notes : function(e){
+//            console.log($(e.target).attr('rel'));            
+            var $url = site_url+"/admin/vendors/notes-edit/id/"+ $(e.target).attr('rel');            
+            loadPopupView($url, 750, 436);
+        },
+        delete_note : function(){
+            if(confirm('Are you sure to delete this note ?')){
+                $note_id=$(this).attr('rel').split("-")[1];
+                $.ajax({
+                    url:site_url+'/admin/vendors/ajax-delete-notes/',
+                    dataType:'json',
+                    data : 'note_id='+$note_id+'&vid='+<?php echo $this->vendor->id; ?>,
+                    type:'post',
+                    success:function(e){
+                        $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                        }
+                    }
+                });
+            }
+            return false;
+        }
+    }
+
+    function init_dataTable(){
+        oTable = $('#notes-data-table').dataTable({
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 10,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-notes/id/<?php echo $this->vendor->id; ?>',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Note:"                
+            },
+            "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 2 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            },
+            fnDrawCallback:function(){                
+            }            
+        } ); 
+        init_server_search_fix();   // Will search only hitting enter not keypress        
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+    
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+    
+    function loadPopupView(url, w, h){
+        $.fancybox({
+            'width'                 : w,
+            'height'                : h,
+            'href'                  : url,    
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedIn'               : 100,
+            'speedOut'              : 100,
+            'overlayColor'          : '#FFF',
+            'onClosed'              : function() {
+                // window.location = $obj.attr('param');
+            }
+        });        
+        return false;
+    }
+    
+    function close_popup(){
+        $.fancybox.close();
+    }
+    
+    function execute_refresh(message){
+        close_popup();
+        oTable.fnDraw();
+        $.jGrowl(message);                   
+    }
+</script>
+

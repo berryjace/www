@@ -1,0 +1,181 @@
+<?php
+
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<?php
+$this->headTitle('Add License');
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery-ui/jquery-ui-timepicker-addon.js"));
+$errorsMessages = $this->form->getMessages();
+?>
+<h3>Add License</h3>
+<form action="" method="POST" enctype="multipart/form-data" id="royalty_report_form">
+<div id="view-content">
+    <div class="vendor_div">
+        <?php
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if(!sizeof($errorsMessages) && !sizeof($this->my_errors)) {
+               echo "<div class='success'>License added successfully</div>";
+            } else if(!sizeof($errorsMessages) && $this->added > 0) {
+               echo "<div class='success'>".$this->added." License added</div>";
+               echo "<div class='errors'>Please fill the highlighted box(es) with correct data</div>";
+            } else {
+               echo "<div class='errors'>Please fill the highlighted box(es) with correct data</div>";
+            }
+        }
+        ?>
+    <table width="250">
+        <tr>
+            <td>Greek Organization</td>
+	    <td>Sharing</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->client_id ?></td>
+            <td><?php echo $this->form->sharing ?></td>
+        </tr>
+
+
+        <tr>
+            <td>Vendor Type</td>
+	    <td></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->vendor_type_id ?></td>
+	    <td></td>
+        </tr>
+        <tr>
+            <td>Royalty</td>
+	    <td>Annual Fee</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->royalty ?></td>
+	    <td><?php echo $this->form->advance ?></td>
+        </tr>
+        <tr>
+            <td>Agreement Date</td>
+            <td>License Agreement Number</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->agreement_date ?></td>
+            <td><?php echo $this->form->license_number ?></td>
+        </tr>
+        <tr>
+        	<td colspan="2">Royalty Description</td>
+        </tr>
+        <tr>
+        	<td colspan="2"><?php echo $this->form->royalty_description; ?></td>
+        </tr>
+        <tr>
+            <td colspan="2">Grant Of License</td>
+        </tr>
+        <tr>
+            <td colspan="2"><?php echo $this->form->grant_of_license ?></td>
+        </tr>
+
+        <tr>
+            <td>Status</td>
+	    <td>Select File</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->status_id ?></td>
+	    <td><?php echo $this->form->license_file ?></td>
+        </tr>
+        <tr>
+            <td><input type="submit" class="button button_black detail_button" value="Save"/></td>
+        </tr>
+
+    </table>
+</div>
+<div class="report_button_div">
+    <?php echo $this->form->save?>
+</div>
+</form>
+
+<script type="text/javascript">
+$(window).load(function(){
+    $(document).on('focus', '#agreement_date', function(){
+       $(this).datepicker({dateFormat:"mm/dd/yy", minYear:'<?php echo date('Y', strtotime('-10years'))?>', changeMonth:true, changeYear:true});
+    });
+
+    $.ajax({
+	'url'	:   site_url+'/admin/vendors/ajax-get-license-statuses',
+	'type'	:   'GET',
+	'success':  function(data){
+	    var d = $.parseJSON(data);
+	    var o = '';
+	    $.each(d, function(index, value) {
+		$('#status_id').append('<option value="'+index+'">'+value+'</option>');
+	  });
+	  $('#status_id').val('<?php echo $this->status_id?>');
+
+	}
+    })
+
+    $('#client_id, #vendor_type_id').each(function(){
+	$(this).on('change', function(){
+	if($(this).val()!='') {
+	    var fld = 'royalty_commission_per';
+	    var type = '%';
+
+
+
+		if($('#vendor_type_id').val()==1) {
+		    fld = 'royalty_commission_per';
+		    type = '%';
+		} else if($('#vendor_type_id').val()==2) {
+		    fld = 'royalty_commission_amt';
+		    type = '$';
+		}
+
+	    $.getJSON(site_url+'/admin/vendors/ajax-get-client-info/id/'+$('#client_id').val()+'?fld[]=greek_grant_of_license&fld[]=greek_royalty_description&fld[]=greek_default_renewal_fee&fld[]='+fld, function(data){
+
+			//console.log(data);
+	    	
+	       $('#grant_of_license').text(data.greek_grant_of_license);
+	       $('#royalty_description').text(data.greek_royalty_description);
+	       $('#advance').val(data['greek_default_renewal_fee']);
+		if(type=='$')
+		    $('#royalty').val(type+ data[fld]);
+		else
+		    $('#royalty').val(data[fld]+type);
+
+	    });
+	} else {
+	    $('#grant_of_license').text('');
+	    $('#royalty').text('');
+	    $('#advance').val('');
+	}
+    })
+
+    })
+
+
+});
+
+</script>
+<style type="text/css">
+    table.report_table, table.report_table td {padding:0px;margin:0px}
+    div.errors {color:#ff0000;}
+    div.success {color:green;}
+    .vendor_div {padding-left:10px;}
+    .report_button_div {padding-left:12px;}
+    input.date {width:65px;background-position: 78px 3px}
+    .vendor_div .text, .report_form .text {width:auto;}
+    table.report_table thead td {font-size:11px;font-weight:bold;vertical-align:bottom;text-align: center}
+    .ui-autocomplete-loading { background: white url('/amc/assets/images/loading.gif') right center no-repeat; }
+    .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+    }
+    /* IE 6 doesn't support max-height
+     * we use height instead, but this forces the menu to always be this tall
+     */
+    * html .ui-autocomplete {
+            height: 200px;
+    }
+</style>

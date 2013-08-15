@@ -1,0 +1,59 @@
+<?php $max_files=Zend_Controller_Front::getInstance()->getRequest()->getParam('max'); ?>
+<form  method="post" action="">
+    <div id="uploader">
+        <p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+    </div>
+</form>
+<script type="text/javascript">
+    // Convert divs to queue widgets when the DOM is ready
+    $(function() {
+        $("#uploader").pluploadQueue({
+            // General settings
+            runtimes : 'html5,gears,silverlight,flash,html4',
+            url : site_url+'/admin/clients/do-upload',
+            max_file_size : '100mb',
+            max_file_count: <?php echo $max_files; ?>, // user can add no more then 20 files at a time
+            chunk_size : '1mb',
+            unique_names : true,
+            multiple_queues : true,
+            // Resize images on clientside if we can
+            resize : {width : 1024, height : 768, quality : 90},
+            rename: true,
+            sortable: true,
+            filters : [
+                {title : "Image files", extensions :"ai,tif,wmf,dat,jpg,jpeg,png,gif,bmp,tiff,pic,xpm,rgb,eps,ps,pdf,doc,docx,xls,xlsx,ods,odt,rtf,ppt,pptx"}
+            ],
+            'flash_swf_url' : site_url+"/assets/js/plupload/plupload.flash.swf",
+            init : {
+                FileUploaded: function(up, file, info) {
+                    window.parent.add_picture_to_form(file.target_name);
+                }
+            }
+        });
+
+        // Client side form validation
+        $('form').submit(function(e) {
+            var uploader = $('#uploader').plupload('getUploader');
+
+            // Files in queue upload them first
+            if (uploader.files.length > 0) {
+                // When all files are uploaded submit form
+                uploader.bind('StateChanged', function() {
+                    if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
+                        $('form')[0].submit();
+                    }
+                });
+
+                uploader.start();
+            } else
+                alert('You must at least upload one file.');
+
+            return false;
+        });
+
+
+    });
+</script>
+<style type="text/css">
+
+</style>

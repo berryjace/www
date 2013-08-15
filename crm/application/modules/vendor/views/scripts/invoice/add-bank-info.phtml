@@ -1,0 +1,48 @@
+<h2><?php echo $this->is_bank_info ? 'Update' : 'Add'; ?> Bank Information</h2>
+<hr size="1" noshade />
+<div class="spacer clear"></div>
+
+<div class="one" id="add_or_update">
+    <form name="bank_info_form" id="bank_info_form" method="post" action="">        
+        <div class="left_div">
+            <?php echo $this->form->account_number; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->account_number_re; ?>                        
+        </div>
+        <div class="right_div">
+            <?php echo $this->form->routing_number; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->routing_number_re; ?>
+        </div>        
+        <div class="spacer clear"></div>
+        <div class="leftalign">
+            <button name="cancel" id="cancel" type="button" class="button button_black">Cancel</button>&nbsp;
+            <button name="change_info" id="change_info" type="submit" class="button button_black">Submit</button>
+        </div>   
+    </form>
+</div>
+
+<style type="text/css">
+    form{padding: 0px; margin: 0px;}
+    #account_number,#account_number_re,#routing_number,#routing_number_re{width:200px;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        
+        $(document).on('event', 'element', function(){});
+        $(document).on('click', 'button#cancel', event_functions.close_popup_form)
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            if('<?php echo $this->result['success']; ?>'){
+                window.parent.execute_refresh('<?php echo $this->result['message']; ?>');
+            }
+        },
+        close_popup_form : function(){
+            window.parent.close_popup();
+        }
+    }    
+</script>

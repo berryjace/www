@@ -1,0 +1,170 @@
+<?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+<?php $user = Zend_Auth::getInstance()->getIdentity();
+$isAdmin = ($user->account_type == 1) ? 1 : 0;
+
+?>
+<div class="spacer clear"></div>
+<div>
+    <h1 style="text-align: center">Summary Report for: <?php echo $this->vendor->organization_name ?></h1>
+    <h2>Year: <?php echo $this->fiscal_year?>&nbsp; Quarter: <?php echo $this->quarter?></h2>
+    <p>Uploaded On: <?php echo date('m-d-Y')?></p>
+	<hr />
+
+</div>
+<div class="spacer clear"></div>
+<div class="one">
+
+	<?php if(empty($this->vendor_reporting_type) || $this->vendor_reporting_type == 1)  {?>
+	<table cellpadding="3" cellspacing="0" border="1" class="sTable2"
+		width="100%">
+		<thead>
+			<tr role="row">
+				<th align="center">Greek Org.</th>
+				<th align="center">Gross Sales</th>
+				<th align="center">Royalty %</th>
+				<th align="center">Royalty Due Before Applying Advance</th>
+				<th align="center">Royalty Advance</th>
+				<th align="center">Royalty Due After Applying Advance</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php $alt = true; $i = 0; ?>
+			<?php //$num_rows = sizeof($this->summary_data['clients']); ?>
+			<?php foreach ($this->summary_data['clients'] as $client): ?>
+			<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+				<td><?php echo $client;  ?></td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['gross_sales'][$i]);  ?>
+				</td>
+				<td align="right"><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' : $this->summary_data['royalty_commission'][$i].'%'; ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency(is_null($this->summary_data['annual_advance'][$i]) ? 0 : $this->summary_data['annual_advance'][$i]);  ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?>
+				</td>
+			</tr>
+			<?php $i++; ?>
+			<?php endforeach; ?>
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td class="total_row">Total</td>
+				<td class="total_col" align="right"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?></td>
+			</tr>
+		</tbody>
+	</table>
+	<?php } elseif($this->vendor_reporting_type == 2) {?>
+	<table cellpadding="0" cellspacing="0" border="1" class="sTable2"
+		width="100%">
+		<thead>
+			<tr role="row">
+				<th align="center">Greek Org.</th>
+				<th align="center"># of Units Sold</th>
+				<th align="center">Royalty Per Unit</th>
+				<th align="center">Royalty Due Before Applying Advance</th>
+				<th align="center">Royalty Advance</th>
+				<th align="center">Royalty Due After Applying Advance</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php $alt = true; $i = 0; ?>
+			<?php //$num_rows = sizeof($this->summary_data['clients']); ?>
+			<?php foreach ($this->summary_data['clients'] as $client): ?>
+			<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+				<td><?php echo $client;  ?></td>
+				<td align="right"><?php echo $this->summary_data['quantity'][$i];  ?></td>
+				<td align="right"><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' : '$'. $this->summary_data['royalty_commission'][$i]; ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency(is_null($this->summary_data['annual_advance'][$i]) ? 0 : $this->summary_data['annual_advance'][$i]);  ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?>
+				</td>
+			</tr>
+			<?php $i++; ?>
+			<?php endforeach; ?>
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td class="total_row">Total</td>
+				<td class="total_col"align="right"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<?php } elseif($this->vendor_reporting_type == 3) {?>
+	<table cellpadding="0" cellspacing="0" border="1" class="sTable2"
+		width="100%">
+		<thead>
+			<tr role="row">
+				<th align="center">Greek Org.</th>
+				<th align="center">Royalty Due Before Applying Advance</th>
+				<th align="center">Royalty Advance</th>
+				<th align="center">Royalty Due After Applying Advance</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php $alt = true; $i = 0; ?>
+			<?php //$num_rows = sizeof($this->summary_data['clients']); ?>
+			<?php foreach ($this->summary_data['clients'] as $client): ?>
+			<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+				<td ><?php echo $client;  ?></td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency(is_null($this->summary_data['annual_advance'][$i]) ? 0 : $this->summary_data['annual_advance'][$i]);  ?>
+				</td>
+				<td align="right"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?>
+				</td>
+			</tr>
+			<?php $i++; ?>
+			<?php endforeach; ?>
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td class="total_row">Total</td>
+				<td class="total_col" align="right"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<?php }?>
+</div>
+<div class="spacer clear"></div>
+
+<style type="text/css">
+    table td {
+	padding: 2px 5px;
+    }
+.status {
+	width: 120px;
+}
+
+.button_pos {
+	width: 176px;
+	float: right;
+}
+
+.button_payment {
+	width: 50%;
+	float: right;
+}
+
+#city,#state,#zip {
+	width: 114px;
+}
+
+.total_row {
+	text-align: right;
+	font-weight: bold;
+}
+
+.total_col {
+	font-weight: bold;
+}
+</style>

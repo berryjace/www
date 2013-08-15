@@ -1,0 +1,124 @@
+<div class="leftalign"><h2>Invoice Info</h2></div>
+<div class="clear"></div>
+<hr size="1" noshade />
+<div class="rightalign">    
+    <img id ="toggle_inv_details" src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  />
+</div>
+
+<div class="one" id="invoice_details">
+    <div class="left_div">
+        <div class="one"><?php echo $this->inv_form->vendor_name; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->inv_type; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->inv_term; ?></div><div class="clear"></div>
+        <br />
+        <div class="one"><?php echo $this->inv_form->address_line_1; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->address_line_2; ?></div><div class="clear"></div>
+        <div class="one_third"><?php echo $this->inv_form->city; ?></div>
+        <div class="one_third"><?php echo $this->inv_form->state; ?></div>
+        <div class="one"><?php echo $this->inv_form->zip; ?></div><div class="clear"></div>
+    </div>
+    <div class="right_div">
+        <div class="one"><?php echo $this->inv_form->inv_num; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->inv_date; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->email; ?></div><div class="clear"></div>
+        <br />
+        <div class="one"><?php echo $this->inv_form->phone_1; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->phone_2; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->inv_form->fax; ?></div><div class="clear"></div>        
+    </div>
+    <div class="clear"></div>    
+</div>
+<div class="spacer clear"></div>
+<div class="spacer clear"></div>
+
+<div class="leftalign"><h2>Payment Line Items</h2></div><div class="rightalign"><b>Invoice #: <?php echo $this->inv_number; ?></b></div><br />
+<hr size="1" noshade />
+<div class="spacer clear"></div>
+
+<form name="payment_form" id="payment_form" method="post" action="">            
+    <?php echo $this->partial('vendors/add-payment-partial.phtml', array('inv_number' => $this->inv_number, 'items' => $this->lineitems)); ?>
+    <div class="spacer clear"></div>
+    <div class="rightalign">
+        <button name="add_payment" id="add_payment" type="submit" class="button button_blue">Submit</button>
+    </div>
+</form>
+
+<style type="text/css">    
+    .ui-menu-item{}
+    .ui-corner-all{
+        -moz-border-radius:0;
+        -webkit-border-radius:0;
+        border-radius:0;
+        font-size: 12px;
+    }
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }    
+    #toggle_inv_details{cursor: pointer;}
+    #city,#state,#zip{width:112px;}
+    .payment_div{width:150px;}
+    #fiscal_year,#quarter,#payment_status,#invoice_status,#payment_amount,#check_number{width: 130px;}    
+    .total_txt{text-align: right; font-weight: bold;}
+    .total_amt{font-weight: bold;}
+    input.inv_inputs{width: 100px;}
+    input.inv_inputs{width: 100px;}    
+    
+</style>
+
+<script type="text/javascript">
+    var bool = true;
+    $(window).bind('load', function(){
+        disable_invoice_details();
+        hide_show_invoice_details();
+        init_lineitems_status();
+    });
+    
+    function disable_invoice_details(){
+        //for invoice
+        $('div#invoice_details input#vendor_name').addClass('desable').prop('disabled', true);
+        $('div#invoice_details select#inv_type').addClass('desable').prop('disabled', true);
+        $('div#invoice_details select#inv_term').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#address_line_1').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#address_line_2').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#city').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#state').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#zip').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#inv_num').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#inv_date').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#email').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#phone_1').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#phone_2').addClass('desable').prop('disabled', true);
+        $('div#invoice_details input#fax').addClass('desable').prop('disabled', true);
+        
+        //for payment
+        //        $('div#payment_details input#fiscal_year').addClass('desable').prop('disabled', true);
+        //        $('div#payment_details select#quarter').addClass('desable').prop('disabled', true);
+    }
+    
+    function hide_show_invoice_details(){
+        $('img#toggle_inv_details').click(function(){
+            $('div#invoice_details').toggle('slow');            
+            if(bool){
+                bool = false;
+                $('img#toggle_inv_details').attr('src', '<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png');
+            }
+            else{
+                bool = true;
+                $('img#toggle_inv_details').attr('src', '<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png');                
+            }
+        });
+    }
+    
+    function init_lineitems_status(){
+        $('select.filters').each(function(){
+            $('select.filters').attr('name', 'invoice_status[]');           
+        })
+        
+//        $('input.desable').each(function(){
+//            $('input.desable').prop('disabled', true);
+//        });
+    }
+        
+</script>

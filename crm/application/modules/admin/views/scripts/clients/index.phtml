@@ -1,0 +1,115 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+?>
+<?php if (sizeof($this->clients)): ?>
+    <div id="client_list_container">
+        <div class="section_head">Clients</div>
+        <ul id="client_list">
+            <?php foreach ($this->clients as $client): ?>
+                <li class="c_list">
+                    <a class="client_name" href='javascript:;'><?php echo(substr($client->organization_name, 0,29)); ?></a>
+                    <div class="hidden">
+                        <div class="c_detail">
+                            <h3>Approved Contact Person</h3>                    
+                            <p class="contact_names">
+                                <?php echo $client->first_name; ?><br />
+                                <?php echo $client->address_line1; ?><br />
+                                <?php echo $client->address_line2; ?><br />
+                                <?php echo $client->city; ?>, <?php echo $client->state; ?> <?php echo $client->zipcode; ?>
+                            </p>
+                            <br />
+                            <p class="contact_details">
+                                <b>Phone</b> : <?php echo $client->phone; ?><br />
+                                <b>Fax</b> : <?php echo $client->fax; ?><br />
+                                <b>Email</b> : <?php echo $client->email; ?><br />
+                            </p>
+                            <input type="hidden" name="client_names[]" value="<?php echo $client->id; ?>" />
+                        </div>
+                    </div>
+                </li>    
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+<?php $this->placeholder('main_side_bar')->captureEnd(); ?>
+<div id="ahabetical_filters">
+    <a href="javascript:;" class="alphabet_filter">All</a> &nbsp;
+    <?php
+    foreach (range('A', 'Z') as $char) {
+        echo '<a href="javascript:;" class="alphabet_filter">' . $char . '</a> &nbsp;';
+    }
+    ?>
+</div>
+<div class="spacer"></div>
+<div class="client_details">
+    <div class="detail">
+    </div>    
+    <div class="view_more hidden">
+        <div class="spacer"></div>
+        <button class="button button_black detail_button">View Details</button>
+    </div>
+</div>
+<style type="text/css">
+    #client_list_container{
+        margin:-0 20px 0 10px;
+        padding:10px 0 0 0;
+        overflow: auto;
+    }
+    #client_list li{ height:15px    }
+	 #client_list a{ font-size:11px; }
+    #client_list a.selected{
+        font-weight: bold;
+    }    
+    #ahabetical_filters a{
+        padding:2px 4px;
+    }
+    #ahabetical_filters a.selected{
+        background-color: #000;
+        color:#FFF;
+    }
+</style>
+
+<script type="text/javascript">
+    $(function(){
+        fix_sidebar_container();
+        
+        $(window).on('resize',fix_sidebar_container);        
+        
+        $('a.client_name').on('click',function(){
+            $('#client_list a.selected').removeClass('selected');
+            $(this).addClass('selected');
+            $('.client_details .detail').html($(this).siblings('.hidden').find('.c_detail'));
+            $('.view_more').removeClass('hidden');
+        });
+        
+        
+        $('a.alphabet_filter').on('click',function(){
+            $('.client_details .detail').html('');
+            $('.view_more').addClass('hidden');
+            $('#ahabetical_filters a.selected').removeClass('selected');
+            $filter=$(this).text().toLowerCase();
+            $(this).addClass('selected');
+            if($filter=='all'){
+                $('li.c_list').show();
+            }else{
+                $('a.client_name').each(function(){
+                    if($(this).text().charAt(0).toLowerCase()!=$filter){ 
+                        $(this).parent().hide(); 
+                    }else{
+                        $(this).parent().show(); 
+                    }
+                });
+            }
+            return false;
+        });
+        
+        $('.detail_button').on('click',function(){
+            window.location.href=site_url+'/admin/clients/view/id/'+$(this).parents('.client_details').find('input[type=hidden]').val();
+        });
+    });
+    
+    function fix_sidebar_container(){
+        $('.bodygrey').css({'height':$(window).height()-110,'overflow':'hidden'});
+        $('#client_list_container').css('height',$(window).height()-110);        
+    }
+</script>

@@ -1,0 +1,453 @@
+<html>
+    <head>
+        <link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/fboxstyle.css" />
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery-TextExt-1.3.0.js"></script>        
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery-ui-1.8.16.custom.min.js"></script>
+        <link href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css" media="screen" rel="stylesheet" type="text/css" />
+        <style type="text/css">
+            .Pending {
+                color: #FF6600;       
+            }
+            .Approved {
+                color: #00CC00;       
+            }
+            .Rejected {
+                color: #FF0000;       
+            }            
+            .grid_button .hightlight {
+                border:2px solid #9F1319;
+                /*background:url(iconCaution.gif) no-repeat 2px*/
+            }
+
+            .imagedownloader a:link
+            { color : #0000af; background : transparent ;
+              text-decoration: underline}
+            .imagedownloader a:visited
+            { color : #609; background : transparent ;
+              text-decoration: underline}
+            .imagedownloader a:hover 
+            { color : #c33; background : #ffe ;
+              text-decoration: none; }
+            </style>
+            <script type="text/javascript">
+                /* Broken Image */
+                function ImgError(source){
+                    source.src = "<?php echo $this->baseUrl("assets/images/_thumb2no_image.jpg"); ?>";
+                    source.onerror = "";
+                    return true;
+                }
+            
+                tinyMCE.init({
+                    mode : "textareas",
+                    theme : "simple"
+                });
+
+                /* jQuery Autocomplete - ( Multiple, Remote ) */
+                $(function() {
+                
+                    $(document).on('click', 'a.imgDownload', function(){
+                        window.location.href = site_url+"/admin/design/download-design/file/"+$(this).attr('rel');     
+                    });   
+                
+                    function split( val ) {
+                        return val.split( /,\s*/ );
+                    }
+                    function extractLast( term ) {
+                        return split( term ).pop();
+                    }
+
+                    $( "#tagwith" )
+                    .bind( "keydown", function( event ) {
+                        if ( event.keyCode === $.ui.keyCode.TAB &&
+                            $( this ).data( "autocomplete" ).menu.active ) {
+                            event.preventDefault();
+                        }
+                    })
+                    .autocomplete({
+                        source: function( request, response ) {
+                            $.getJSON( "<?php echo $this->baseUrl('admin/design/ajax-get-tags'); ?>", {
+                                term: extractLast( request.term )
+                            }, response );
+                        },
+                        search: function() {
+                            var term = extractLast( this.value );
+                            if ( term.length < 1 ) {
+                                return false;
+                            }
+                        },
+                        focus: function() {
+                            return false;
+                        },
+                        select: function( event, ui ) {
+                            var terms = split( this.value );
+                            terms.pop();
+                            terms.push( ui.item.value );
+                            terms.push( "" );
+                            this.value = terms.join( ", " );
+                            return false;
+                        }
+                    });               
+                });
+                /* No Design */
+                function noDesignFound()
+                {
+                    $( "<div title='Warning'><p><span class='ui-icon ui-icon-circle-check' style='float:left; margin:0 7px 50px 0;'></span>Sorry!...No Designs Left.</p></div>" ).dialog({
+                        modal: true,
+                        buttons: {
+                            Ok: function() {
+                                parent.$.fancybox.close();                              
+                                $( this ).dialog( "close" );
+                            }                        
+                        }                    
+                    });                
+                    return false;
+                }
+            </script>
+        </head>
+        <body  >
+            <div id ="main" style="width:900px;padding-left:30px;border-style:solid;border-width:0px;" >
+                <?php
+                //$this->headTitle($this->event->name);
+                //$logged_user_id = $this->getHelper("BUtils")->getLoggedInUser();
+                $CurrentAction = "index";
+                $CurrentController = Zend_Controller_Front::getInstance()->getRequest()->getControllerName();
+                $CurrentAction = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+
+//            if ($this->status == 0) {
+//                $CurrentStatus = "pending";
+//            } else if ($this->status == 1) {
+//                $CurrentStatus = "approved";
+//            } else if ($this->status == 2) {
+//                $CurrentStatus = "rejected";
+//            } else {
+//                $CurrentStatus = "all";
+//            }
+                ?>
+
+            <div id="details_view_content">                
+                <?php
+                if ($this->tagfilter == NULL || $this->tagfilter == '') {
+                    if (sizeof($this->all_designs)) {
+                        foreach ($this->all_designs as $this->design) {
+                            ?>
+                            <div id="org_name_date" style="width:95%;float:left;padding-right:20px;padding-left:30px;padding-top:20px;">
+                                <h3 class="hyperlink" style="margin-bottom:0;float:left;color: #3B2216;" >
+                                    <b>&nbsp; <?php echo $this->design->owner_id->organization_name; ?></b>
+                                </h3>
+                                <h4 class="hyperlink"  style="margin-bottom:0;float:left;color: #3B2216;" ><b>: </b></h4>
+                                <h3 class="hyperlink"  style="margin-bottom:0;float:left;color: #3B2216;" >
+                                    <b>&nbsp; <?php echo $this->design->upload_date->format('jS F Y'); ?> &nbsp;</b>
+                                </h3>
+                            </div>
+
+                            <div class="details_product" style="width:45%;float:left;overflow:hidden;padding-right:25px;padding-top:25px;padding-left:35px;">
+                                <?php
+                                if ($this->design->file_url != '') {
+                                    if ($this->design->is_approved == 1)
+                                        $approval_status = "Approved";
+                                    elseif ($this->design->is_approved == 2)
+                                        $approval_status = "Rejected";
+                                    else
+                                        $approval_status = "Pending";
+                                    ?>
+                                    <a href="javascript:;" title="<?php echo "ID: " . $this->design->id . " - " . $this->design->file_url; ?>" >
+                                        <span>
+                                            <img src="<?php echo $this->baseUrl("assets/files/design") . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . "_thumb2" . $this->design->file_url; ?>" width="400px" height="355px"  class="list_pic" onerror="ImgError(this);" />
+
+                                        </span>
+                                    </a>
+
+                                <?php } else { ?>
+                                    <a href="javascript:;" title="<?php echo $this->design->upload_date->format('jS F Y'); ?>" >
+                                        <span>
+                                            <img src="<?php echo $this->baseUrl("assets/images/_thumb2no_image.jpg"); ?>" width="400px" height="355px" onerror="ImgError(this);" />
+                                        </span>
+                                    </a>
+                                <?php } ?>
+                            </div>
+
+                            <form name="comment_form" action="<?php echo $this->baseUrl('admin/' . $CurrentController . '/details-view/') . 'status/' . $this->status . '/vendor/' . $this->currentvendor . '/start_date/' . $this->from . '/end_date/' . $this->to . '/id/' . $this->design->id . '/pg/' . $this->pg; ?>" method="get"  >
+                                <div id="tag_with" style="width:45%;float:left;color: #3B2216;padding-top:25px;padding-right:10px;padding-left:20px;padding-bottom:15px;">
+                                    <b>Tag With: </b>                           
+                                    <br>                               
+                                    <input id="tagwith" name="tagwith" type="text" style="width: 360px;padding-left:5px;padding-top:5px;" placeholder="">   
+                                    <br/>
+                                    <!--                                <div style= "padding-bottom: 0px">  &nbsp; </div>-->
+                                    <b><?php echo $this->design->owner_id->organization_name; ?> Licensed with: </b>
+                                    <div id="clients_licensed" style="padding-top:5px;height:245px;width:90%;font:12px/20px Georgia, Garamond, Serif;overflow-x:hidden;overflow-y:scroll;float:left;">
+
+                                        <ol>
+                                            <?php
+                                            if (sizeof($this->licensed_clients)) {
+                                                foreach ($this->licensed_clients as $lic_client) {
+                                                    echo '<li>' . $lic_client->client_id->organization_name . '</li>';
+                                                }
+                                            } else {
+                                                echo '<li>No Clients licensed with <b>' . $this->design->owner_id->organization_name . '</b>.</li>';
+                                            }
+                                            ?>                                    
+                                        </ol> 
+                                    </div>
+                                </div>  
+                                <div id="status" style="float:left;width:90%;padding-left:35px;padding-top:15px">
+
+                                    <h3 class="design_status" style="margin-bottom:0;float:left;" >
+                                        <b><span style="color: #3B2216;">Status:</span> &nbsp; <span class="<?php echo $approval_status; ?>"><?php echo $approval_status; ?><span></b>
+                                                    </h3>
+                                                    <?php if ($this->design->file_url != NULL || $this->design->file_url != ""): ?>
+                                                        <?php
+                                                        $url = $_SERVER['HTTP_HOST'] . $this->baseUrl("assets/files/design") . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . "_thumb2" . $this->design->file_url;
+                                                        $handle = curl_init($url);
+                                                        curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
+                                                        /* Get the HTML or whatever is linked in $url. */
+                                                        $response = curl_exec($handle);
+                                                        /* Check for 404 (file not found). */
+                                                        $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+                                                        if ($httpCode != 404): /* Handle 404 here. */
+                                                            ?>
+                                                            <div class="imagedownloader" style="padding-left:300px;">
+                                                                <a class="imgDownload" rel="<?php echo $this->design->file_url; ?>">Download Image</a>
+                                                            </div>
+                                                            <?php
+                                                        endif;
+                                                        curl_close($handle); /* Handle $response here. */
+                                                    endif;
+                                                    ?>            
+                                                    </div>
+                                                    <div id="comments" style="float:left;width:60%;padding-top:10px;padding-left:35px;">
+                                                        <b style="color: #3B2216;" >Comments: </b>                           
+                                                        <br>
+                                                        <textarea id="comment" name="comment" rows="14" cols="40" style="width: 95%;float:left;">
+                                                            <?php
+                                                            echo $this->design->note_from_admin;
+                                                            if ($approval_status == "Pending")
+                                                                echo '<span>This design is <b>pending</b>.</span>';
+                                                            else
+                                                                echo '';
+                                                            ?>
+                                                        </textarea> 
+                                                    </div>
+                                                    <div id="clients_tag_with" style="color:#3B2216;float:left;padding-top:10px;padding-left:35px;">                            
+<!--                                                        <b><?php //echo $this->design->owner_id->organization_name; ?> - Tag with: </b>                         -->
+                                                        <b>This design has been tagged with:</b>
+                                                        <div id="clients_tag" style="padding-top:5px;height:150px;width:240px;font:12px/22px Georgia, Garamond, Serif;overflow-x:hidden;overflow-y:scroll;">
+                                                            <ol>
+                                                                <?php
+                                                                if (sizeof($this->all_tagwith)) {
+                                                                    foreach ($this->all_tagwith as $tagwith) {
+                                                                        echo '<li>' . $tagwith->design_tag_id->tag_name . '</li>';
+                                                                    }
+                                                                } else {
+                                                                    echo '<li>No Tags with <b>' . $this->design->owner_id->organization_name . '</b>.</li>';
+                                                                }
+                                                                ?>             
+                                                            </ol>
+                                                        </div> 
+                                                    </div>
+                                                    <div id="radiobutton" class="grid_button" style="float:left;padding-top:10px;padding-right:30px;padding-left:30px;">                                        
+                                                        <b style="color: #3B2216;" ><input type="radio" class="statgrp" name="statusgrp" value="1" <?php echo $approval_status == "Approved" ? 'checked' : ''; ?> > Approved &nbsp; &nbsp; <input type="radio" class="statgrp" name="statusgrp" value="2" <?php echo $approval_status == "Rejected" ? 'checked' : ''; ?>> Rejected </b>
+                                                    </div>
+
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function(){
+                                                            $('input[name=statusgrp]').change(function(event){
+                                                                event.preventDefault();
+                                                                //var str = $('#comment').val();
+                                                                if(this.value == 1) /* RadioButton - Approved select*/  
+                                                                {   
+                                                                    tinyMCE.activeEditor.setContent('<span>This design is <b>approved</b><br><br>Please be advised that approval of this design is limited only to the appropriateness of the \"theme\" and the portion of the design that includes the marks of our Greek client(s). Further, it is the express expectation, per the license agreement, that you have secured approval  from any other intellectual property owner (if any), including trademarks and/or copyrights, prior to printing or production of any product.</span>');                                                                                            
+                                                                }                                                                
+                                                                else if(this.value == 2) /* RadioButton - Rejected select*/                                                           
+                                                                {
+                                                                    tinyMCE.activeEditor.setContent('<span>We must <b>reject</b> this proposed design on behalf of our client(s).</span>');
+                                                                }
+                                                                else
+                                                                {
+                                                                    tinyMCE.activeEditor.setContent('<span>This design is <b><? echo $approval_status; ?></b>.</span>');                                                                                                                                                                            
+                                                                }
+                                                            });
+                                                        });
+                                                    </script>
+
+                                                    <div id="savebutton" class="grid_button" style="float:left;padding-top:10px;padding-right:30px;padding-left:25px;">
+                                                        <button id="box3Clear" class="button button_brown" style="width:195px; height:30px; margin-top: -0px;" name="save" type="submit">Save</button>
+                                                    </div>
+
+                                                    <?php
+                                                }
+                                            } else {
+                                                echo "<script language=javascript>noDesignFound();</script>";
+                                            }
+                                        } else {
+                                            /* Tag Designs */
+                                            if (sizeof($this->tag_designs)) {
+                                                foreach ($this->tag_designs as $this->design) {
+                                                    ?>
+                                                    <div id="org_name_date" style="width:95%;float:left;padding-right:20px;padding-left:30px;padding-top:20px;">
+                                                        <h3 class="hyperlink" style="margin-bottom:0;float:left;color: #3B2216;" >
+                                                            <b>&nbsp; <?php echo $this->design['organization_name']; ?></b>
+                                                        </h3>
+                                                        <h4 class="hyperlink"  style="margin-bottom:0;float:left;color: #3B2216;" ><b>: </b></h4>
+                                                        <h3 class="hyperlink"  style="margin-bottom:0;float:left;color: #3B2216;" >
+                                                            <b>&nbsp; <?php echo date('jS F Y', strtotime($this->design['upload_date'])); ?> &nbsp;</b>
+                                                        </h3>
+                                                    </div>
+
+                                                    <div class="details_product" style="width:45%;float:left;overflow:hidden;padding-right:25px;padding-top:25px;padding-left:35px;">
+                                                        <?php
+                                                        if ($this->design['file_url'] != '') {
+                                                            if ($this->design['is_approved'] == 1)
+                                                                $approval_status = "Approved";
+                                                            elseif ($this->design['is_approved'] == 2)
+                                                                $approval_status = "Rejected";
+                                                            else
+                                                                $approval_status = "Pending";
+                                                            ?>
+                                                            <a href="javascript:;" title="<?php echo "ID: " . $this->design['id'] . " - " . $this->design['file_url']; ?>" >
+                                                                <span>
+                                                                    <img src="<?php echo $this->baseUrl("assets/files/design") . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . "_thumb2" . $this->design['file_url']; ?>" width="400px" height="355px"  class="list_pic" onerror="ImgError(this);" />
+                                                                </span>
+                                                            </a>
+
+                                                        <?php } else { ?>
+                                                            <a href="javascript:;" title="<?php echo date('jS F Y', strtotime($this->design['upload_date'])); ?>" >
+                                                                <span>
+                                                                    <img src="<?php echo $this->baseUrl("assets/images/_thumb2no_image.jpg"); ?>" width="400px" height="355px" onerror="ImgError(this);" />
+                                                                </span>
+                                                            </a>
+                                                        <?php } ?>
+                                                    </div>
+
+                                                    <form name="comment_form" action="<?php echo $this->baseUrl('admin/' . $CurrentController . '/details-view/') . 'status/' . $this->status . '/vendor/' . $this->currentvendor . '/start_date/' . $this->from . '/end_date/' . $this->to . '/id/' . $this->design['id'] . '/pg/' . $this->pg; ?>" method="get"  >
+                                                        <div id="tag_with" style="width:45%;float:left;color: #3B2216;padding-top:25px;padding-right:10px;padding-left:20px;padding-bottom:15px;">
+                                                            <b>Tag With: </b>                           
+                                                            <br>                               
+                                                            <input id="tagwith" name="tagwith" type="text" style="width: 360px;padding-left:5px;padding-top:5px;" placeholder="">   
+                                                            <br/>
+                                                            <!--                                <div style= "padding-bottom: 0px">  &nbsp; </div>-->
+                                                            <b><?php echo $this->design['organization_name']; ?> Licensed with: </b>
+                                                            <div id="clients_licensed" style="padding-top:5px;height:245px;width:90%;font:12px/20px Georgia, Garamond, Serif;overflow-x:hidden;overflow-y:scroll;float:left;">
+
+                                                                <ol>
+                                                                    <?php
+                                                                    if (sizeof($this->licensed_clients)) {
+                                                                        foreach ($this->licensed_clients as $lic_client) {
+                                                                            echo '<li>' . $lic_client->client_id->organization_name . '</li>';
+                                                                        }
+                                                                    } else {
+                                                                        echo '<li>No Clients licensed with <b>' . $this->design['organization_name'] . '</b>.</li>';
+                                                                    }
+                                                                    ?>                                    
+                                                                </ol> 
+                                                            </div>
+                                                        </div>  
+                                                        <div id="status" style="float:left;width:90%;padding-left:35px;padding-top:15px">
+
+                                                            <h3 class="design_status" style="margin-bottom:0;float:left;" >
+                                                                <b><span style="color: #3B2216;">Status:</span> &nbsp; <span class="<?php echo $approval_status; ?>"><?php echo $approval_status; ?><span></b>
+                                                                            </h3>  
+                                                                            <?php if ($this->design->file_url != NULL || $this->design->file_url != ""): ?>
+                                                                                <?php
+                                                                                $url = $_SERVER['HTTP_HOST'] . $this->baseUrl("assets/files/design") . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . "_thumb2" . $this->design->file_url;
+                                                                                $handle = curl_init($url);
+                                                                                curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
+                                                                                /* Get the HTML or whatever is linked in $url. */
+                                                                                $response = curl_exec($handle);
+                                                                                /* Check for 404 (file not found). */
+                                                                                $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+                                                                                if ($httpCode != 404): /* Handle 404 here. */
+                                                                                    ?>
+                                                                                    <div class="imagedownloader" style="padding-left:300px;">
+                                                                                        <a class="imgDownload" rel="<?php echo $this->design->file_url; ?>">Download Image</a>
+                                                                                    </div>
+                                                                                    <?php
+                                                                                endif;
+                                                                                curl_close($handle); /* Handle $response here. */
+                                                                            endif;
+                                                                            ?> 
+                                                                            </div>
+                                                                            <div id="comments" style="float:left;width:60%;padding-top:10px;padding-left:35px;">
+                                                                                <b style="color: #3B2216;" >Comments: </b>                           
+                                                                                <br>
+                                                                                <textarea id="comment" name="comment" rows="14" cols="40" style="width: 95%;float:left;">
+                                                                                    <?php
+                                                                                    echo $this->design['note_from_admin'];
+                                                                                    if ($approval_status == "Pending")
+                                                                                        echo '<span>This design is <b>pending</b>.</span>';
+                                                                                    else
+                                                                                        echo '';
+                                                                                    ?>
+                                                                                </textarea> 
+                                                                            </div>
+                                                                            <div id="clients_tag_with" style="color:#3B2216;float:left;padding-top:10px;padding-left:35px;">                            
+<!--                                                                                <b><?php //echo $this->design['organization_name']; ?> - Tag with: </b>                         -->
+                                                                                <b>This design has been tagged with:</b>
+                                                                                <div id="clients_tag" style="padding-top:5px;height:150px;width:240px;font:12px/22px Georgia, Garamond, Serif;overflow-x:hidden;overflow-y:scroll;">
+                                                                                    <ol>
+                                                                                        <?php
+                                                                                        if (sizeof($this->all_tagwith)) {
+                                                                                            foreach ($this->all_tagwith as $tagwith) {
+                                                                                                echo '<li>' . $tagwith->design_tag_id->tag_name . '</li>';
+                                                                                            }
+                                                                                        } else {
+                                                                                            echo '<li>No Tags with <b>' . $this->design['organization_name'] . '</b>.</li>';
+                                                                                        }
+                                                                                        ?>             
+                                                                                    </ol>
+                                                                                </div> 
+                                                                            </div>
+                                                                            <div id="radiobutton" class="grid_button" style="float:left;padding-top:10px;padding-right:30px;padding-left:30px;">                                        
+                                                                                <b style="color: #3B2216;" ><input type="radio" class="statgrp" name="statusgrp" value="1" <?php echo $approval_status == "Approved" ? 'checked' : ''; ?> > Approved &nbsp; &nbsp; <input type="radio" class="statgrp" name="statusgrp" value="2" <?php echo $approval_status == "Rejected" ? 'checked' : ''; ?>> Rejected </b>
+                                                                            </div>
+
+                                                                            <script type="text/javascript">
+                                                                                $(document).ready(function(){
+                                                                                    $('input[name=statusgrp]').change(function(event){
+                                                                                        event.preventDefault();
+                                                                                        //var str = $('#comment').val();
+                                                                                        if(this.value == 1) /* RadioButton - Approved select*/  
+                                                                                        {                                                            
+                                                                                            //tinyMCE.activeEditor.setContent(str.replace(/this design is pending|this design was rejected because it doesnot conform to the terms and conditions of greek licensing/gi, 'This design is Approved'));
+                                                                                            tinyMCE.activeEditor.setContent('<span>This design is <b>approved</b><br><br>Please be advised that approval of this design is limited only to the appropriateness of the \"theme\" and the portion of the design that includes the marks of our Greek client(s). Further, it is the express expectation, per the license agreement, that you have secured approval  from any other intellectual property owner (if any), including trademarks and/or copyrights, prior to printing or production of any product.</span>');                                                                                            
+                                                                                        }                                                                
+                                                                                        else if(this.value == 2) /* RadioButton - Rejected select*/                                                           
+                                                                                        {
+                                                                                            tinyMCE.activeEditor.setContent('<span>We must <b>reject</b> this proposed design on behalf of our client(s).</span>');
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            tinyMCE.activeEditor.setContent('<span>This design is <b><? echo $approval_status; ?></b>.</span>');                                                                                                                                                                            
+                                                                                        }
+                                                                                    });
+                                                                                });
+                                                                            </script>
+
+                                                                            <div id="savebutton" class="grid_button" style="float:left;padding-top:10px;padding-right:30px;padding-left:25px;">
+                                                                                <button id="box3Clear" class="button button_brown" style="width:195px; height:30px; margin-top: -0px;" name="save" type="submit">Save</button>
+                                                                            </div>
+
+                                                                            <?php
+                                                                        }
+                                                                    } else {
+                                                                        echo "<script language=javascript>noDesignFound();</script>";
+                                                                    }
+                                                                }
+                                                                ?>
+                                                                </form>
+
+                                                                </div>
+                                                                <div style="clear:both;"></div>
+                                                                <div id="pagination_control" style="width:900px; padding-top:30px; text-align: center; " >
+                                                                    <?php
+                                                                    if ($this->tagfilter == NULL || $this->tagfilter == '') {
+                                                                        echo $this->paginationControl($this->all_designs, 'Sliding', '/design/pagination.phtml');
+                                                                    } else {
+                                                                        echo $this->paginationControl($this->tag_designs, 'Sliding', '/design/pagination.phtml');
+                                                                    }
+                                                                    ?>
+                                                                </div>   
+                                                                </div>
+                                                                </body>
+                                                                </html>
+

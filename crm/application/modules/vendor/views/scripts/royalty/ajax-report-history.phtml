@@ -1,0 +1,44 @@
+<?php //print_r($this->history_data); ?>
+<?php $i = 0; ?>
+<?php foreach ($this->history_data['quarter'] as $q): ?>        
+    <div class="one report_font"><b><?php echo 'Q' . $q; ?></b> Sales and Royalty Report Summary for <b><?php echo $this->organization; ?></b> (Submitted on <b><?php echo $this->history_data['submission_date'][$i]; ?></b>)<br /></div>
+    <div class="one">
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+            <thead>
+                <tr role="row">
+                    <th align="left">Greek Org.</th>
+                    <th align="left">Gross Sales</th>
+                    <th align="left">Royalty %</th>
+                    <th align="left">Royalty Due Before Applying Advance</th>
+                    <th align="left">Royalty Advance</th>
+                    <th align="left">Royalty Due After Applying Advance</th>                
+                </tr>
+            </thead>
+            <tbody>        
+            <?php $alt = true; $j = 0; ?>                            
+            <?php foreach ($this->history_data['organizations'][$i] as $org): ?>        
+            <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                <td><?php echo $org;  ?></td>
+                <td><?php echo is_null($this->history_data['gross_sales'][$i][$j]) ? 'N/A' : $this->BUtils()->getCurrency($this->history_data['gross_sales'][$i][$j]); ?></td>
+                <td><?php echo is_null($this->history_data['royalty_commission'][$i][$j]) ? 'N/A' : $this->history_data['royalty_commission'][$i][$j].'%';  ?></td>
+                <td><?php echo $this->BUtils()->getCurrency($this->history_data['royalty_before_adv'][$i][$j]); ?></td>
+                <td><?php echo $this->BUtils()->getCurrency(is_null($this->history_data['annual_advance'][$i][$j]) ? 0 : $this->history_data['annual_advance'][$i][$j]); ?></td>
+                <td><?php echo $this->BUtils()->getCurrency($this->history_data['royalty_after_adv'][$i][$j]); ?></td>
+            </tr>              
+            <?php $j++; ?>
+            <?php endforeach; ?>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td class="total_row">Total</td>
+                <td class="total_col"><?php echo $this->BUtils()->getCurrency(array_sum($this->history_data['royalty_after_adv'][$i])); ?></td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+    <div class="spacer clear"></div>
+    <div class="spacer clear"></div>
+    <?php $i++; ?>
+<?php endforeach; ?>

@@ -1,0 +1,345 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'invoices', 'id' => $this->invoice->vendor_id->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->invoice->vendor_id->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->invoice->vendor_id->user_status)); ?></h4>
+        </div>
+    </div>
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<?php if ($this->invoice->vendor_id->user_status == "Current"): ?>
+    <div class="one">
+        <div class="leftalign">
+            <a href="<?php echo $this->baseUrl('admin/vendors/invoice-create-vendor/id/' . $this->invoice->vendor_id->id); ?>" id="create_invoice" rel="<?php echo $this->invoice->vendor_id->id; ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/plus.png" class="mgright5" alt="" /><span>Create An Invoice</span></a> &nbsp;
+            <a href="javascript:;" id="exportaspdf" rel="<?php echo $this->invoice->id; ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/pdf.png" class="mgright5" alt="" /><span>Export to PDF</span></a> &nbsp;
+        </div>
+        <div class="rightalign">
+            <?php echo $this->formButton('edit_invoice', 'Edit', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+            <?php echo $this->formButton('email_invoice', 'Email Invoice', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+        </div>
+    </div>
+    <div class="spacer"></div>
+<?php endif; ?>
+
+<?php echo $this->partial('vendors/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status)); ?>
+
+<div class="left_div">
+    <div class="one"><?php echo $this->form->vendor_name->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->inv_type->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->inv_term->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->address_line_1->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->address_line_2->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one_third"><?php echo $this->form->city->setAttrib('readonly', 'true'); ?></div>
+    <div class="one_third"><?php echo $this->form->state->setAttrib('readonly', 'true'); ?></div>
+    <div class="one"><?php echo $this->form->zip->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+</div>
+<div class="right_div">
+    <div class="one"><?php echo $this->form->inv_num->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->inv_date->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->email->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->phone_1->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->phone_2->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->fax->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+</div>
+<div class="spacer clear"></div>
+<div class="spacer clear"></div>
+
+<div class="one">
+    <?php if (sizeof($this->items)): ?>
+        <?php
+        $quarters = array(0 => 'N/A', 1 => 'First', 2 => 'Second', 3 => 'Third', 4 => 'Fourth');
+        $alt = true;
+        $currency = new Zend_Currency('en_US');
+        ?>
+        <h4>Invoice ID : <?php echo $this->invoice->invoice_number; ?></h4>
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+            <thead>
+                <tr role="row">
+                    <th width="5%">Item #</th>
+                    <th width="25%">Client</th>
+                    <th width="30%">Description</th>
+<!--                    <th>Fiscal Year</th>
+                    <th>Quarter</th>
+                    <th>Date</th>-->
+                    <th width="10%">Payment #</th>
+                    <th width="10%">Amount Due</th>
+                    <th width="10%">Amount Paid</th>
+                    <th width="10%">Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $i = $total_due = $total_paid = 0; ?>
+                <?php foreach ($this->items as $item): ?>
+                    <?php
+                    $i++;
+                    $total_due += $item->amount_due;
+                    $total_paid += $item->amount_paid;
+                    ?>
+                    <?php
+		    $orgnizationName = ($item->client_id instanceof \BL\Entity\User) ? $item->client_id->organization_name : 'N/A';
+
+		    ?>
+                    <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                        <td><?php echo $i; ?></td>
+                        <td><?php echo $orgnizationName ?></td>
+                        <td><?php echo $item->description; ?></td>
+<!--                        <td><?php //echo $item->fiscal_year; ?></td>
+                        <td><?php //echo isset($item->quarter) ? $quarters[$item->quarter] : 'N/A'; ?></td>
+                        <td><?php //echo ( (int) $item->created_at->format("Y") > 0 ? $item->created_at->format("m/d/Y") : 'N/A'); ?></td>                    -->
+                        <td><?php echo $item->check_number; ?></td>
+                        <td class="money"><?php echo $currency->toCurrency($item->amount_due); ?></td>
+                        <td class="money"><?php echo $currency->toCurrency($item->amount_paid); ?></td>
+                        <td class="money"><?php echo $currency->toCurrency($item->amount_due > 0 ? ($item->amount_due - $item->amount_paid) : 0); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+<!--                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>-->
+                    <td>&nbsp;</td>
+                    <td class="total_row">Total</td>
+                    <td class="total_col money"><?php echo $currency->toCurrency($total_due); ?></td>
+                    <td class="total_col money"><?php echo $currency->toCurrency($total_paid); ?></td>
+                    <td class="total_col money"><?php echo $currency->toCurrency($total_due > 0 ? ($total_due - $total_paid) : 0); ?></td>
+                </tr>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>
+<div class="spacer clear"></div>
+
+<div class="one">
+    <span class="status"><b>Emailed on:</b></span>
+    <?php if ($this->invoice->email_date): ?>
+        <?php $emailed_on = explode(',', trim($this->invoice->email_date,',')); ?>
+        <?php for ($i=0; $i<count($emailed_on); $i++): ?>
+            <span class="emailed_on"><?php echo $emailed_on[$i]; ?></span>
+        <?php endfor; ?>
+    <?php else: ?>
+        <span class="emailed_on notmailed">Not yet</span>
+    <?php endif; ?>
+    <button class="blueButton" id="addDate" style="float: none">Add Date</button>
+    <input type="text" id="ndate" value="" style="display:none;"/>
+    <button class="blueButton" id="saveDate" style="float: none; display:none">Save</button>
+
+</div>
+<div class="spacer clear"></div>
+
+<?php echo $this->partial('vendors/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status)); ?>
+
+<?php if ($this->invoice->invoice_status != "Closed"): ?>
+    <div class="rightalign">
+        <?php echo $this->formButton('paid', 'Mark as Paid', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+        <?php echo $this->formButton('partial_paid', 'Mark as Partially Paid', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+        <?php echo $this->formButton('void', 'Void', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+        <?php echo $this->formButton('waive', 'Waive', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+    </div>
+    <div class="spacer"></div>
+<?php endif; ?>
+
+<div id="dialog-progress-bar" class="notified-class" title="" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+
+<style type="text/css">
+    .status{width: 120px; float: left;}
+    .button_pos{width: 176px; float: right;}
+    .button_payment{width: 50%; float: right;}
+    #city, #state, #zip{width:112px;}
+    .total_row{text-align: right; font-weight: bold;}
+    .total_col{font-weight: bold;}
+    .emailed_on{background-color: #999999; font-weight: bold; font-size: 12px; padding: 2px 5px; margin-right: 2px;}
+    .notmailed{background-color: red;}
+    
+    .money{text-align: right;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        $("input.text, select").addClass('desable').prop('disabled', true);
+        $(document).on('click', 'a#exportaspdf', show_invoice_functions.export_as_pdf);
+        $(document).on('click', 'button#edit_invoice', show_invoice_functions.edit_invoice);
+        $(document).on('click', 'button#email_invoice', show_invoice_functions.email_invoice);
+        $(document).on('click', 'button#paid', show_invoice_functions.mark_as_paid);
+        $(document).on('click', 'button#partial_paid', show_invoice_functions.mark_as_partial_paid);
+        $(document).on('click', 'button#void', show_invoice_functions.mark_as_void);
+        $(document).on('click', 'button#waive', show_invoice_functions.mark_as_waive);
+    });
+
+	$(function(){
+		$('#addDate').on('click', function(e){
+			e.preventDefault();
+			var pr = $(this).parent();
+			$(this).hide();
+			pr.find('#saveDate,#ndate').show();
+
+		});
+		$('#saveDate').on('click', function(e){
+			e.preventDefault();
+			var pr = $(this).parent();
+			me = $(this);
+			var ndate = pr.find('#ndate');
+			$.ajax({
+				'url'	:	site_url+'/admin/vendors/ajax-add-invoice-date/invoice_id/<?php echo $this->invoice->id?>',
+				'data'	:	'date='+$('#ndate').val(),
+				'dataType':	'json',
+				'type'	:	'post',
+				'success'	:	function(d){
+					if(d.code == 'success') {
+						me.hide();
+						ndateVal = ndate.val();
+						pr.prepend('<span class="emailed_on">'+ndateVal+'</span>');
+						pr.find('#ndate').val('').hide();
+						pr.find('#addDate').show();
+					}
+				}
+			})
+
+		})
+	})
+
+
+    show_invoice_functions={
+        export_as_pdf : function(e){
+            $("a#exportaspdf").attr("target","_blank");
+            $("a#exportaspdf").attr("href", site_url+'/admin/invoice/exportinvoice-as-pdf/id/'+$("a#create_invoice").attr('rel')+'/inv_id/'+$(this).attr("rel"));
+        },
+        edit_invoice : function(){
+            $url = site_url+'/admin/invoice/edit/id/'+$("a#create_invoice").attr('rel')+'/inv_id/'+$("a#exportaspdf").attr("rel");
+            window.location.href = $url;
+        },
+        email_invoice : function(){
+            $url = site_url+'/admin/invoice/email/id/'+$("a#create_invoice").attr('rel')+'/inv_id/'+$("a#exportaspdf").attr("rel");
+            loadPopupView($url, 700, 620);
+        },
+        mark_as_paid : function(){
+//            process_invoice('paid');
+            $url = site_url+'/admin/invoice/mark-As/id/'+$("a#create_invoice").attr('rel')+'/inv_id/'+$("a#exportaspdf").attr("rel")+'/mark/paid';
+            loadPopupView($url, 350, 470);
+        },
+        mark_as_partial_paid : function(){
+            $url = site_url+'/admin/invoice/mark-As/id/'+$("a#create_invoice").attr('rel')+'/inv_id/'+$("a#exportaspdf").attr("rel")+'/mark/partial_paid';
+            loadPopupView($url, 350, 470);
+        },
+        mark_as_void : function(){
+            process_invoice('void');
+        },
+        mark_as_waive : function(){
+            process_invoice('waive');
+        }
+    }
+
+    function process_invoice(mark_to){
+        var html = "<b>Are you sure?</b>"
+        $("#dialog-progress-bar").html(html);
+        $("#dialog-progress-bar").dialog({
+            resizable: false,
+            height: 'auto',
+            width: 300,
+            modal: true,
+            title: "Confirmation",
+            buttons: {
+                "Continue": function() {
+                    $(this).dialog("close");
+                    $.ajax({
+                        url: site_url+'/admin/invoice/mark-As/id/'+$("a#create_invoice").attr('rel')+'/inv_id/'+$("a#exportaspdf").attr("rel")+'/mark/'+mark_to,
+                        type: "POST",
+                        dataType: 'json',
+                        beforeSend: function() {
+                            var html = '<div style="width: 220px; margin:0 auto;"><img src="'+site_url+'/assets/images/ajax-loader.gif" /></div>';
+                            $("#dialog-progress-bar" ).html(html);
+                            $("#dialog-progress-bar" ).dialog({
+                                resizable: false,
+                                height: 'auto',
+                                width: 300,
+                                modal: true,
+                                title: "Please wait..."
+                            });
+                            $('div').find('div.ui-dialog-buttonset').remove();
+                        },
+                        complete: function() {
+                            $(this).dialog("close");
+                        },
+                        success: function(response) {
+//                            console.log(response);
+                            var html= '<b>'+ response.message +'</b>';
+                            $("#dialog-progress-bar").html(html);
+                            $("#dialog-progress-bar").dialog({
+                                resizable: false,
+                                height: 'auto',
+                                width: 500,
+                                modal: true,
+                                title: "Message",
+                                buttons: {
+                                    "Go to Invoices": function() {
+                                        $(this).dialog("close");
+                                        window.location.href = site_url+'/admin/vendors/invoices/id/'+$("a#create_invoice").attr('rel');
+                                    },
+                                    "Close": function(){
+                                        $(this).dialog("close");
+                                        window.location.reload();
+//                                        window.location.href = site_url+'/admin/vendors/invoices/id/'+$("a#create_invoice").attr('rel');
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+                "Cancel": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        return false;
+    }
+
+    function loadPopupView(url, w, h){
+        $.fancybox({
+            'width'                 : w,
+            'height'                : h,
+            'href'                  : url,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'
+        });
+        return false;
+    }
+
+    function close_popup(){
+        $.fancybox.close();
+    }
+
+    function execute_refresh(message){
+        close_popup();
+        $.jGrowl(message);
+        setTimeout(function() {
+            window.location.reload();
+        }, 1500);
+    }
+</script>
+
+
+
+
+
+

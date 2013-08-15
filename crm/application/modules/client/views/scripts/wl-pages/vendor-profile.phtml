@@ -1,0 +1,189 @@
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jcarousel/lib/jquery.jcarousel.min.js" ></script>
+<link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/js/jcarousel/skins/tango/skin.css" />
+<script type="text/javascript">
+
+jQuery(document).ready(function() {
+    jQuery('#mycarousel').jcarousel();
+
+    $('.resize_img').each(function(){
+    	 var dim = $(this).width()/$(this).height();
+
+         var bWide = $(this).width() > $(this).height();
+
+         if (bWide){
+				$(this).width("250px");
+				$(this).height(dim*250 + "px");
+
+         } else {
+				$(this).width(dim*250 + "px");
+				$(this).height("250px");
+         }
+        });
+
+
+    var height = $('div.con').parent().height();
+
+    $('div.con').css('height', height + 'px');
+        
+});
+
+function showOverlay(src){
+	
+	if ($("#lrgPrev").attr('src') == src){
+		
+			$("#overlay>div").css("width", $("#lrgPrev").width() + "px");
+		
+			$("#overlay").css("visibility", "visible");
+		
+		
+	} else {
+
+		
+		$("#lrgPrev").attr('src', src);
+
+		//alert($("#lrgPrev").attr('src'));
+	
+		$("#lrgPrev").load(function(){
+		
+			$("#overlay>div").css("width", $("#lrgPrev").width() + "px");
+			
+			$("#overlay").css("visibility", "visible");
+	
+		});
+	}
+}
+
+function hideOverlay(){
+	$("#overlay").css("visibility", "hidden");
+}
+</script>
+<style>
+    body {
+	font-family: arial !important;
+    }
+    h1, h2, h3 {
+	margin: 10px 0 !important;
+    }
+	#overlay{
+		visibility: hidden;
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		z-index: 1000;
+		background-color: rgba(0, 0, 0, 0.5);
+	}
+	
+	#overlay div{
+		position: relative;
+		margin: 100px auto;
+		background-color: #fff;
+		border: 1px solid #000;
+		padding: 15px;
+		text-align: center;
+	}
+	
+	#xButton{
+		position: absolute;
+		top: -10px;
+		right: -10px;
+	}
+	
+	.con{
+		margin: 0 auto;
+		padding: 10px;
+		background-color: white;
+		width: 1170px;
+	}
+</style>
+<br/>
+<div class="con">
+    <div class="left" style="width:60%">
+	<?php
+	if (sizeof($this->vendorProfile)) {
+	    ?>
+    	<h1><?php echo $this->vendorProfile->organization_name; ?></h1>
+	    <?php echo '<a href="http://' . $this->vendorProfile->web_page . '">' . $this->vendorProfile->web_page . '</a>'; ?><br />
+	    <?php echo $this->vendorProfile->address1; ?><br />
+	    <?php echo $this->vendorProfile->city . '&nbsp;' . $this->vendorProfile->state . '&nbsp;' . $this->vendorProfile->zip; ?><br />
+	    <?php echo $this->vendorProfile->phone1; ?><br />
+	<?php } else {
+	    ?>
+    	<h1><?php echo $vendor->organization_name; ?></h1>
+    	Company Information not available.
+	    <?php
+	}
+	?>
+	<br/>
+	<h3>Products Offered</h3>
+	<?php
+//Zend_Debug::dump($this->vendorOperation->vendor_products);
+	if (($this->vendorOperation->vendor_products == '') && count($this->vendorOfferedProduct) == 0) {
+	    echo "";
+	} elseif (count($this->vendorOfferedProduct) > 0) {
+	    $productsArr = array();
+	    foreach ($this->vendorOfferedProduct as $product) {
+		$productsArr[] = $product['product_name'];
+	    }
+	    $products = implode(', ', $productsArr);
+	    echo $products;
+	} else {
+	    echo $this->vendorOperation->vendor_products;
+	}
+	?>
+	<br/>
+	<h3>Company Description</h3>
+	<?php
+	echo '<p>' . !empty($this->vendorProfile->company_discripction) ? $this->vendorProfile->company_discripction : $this->vendorProfile->product_offered . '</p>';
+	?>
+
+
+	<br/>
+	
+	<h3>Sample Products *</h3>
+	<?php
+	if (sizeof($this->vendorSampleProduct)) {
+	    echo '<div class="sample_ctn"><ul id="mycarousel" class="jcarousel-skin-tango">';
+	    foreach ($this->vendorSampleProduct as $sample) {
+		//$sample->file_url
+		?>
+		<li>
+			<a href="javascript:void(0)" onclick="showOverlay('<?php echo $this->baseUrl('/assets/files/samples/products/large/'.$sample->file_url) ?>')">
+				<img src="<?php echo $this->baseUrl('/assets/files/samples/products/thumbs/'.$sample->file_url) ?>" width="75" height="75" alt="" />
+			</a>
+		</li>
+		<?php
+	    }
+	    echo '</ul></div>';
+	} else {
+	    echo "The vendor is yet to add product samples to their profile.";
+	}
+	?>
+    </div>
+    <div class="left" style="width: 40%">
+	<?php if (sizeof($this->vendorProfile) && $this->vendorProfile->logo_url != '') {
+	    ?>
+    	<div class="vendor_logo"><div><img class="resize_img" src="<?php echo $this->baseUrl('/assets/files/vendor_profile/'.$this->vendorProfile->logo_url); ?>"  /></div></div>
+	    <?php
+	} else {
+	    ?>
+    	<div class="vendor_logo">
+    	    <div>
+    <!--                <img src="<?php //echo get_template_directory_uri();   ?>/images/vendor_logo_1.jpg"  />-->
+    		<img src="<?php echo $this->baseUrl("assets"); ?>/images/OLP_Logo_BLK_SCR_250.jpg" />
+    	    </div>
+    	</div>
+	    <?php
+	}
+	?>
+    </div>
+    
+    <div id="overlay">
+    <div>
+    	<a href="javascript:void(0)" onclick="hideOverlay()" title="click to close"><img id="xButton" alt="X" src="<?php echo $this->baseUrl('/assets/css/fancy_close.png');?>" /></a>
+		<img id="lrgPrev"alt="large preview" src="http://poweros.softura.com/crm/assets/files/samples/products/large/p17enkt4kfvnicc51st51esdsjj5.png"/>
+	</div>
+    </div>
+</div>

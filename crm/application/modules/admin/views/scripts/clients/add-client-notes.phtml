@@ -1,0 +1,89 @@
+<?php
+//$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('clients/sidebar-menus.phtml', array('selected' => 'operations', 'id' => $this->client->id));
+//$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/tabs-no-images.css" />
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-ui/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquerytools/jquery.tools.min.js"></script>
+
+<div class="one">
+    <!-- tabs -->
+    <ul class="css-tabs">
+        <li><a id="t1" href="#">Setup</a></li>
+        <li><a id="t2" href="#">Legal</a></li>
+        <li><a id="t3" href="#">Operations</a></li>
+        <li><a id="t4" href="#">Royalty</a></li>
+        <li><a id="t5" href="#">Notes</a></li>
+        <li><a id="t6" href="#">Lic. Template</a></li>
+    </ul>
+
+    <!-- panes -->
+    <div class="css-panes">
+        <div><!-- setup --></div>
+        <div><!-- legal --></div>
+        <div><!-- operation --></div>
+        <div><!-- Royalty --></div>
+        <div>
+            <div class="spacer"></div>
+            <form action="" method="POST" enctype="multipart/form-data" id="client_note_form">
+                <?php echo $this->form->note; ?>
+                <div class="spacer"></div>
+                <button type="submit" class="button button_black detail_button">Save</button>
+            </form>
+            <div class="clear"></div>
+        </div>
+        <div><!-- Lic. Template --></div>
+    </div>
+</div>
+
+<style type="text/css">
+    .errors{
+        list-style: none;
+        color:red;
+    }
+    .grid_12{
+        margin-left: 0%;
+        margin-right: 0%;
+    }
+    .grid_9{
+        margin-left: 0%;
+        margin-right: 0%;
+    }
+    .grid_4{
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-top:3px;
+    }
+    .grid_3{
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-top:3px;
+    }
+    .grid_2{
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-top:3px;
+    }
+
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+    .ui-autocomplete-loading
+    {
+        background: white url('<?php echo $this->baseUrl("assets"); ?>/images/loading.gif') right center no-repeat;
+    }
+</style>
+<script type="text/javascript">
+$(document).ready(function() {
+
+    $(".css-tabs:first").tabs(".css-panes:first > div",{initialIndex: 4})
+        .bind("onBeforeClick onClick", function(event,index) {
+            return false;
+        });
+
+});
+</script>

@@ -1,0 +1,113 @@
+<div class="one">
+    <div class="one_fourth"><h2 class="grid_cap">Royalty Report Detail</h2></div>
+</div>
+<div class="spacer"></div>
+<table cellpadding="2" cellspacing="2" border="0" class="dyntable sTable2" id="reports-data-table" width="100%">
+    <thead>
+        <tr>
+            <th class="head0" width="20%" align="left">Company Name</th>
+            <th class="head1" width="10%" align="center">Date</th>
+            <th class="head0" width="10%" align="center">Pmt Type</th>
+            <th class="head1" width="10%" align="center">Ref#</th>
+            <th class="head0" width="10%" align="center">Total Amount</th>
+            <th class="head1" width="10%" align="center">Affinity</th>
+            <th class="head0" width="10%" align="center"><?php echo $this->clientDetail?$this->clientDetail->organization_name:''; ?></th>
+            <th class="head1" width="10%" align="center">Sharing</th>
+        </tr>            
+    </thead>
+    <?php 
+    $totalClientAmount=0;
+    foreach($this->reportDetail as $item) { ?>
+    <?php 
+                    $amcAmount=0;
+                    $clientAmount=0;
+                if (($item->amount_paid) && $item->pmt_id->invoice->invoice_type!='Refund')
+                 {
+                    $totalAmount=$item->amount_paid;
+                    if($item->sharing==1)
+                    {
+                     $amcAmount=($item->amount_paid * $item->percent_amc);
+                    }
+                    $clientAmount=$item->amount_paid - $amcAmount;
+                 }
+                 elseif (($item->late_paid) && $item->pmt_id->invoice->invoice_type!='Refund')
+                 {
+                     $totalAmount=$item->late_paid;
+                     if($item->sharing==1)
+                    {
+                     $amcAmount=($item->late_paid * $item->percent_amc);
+                    }
+                     $clientAmount=$item->late_paid - $amcAmount;
+                 }
+                 elseif (($item->adv_paid) && $item->pmt_id->invoice->invoice_type!='Refund')
+                 {
+                    $totalAmount=$item->adv_paid;
+                     if($item->sharing==1)
+                    {
+                     $amcAmount=($item->adv_paid * $item->percent_amc);
+                    }
+                     $clientAmount=$item->adv_paid - $amcAmount;
+                 }
+             else
+                 {
+                     $amcAmount=0;
+                     $clientAmount=0;
+                     $totalAmount=0;
+                 } ?>
+    <tr>
+        <td width="20%" align="left" ><?php echo $item->pmt_id->vendor->organization_name; ?></td>
+        <td width="10%" align="center" ><?php echo $item->last_modified_date->format("m/d/Y"); ?></td>
+        <td width="10%" align="center" ><?php echo $item->pmt_id->invoice ? str_replace('Received','',$item->pmt_id->invoice->payment_status): "N/A"; ?></td>
+        <td width="10%" align="center" ><?php echo $item->pmt_id->check_num; ?></td>
+        <td width="10%" align="left" ><?php echo $this->currency->toCurrency($totalAmount); ?></td>
+        <td width="10%" align="left" ><?php echo $this->currency->toCurrency($amcAmount); ?></td>
+        <td width="10%" align="left"><?php echo $this->currency->toCurrency($clientAmount); ?></td>
+        <td width="10%" align="center"><?php echo $item->sharing ? 'Yes' : 'No'; ?></td>
+    </tr>
+    <?php 
+        $totalClientAmount = $totalClientAmount + $clientAmount;
+    } ?>
+    <tr >
+        <td valign="middle" colspan="6" align="right" ><strong>Total Amount for Quarter:</strong></td>
+        <td align="left"><?php echo $this->currency->toCurrency($totalClientAmount); ?></td>
+        <td></td>
+    </tr>
+</table>
+
+
+
+<style type="text/css">
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .sTable2 tbody tr.selected td{
+        background-color: #FFFFCC;
+    }
+    .fancybox-title-inside{
+        text-align: left;
+    }
+    .leftalign{float: left;}
+    .rightalign{float: right;}
+    .Pending {
+        color: #FF6600;       
+    }
+    .Approved {
+        color: #078000;       
+    }
+    .Rejected {
+        color: #FF0000;       
+    }
+    .Past {
+        color: #FF0000;       
+    }
+
+</style>  

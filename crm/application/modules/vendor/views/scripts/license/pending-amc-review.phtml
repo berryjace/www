@@ -1,0 +1,40 @@
+<?php
+    //echo $this->product_size;
+?>
+
+<div style="background-color: #e3e3e3; margin:0 auto">
+    <div style="padding:10px; font:sans-serif;font-size: 13px;">
+        Affinity administrators are currently reviewing your licensing application. Please note that your application is incomplete until we receive your annual advance payment and your sample product(s), if applicable. The current status of these are as follows:
+        <br><br>
+
+        <?php
+            if($this->financial_info>0){
+        ?>
+        <!-- <input type="checkbox" name="fin_info" id="fin_info" value="1" checked="checked" />Annual Advance Fee Received<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or<br>
+        <input type="checkbox" name="fin_info" id="fin_info"  />Awaiting Advance Fee Payment -->
+        Application Fee Received
+        <?php }
+        else{?>
+       <!-- <input type="checkbox" name="fin_info" id="fin_info"  />Annual Advance Fee Received<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or<br>
+        <input type="checkbox" name="fin_info" id="fin_info" value="1" checked="checked" />Awaiting Advance Fee Payment-->
+        <span style="color:#EE0000">Awaiting Application Fee Payment</span>
+        <?php }?>
+        <br/><br/>
+         <?php
+
+
+            if($this->product_size>0){
+        ?>
+        <!--<input type="checkbox" name="sample_status" id="sample_status" value="1" checked="checked" />Sample Product(s) Received<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or<br>
+        <input type="checkbox" name="sample_status" id="sample_status"  />Awaiting Sample Product Submission-->
+        Sample Product(s) Received
+        <?php }
+        else{?>
+        <!--<input type="checkbox" name="sample_status" id="sample_status"  />Sample Product(s) Received<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or<br>
+        <input type="checkbox" name="sample_status" id="sample_status" value="1" checked="checked" />Awaiting Sample Product Submission-->
+        <span style="color:#EE0000">Awaiting Sample Product Submission</span><br>
+
+        <?php }?>
+
+    </div>
+</div>

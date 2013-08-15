@@ -1,0 +1,67 @@
+<?php
+$current_controller = Zend_Controller_Front::getInstance()->getRequest()->getControllerName();
+$current_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+$user = Zend_Auth::getInstance()->getIdentity();
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <?php echo $this->headTitle(); ?>
+        <link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/style.css" />
+        <!--[if IE 9]><link rel="stylesheet" media="screen" href="<?php //echo $this->baseUrl("assets");    ?>/css/ie9.css"/><![endif]-->
+        <!--[if IE 8]><link rel="stylesheet" media="screen" href="<?php //echo $this->baseUrl("assets");    ?>/css/ie8.css"/><![endif]-->
+        <!--[if IE 7]><link rel="stylesheet" media="screen" href="<?php //echo $this->baseUrl("assets");    ?>/css/ie7.css"/><![endif]-->
+        <?php echo $this->headLink(); ?>
+        <script type="text/javascript"> var site_url="<?php echo $this->baseUrl(); ?>"; </script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery-ui-1.8.16.custom.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery.jgrowl.js"></script>
+        <?php echo $this->headScript(); ?>        
+    </head>
+
+    <body class="bodywhite">
+        <div class="maincontent-empty">
+            <div class="left">
+                <?php if (count($this->messages)) : ?>
+                    <?php
+                    $this->messages = array_unique($this->messages);
+                    ?>
+                    <div class="clear"></div>
+                    <script type="text/javascript">
+                        $(function(){
+    <?php foreach ($this->messages as $message) : ?>                    
+        <?php if ($message <> "") : ?>
+                       $.jGrowl("<?php echo $message ? $this->escape($message) : ''; ?>", { header: 'Information'});
+        <?php endif; ?>
+    <?php endforeach; ?>
+           $.extend( $.fn.jGrowl.prototype , {
+               /** Default JGrowl Settings **/
+               defaults: {
+                   pool: 		0,
+                   header: 		'',
+                   check: 		1000,
+                   life: 		7000,
+                   sticky   : true,
+                   closeTemplate: '&times;'
+               }
+           });
+       });
+                    </script>
+                <?php endif; ?>
+                <?php echo $this->layout()->content ?>
+            </div><!--left-->
+
+            <br clear="all" />
+
+        </div><!--maincontent-->
+
+        <br />
+        <div class="footer footer_float">
+            <div class="footerinner">
+                &copy; 2011. Greek Licensing Portal
+            </div><!-- footerinner -->
+        </div><!-- footer -->
+
+    </body>
+</html>

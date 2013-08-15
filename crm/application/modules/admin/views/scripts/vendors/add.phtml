@@ -1,0 +1,187 @@
+<form action="" method="POST" id="<?php echo $this->form->getName(); ?>">
+
+    <h2>User Info</h2>
+    <hr size="1" noshade />
+
+    <div class="left_div">
+        <?php echo $this->form->username; ?>
+        <?php echo $this->form->recovery_email; ?>
+        <?php echo $this->form->status; ?>
+    </div>
+    <div class="right_div extSpace5">
+        <?php echo $this->form->password; ?>
+        <?php echo $this->form->confirm_password; ?>
+    </div>
+    <div class="clear"></div>
+    <h2>Company Info</h2>
+    <hr size="1" noshade />
+
+    <div class="left_div">
+        <?php echo $this->form->organization_name; ?>
+        <?php echo $this->form->address_line_1; ?>
+        <?php echo $this->form->address_line_2; ?>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->company_email; ?>
+    </div>
+    <div class="right_div">
+        <?php echo $this->form->phone_1; ?>
+        <?php echo $this->form->phone_2; ?>
+        <?php echo $this->form->fax; ?>
+        <?php echo $this->form->web_page; ?>
+    </div>
+    <div class="validation_div" style="float: left; margin-left: 10px; color: red;">
+        <br />
+        <div id="validate_phone1"></div>
+        <br />
+        <div class="spacer"></div>
+        <div class="spacer clear"></div>
+        <div id="validate_phone2"></div>
+        <br />
+        <div class="spacer"></div>
+        <div class="spacer clear"></div>
+        <div id="validate_fax"></div>
+    </div>
+    <div class="clear"></div>
+    <h2 class="contact">Contact Info</h2>
+    <hr size="1" noshade />
+
+    <table cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td width="8%"><?php echo $this->form->v_sal; ?></td>
+            <td width="10%"><?php echo $this->form->v_first_name; ?></td>
+            <td width="10%"><?php echo $this->form->v_last_name; ?></td>
+            <td width="10%"><?php echo $this->form->v_title; ?></td>
+            <td width="10%"><?php echo $this->form->v_phone; ?></td>
+
+            <td width="10%"><?php echo $this->form->v_mobile; ?></td>
+            <td width="15%"><?php echo $this->form->v_email; ?></td>
+            <td width="10%"><?php echo $this->form->v_contact_type; ?></td>
+        </tr>
+        <tr id="validate_new_contact">
+            <td id="validate_sal">&nbsp;</td>
+            <td id="validate_first_name">&nbsp;</td>
+            <td id="validate_last_name">&nbsp;</td>
+            <td id="validate_title">&nbsp;</td>
+            <td id="validate_phone">&nbsp;</td>
+
+            <td id="validate_mobile">&nbsp;</td>
+            <!--<td id="validate_fax">&nbsp;</td>-->
+            <td id="validate_email">&nbsp;</td>
+            <td id="validate_contact_type">&nbsp;</td>
+         </tr>
+    </table>
+    <div class="clear"></div>
+    <div class="one">
+        <button type="submit" id="submitEdit" class="button button_black detail_button">Submit</button>
+        <button type="button" id="submitEdit" class="button button_black detail_button">Cancel</button>
+    </div>
+</form>
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #first_name{
+        width:250px;
+    }
+    .jGrowl-notification{
+        background-color: #917C54 !important;
+    }
+    .tbl select{
+        background-color: #ffffff !important;
+    }
+    .tbl{
+        background-color: transparent !important;
+    }
+    #validate_new_contact{font-size: 11px; color: red;}
+</style>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('button[type="button"]').click(function(){
+        $('input.text,input.elWidth').val('');
+    });
+});
+
+//var REG_EXP = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/;
+var REG_EXP = /\(?([0-9]{3})\)?([ ]?)([0-9]{3})([-]?)([0-9]{4})/;
+$(document).on('blur', '#phone_1', function(){
+    if($('#phone_1').val() != ""){
+        if(REG_EXP.test($('#phone_1').val()) == false){
+            $('#validate_phone1').html('Phone format be (xxx) xxx-xxxx');
+        }
+        else{
+            $('#validate_phone1').html('');
+        }
+    }
+    else{
+        $('#validate_phone1').html('');
+    }
+});
+
+
+
+$(document).on('blur', '#fax', function(){
+    if($('#fax').val() != ""){
+        if(REG_EXP.test($('#fax').val()) == false){
+            $('#validate_fax').html('Fax format be (xxx) xxx-xxxx');
+        }
+        else{
+            $('#validate_fax').html('');
+        }
+    }
+    else{
+        $('#validate_fax').html('');
+    }
+});
+
+var count = 0;
+//$(document).on('blur', '#state', function(){
+//    if($('#state').val() != ""){
+//        if($('#state').val().length > 2){
+//            if(count == 0){
+//                $('#state-label').append('<span id="validate_state" style="color:red">&nbsp;&nbsp;(Max 2 digit)</span>');
+//            }
+//            count++;
+//        }
+//        else{
+//            $('#state-label #validate_state').html('');
+//        }
+//    }
+//});
+
+$(document).on('blur', '#v_phone', function(){
+    if($('#v_phone').val() != ""){
+        if(REG_EXP.test($('#v_phone').val()) == false){
+            $('#validate_phone').html('Format must be (xxx) xxx-xxxx');
+        }
+        else{
+            $('#validate_phone').html('');
+        }
+    }
+    else{
+        $('#validate_phone').html('');
+    }
+});
+
+$(document).on('blur', '#v_mobile', function(){
+    if($('#v_mobile').val() != ""){
+        if(REG_EXP.test($('#v_mobile').val()) == false){
+            $('#validate_mobile').html('Format must be (xxx) xxx-xxxx');
+        }
+        else{
+            $('#validate_mobile').html('');
+        }
+    }
+    else{
+        $('#validate_mobile').html('');
+    }
+});
+</script>

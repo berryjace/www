@@ -1,0 +1,768 @@
+<?php
+$errorsMessages = $this->form->getMessages();
+$this->headTitle('Create New Notification');
+//print_r($errorsMessages);
+?>
+<div id="view-content">
+    <form action="<?php echo $this->baseUrl();?>/admin/notification/add" method="POST" id="frmaddevent">
+        <div class="">
+            <div class="clear"></div>
+            <div class="fielddiv">
+                <div class="one_fifth">
+                    Notification Title *:
+                </div>
+                <div class="clear"></div>
+                <div class="one_third errors">
+                    <?php
+                    if (isset($errorsMessages['notification_title']['isEmpty']))
+                        echo $errorsMessages['notification_title']['isEmpty'];
+                    ?>
+                </div>
+                <div class="clear"></div>
+                <div class="one_fifth">
+                    <?php echo $this->form->notification_title; ?>
+                </div>
+            </div>
+            <div class="spacer"></div>                      
+
+            <div class="clear"></div>
+            <div class="fielddiv">
+                <div class="one_fifth">
+                    Notification Message *:
+                </div>
+                <div class="clear"></div>
+                <div class="one_third errors">
+                    <?php
+                    if (isset($errorsMessages['notification_message']['isEmpty']))
+                        echo $errorsMessages['notification_message']['isEmpty'];
+                    ?>
+                </div>
+                <div class="clear"></div>
+                <div class="one_fifth">
+                    <?php echo $this->form->notification_message; ?>
+                </div>
+            </div>
+            <div class="spacer"></div>
+
+            <div class="fielddiv">
+                <div class="one_fifth ">
+                    Send Via :
+                </div>
+                <div class="clear"></div>
+                <div class="one_third errors">
+                    <?php
+                    if (isset($errorsMessages['site_notification']['chooseOne']))
+                        echo $errorsMessages['site_notification']['chooseOne'];
+                    ?>
+                </div>
+                <div class="clear"></div>
+                <div class="one_sixth" style="width:80px;">
+                    <?php echo $this->form->email_notification; ?>&nbsp;&nbsp;&nbsp;<label for="email_notification">Email</label>
+                </div>
+                <div class="one_sixth" style="width:130px;">
+                    <?php echo $this->form->site_notification; ?>&nbsp;&nbsp;&nbsp;<label for="site_notification">Site Notification</label>
+                </div>
+            </div>
+            <div class="spacer"></div>
+
+            <div class="fielddiv">
+                <div class="one">
+                    Send Notification To :
+                </div>
+                <div class="clear"></div>
+                <div class="one_third errors">
+                    <?php
+                    if (isset($errorsMessages['send_seperate_invitation_client']['chooseOne']))
+                        echo $errorsMessages['send_seperate_invitation_client']['chooseOne'];
+                    ?>
+                </div>
+                <div class="clear"></div>
+                <div class="one_sixth" style="width:80px;">
+                    <?php echo $this->form->send_seperate_invitation_client; ?>&nbsp;&nbsp;&nbsp;<label for="send_seperate_invitation_client">All Clients</label>
+                </div>
+                <div class="one_sixth" style="width:110px;">
+                    <?php echo $this->form->send_seperate_invitation_vendor; ?>&nbsp;&nbsp;&nbsp;<label for="send_seperate_invitation_vendor">All Vendors</label>
+                </div>
+            </div>
+            <div class="spacer" id="event_client_loader">
+                <div id="wait1" style="display:none"><img src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif"></div>
+            </div>
+
+            <div class="fielddiv">
+                <div class="one">
+                    Enter a Vendor name to choose Clients(s):
+                </div>
+                <div class="clear"></div>
+                <div class="one_third errors">
+                    <?php
+                    /* if (isset($errorsMessages['notification_message']['isEmpty']))
+                      echo $errorsMessages['notification_message']['isEmpty']; */
+                    ?>
+                </div>
+                <div class="clear"></div>
+                <div class="one_third">
+                    <?php echo $this->form->event_vendor_choice; ?>
+                </div>
+                <div class="one_fifth" style="margin-left: 20px;">
+                    <?php echo $this->form->addClient; ?>
+                </div>
+            </div>
+            <div class="spacer"></div>
+
+            <div class="fielddiv">
+                <div class="clear"></div>
+                <div class="one_third">
+                    Filter Clients: <br>
+                    <div style="float:left"><input type="text" size="22" id="box5Filter" /></div>
+                    <div style="float:left">&nbsp;&nbsp;<button id="box5Clear" type="button" class="button button_black" style="height:30px; margin-top: -2px;">Clear</button></div>
+                    <div class="one_fifth" style="margin-left:10px;display: none" id="client_wait">
+                        <img style="margin-top:8px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif">
+                    </div>
+                </div>
+                <div class="clear"></div>
+                <div class="one_fifth" style="width:auto; margin-right:10px">
+                    <?php echo $this->form->left_client; ?>
+                </div>
+                <div style="height:175px; width: 48px; float:left">
+                    <div style="width:48px; height: 48px; float: left; padding-top:50px;">
+                        <img id="return_client" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_right.png">
+                        <img id="return_client_all" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_double_right.png">
+                    </div>
+                    <div style="width:48px; height: 48px; float: left; margin-left:-1px;">
+                        <img id="to_client_all" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_double_left.png">
+                        <img id="to_client" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_left.png">
+                    </div>
+                </div>
+                <div class="one_fifth" style="width:auto; margin-left:10px">
+                    <?php echo $this->form->right_client; ?>
+                </div>
+            </div>
+            <div class="spacer">
+                <div id="wait2" style="display:none"><img src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif"></div>
+            </div>
+
+            <div class="fielddiv">
+                <div class="one">
+                    Enter a Client name to choose Vendor(s):
+                </div>
+                <div class="clear"></div>
+                <div class="one_third errors">
+                    <?php
+                    /* if (isset($errorsMessages['notification_message']['isEmpty']))
+                      echo $errorsMessages['notification_message']['isEmpty']; */
+                    ?>
+                </div>
+                <div class="clear"></div>
+                <div class="one_third">
+                    <?php echo $this->form->event_client_choice; ?>
+                </div>
+                <div class="one_fifth" style="margin-left: 20px;">
+                    <?php echo $this->form->addVendor; ?>
+                </div>                
+            </div>
+            <div class="spacer"></div>
+
+            <div class="fielddiv">
+                <div class="clear"></div>
+                <div class="one_half">
+                    Filter Vendors: <br>
+                    <div style="float:left"><input type="text" size="22" id="box3Filter" /></div>
+                    <div style="float:left">&nbsp;&nbsp;<button id="box3Clear" type="button" class="button button_black" style="height:30px; margin-top: -2px;">Clear</button></div>
+                   	<div style="float:left;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status:</div>
+                   	<div style="float:left;">&nbsp;&nbsp;<select id="box3Statuses">
+                   	<option value="all">All Status Types</option>
+                   	<?php foreach($this->vendor_groups as $cat=>$v){?>
+                   	<option value="<?php echo $cat;?>"><?php echo $cat;?></option>
+                   	<?php }?>
+                   	</select>
+                   	</div>
+                    <div class="one_fifth" style="margin-left:10px;display: none" id="vendor_wait">
+                        <img style="margin-top:8px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif">
+                    </div>
+                </div>
+                <div class="spacer clear"></div>
+                <div class="one_fifth" style="width:auto; margin-right:10px">
+                    <?php echo $this->form->left_vendor; ?>
+                </div>
+                <div style="height:175px; width: 48px; float:left">
+                    <div style="width:48px; height: 48px; float: left; padding-top:50px;">
+                        <img id="return_vendor" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_right.png">
+                        <img id="return_vendor_all" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_double_right.png">
+                    </div>
+                    <div style="width:48px; height: 48px; float: left; margin-left:-1px;">
+                        <img id="to_vendor_all" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_double_left.png">
+                        <img id="to_vendor" src="<?php echo $this->baseUrl("assets"); ?>/images/arrow_left.png">
+                    </div>
+                </div>
+                <div class="one_fifth" style="width:auto; margin-left:10px">
+                    <?php echo $this->form->right_vendor; ?>
+                </div>               
+            </div>            
+            <div class="spacer clear"></div>           
+             
+            <div class="one" style="margin-top:10px;">                
+                <button type="submit" class="button button_black detail_button" id="submit">Submit</button>
+                <button type="button" class="button button_black detail_button" id="previewBtn">Preview</button>                
+            </div>
+            <div class="clear"></div>
+
+            <div class="one" style="margin-left:10px; margin-top: 10px; display: none" id="submit_wait">
+                <img style="margin-top:8px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" />
+            </div>
+            <div class="spacer clear"></div>
+            
+            <div class="fielddiv">
+                <div id="dialog-preview" title="Preview " style="display:none;">
+                    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>text text</p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- for filters (* don't remove these HTML) -->
+<select id="box3Storage">
+</select>
+
+<select id="box5Storage">
+</select>
+<!-- -->
+<!-- holder for vendor categories -->
+<div class="vendorCatHolder">
+	<div id="jqResultShower" >
+		
+	</div>
+	<?php 
+	foreach($this->vendor_groups as $id=>$grp){
+		?><div class='jqFindVendorGroup' title='<?php echo $id;?>'>
+			<?php foreach($grp as $i=>$vend ){?>
+				<div class='jqVendorItem' title='<?php echo $i;?>'>
+					<p><?php echo $vend;?></p>
+				</div>
+			
+			<?php }?>
+		</div>
+		
+	<?php }?>
+</div>
+<!-- -->
+
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/960_12_fluid.css" rel="stylesheet" type="text/css" media="all">
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/Aristo/Aristo.css" rel="stylesheet" type="text/css" media="all">
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/plugins/jquery.jgrowl.css" rel="Stylesheet" type="text/css" />
+<style type="text/css">
+    .errors{list-style: none;color:red;}
+    .grid_12{margin-left: 0%;margin-right: 0%;}
+    .grid_9{margin-left: 0%;margin-right: 0%;}
+    .grid_4{margin-left: 0%;margin-right: 0%;margin-top:3px;}
+    .grid_3{margin-left: 0%;margin-right: 0%;margin-top:3px;}
+    .grid_2{margin-left: 0%;margin-right: 0%;margin-top:3px;}
+    div.jGrowl div.jGrowl-notification{color:#000000;background-color:#A79269;}
+    .ui-autocomplete-loading{
+        background: white url('<?php echo $this->baseUrl("assets"); ?>/images/loading.gif') right center no-repeat;
+    }
+    .vendorCatHolder{ display: none;}
+    #left_vendor,#right_vendor,#left_client,#right_client{width:250px;}
+</style>
+
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-ui/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/dbllist/jQuery.dualListBox-1.3.js"></script>
+
+<script type="text/javascript">
+    var error_bool = false;
+    $(document).ready( function($) {
+        $('#submit').click(function() {
+            $('div.errors').html('');
+            $('#right_vendor option').attr('selected','selected');
+            $('#right_client option').attr('selected','selected');
+            var notification_message = tinyMCE.getInstanceById('notification_message').getBody().innerHTML;
+            notification_message=notification_message.replace('<br _mce_bogus="1">','');            
+            $.ajax({
+                url:'<?php echo $this->baseUrl("admin/notification/add/ajax/1") ?>',
+                type: "POST",
+                dataType: 'json',
+                data:$('#frmaddevent').serialize()+'&notification_message='+notification_message,
+                beforeSend: function() { $('#submit_wait').show(); },
+                complete: function() { $('#submit_wait').hide();},
+                success: function(msg) {
+                    //alert(msg.error);
+                    $('div.errors').html('');
+                    if(msg.error) {
+                        error_bool = false;
+                        $.each(msg.message, function(k, mg){
+                            $.each(mg, function(ky, m){
+                                $('#'+k).parents('.fielddiv').find('div.errors').html(m);
+                                $.jGrowl(m);
+                            });
+                        });
+                    } else {
+                        error_bool = true;
+                        $.jGrowl(msg.message);
+                        document.location = '<?php echo $this->baseUrl("admin/notification/index") ?>';
+                    }
+                    return msg.error;
+                }
+            });
+            return error_bool;
+        });
+
+
+
+        $('#return_vendor').click(function() {
+            $('#vendor_wait').show();
+            $('#left_vendor option:selected').each(function(){
+                $('#right_vendor').append(this);
+            });
+            $('#vendor_wait').hide();
+        });
+        $('#return_vendor_all').click(function() {
+            $('#vendor_wait').show();
+            $('#left_vendor option').each(function(){
+                $('#right_vendor').append(this);
+            });
+            $('#vendor_wait').hide();
+        });
+
+        $('#to_vendor').click(function() {
+            $('#vendor_wait').show();
+            $('#right_vendor option:selected').each(function(){
+                $('#left_vendor').append(this);
+            });
+            $('#vendor_wait').hide();
+        });
+        $('#to_vendor_all').click(function() {
+            $('#vendor_wait').show();
+            $('#right_vendor option').each(function(){
+                $('#left_vendor').append(this);
+            });
+            $('#vendor_wait').hide();
+        });
+
+
+        $('#return_client').click(function() {
+            $('#client_wait').show();
+            $('#left_client option:selected').each(function(){
+                $('#right_client').append(this);
+            });
+            $('#client_wait').hide();
+        });
+        $('#return_client_all').click(function() {
+            $('#client_wait').show();
+            $('#left_client option').each(function(){
+                $('#right_client').append(this);
+            });
+            $('#client_wait').hide();
+        });
+
+        $('#to_client').click(function() {
+            $('#client_wait').show();
+            $('#right_client option:selected').each(function(){
+                $('#left_client').append(this);
+            });
+            $('#client_wait').hide();
+        });
+        $('#to_client_all').click(function() {
+            $('#client_wait').show();
+            $('#right_client option').each(function(){
+                $('#left_client').append(this);
+            });
+            $('#client_wait').hide();
+        });
+
+        $("#wait1").hide()
+        dateDisable();
+        dateEnable();
+        _init_autoComplete("#event_client_choice", "<?php echo $this->baseUrl("admin/event/getclients") ?>");
+        _init_autoComplete("#event_vendor_choice", "<?php echo $this->baseUrl("admin/event/getvendors") ?>");
+        addVendor();
+        addClient();
+        _init_checkboxes()
+
+                //$.configureBoxes();
+                var cur_year = "<?php echo date('Y') ?>";
+                var cur_month = "<?php echo date('m') - 1 ?>";
+                var cur_day = "<?php echo date('d') ?>";
+
+                tinyMCE.init({
+                    mode : "textareas",
+                    elements : "notification_message",
+                    theme : "advanced",
+                    height: "300",
+                    theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+                    theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+                    theme_advanced_buttons3 : "",
+                    theme_advanced_toolbar_location : "top",
+                    theme_advanced_toolbar_align : "left",
+                    theme_advanced_statusbar_location : "bottom",
+                    theme_advanced_path : false,
+                    theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+                    font_size_style_values : "13px, 14px,16px,18px,20px",
+                    content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+                    force_br_newlines : true,
+                    force_p_newlines : false,
+                    forced_root_block : "",
+                    theme_advanced_resizing : true,
+                    skin : "o2k7",
+                    skin_variant : "silver"
+                });
+
+                $.configureBoxes({
+                    box1View: 'left_client',
+                    useFilters: 'true',
+                    box1Storage: 'box5Storage',
+                    box1Filter: 'box5Filter',
+                    box1Clear: 'box5Clear',
+                    box1Counter: 'box5Counter',
+                    box2View: 'right_client',
+                    box2Storage: 'box6Storage',
+                    box2Filter: 'box5Filter',
+                    box2Clear: 'box6Clear',
+                    box2Counter: 'box6Counter'
+//                    to1: 'to_client',
+//                    to2: 'return_client',
+//                    allTo1: 'to_client_all',
+//                    allTo2: 'return_client_all'
+                });
+                
+                $.configureBoxes({
+                    box1View: 'left_vendor',
+                    useFilters: 'true',
+                    box1Storage: 'box3Storage',
+                    box1Filter: 'box3Filter',
+                    box1Clear: 'box3Clear',
+                    box1Counter: 'box3Counter',
+                    box2View: 'right_vendor',
+                    box2Storage: 'box4Storage',
+                    box2Filter: 'box3Filter',
+                    box2Clear: 'box4Clear',
+                    box2Counter: 'box4Counter'
+                    //to1: 'to_vendor',
+                    //to2: 'return_vendor',
+                    //allTo1: 'to_vendor_all',
+                    //allTo2: 'return_vendor_all'
+                });
+                                
+                $('#event_vendor_choice').val('')
+                $('#event_client_choice').val('')
+                $("#start_date, #end_date").datetimepicker({
+                    minDate: new Date(cur_year, cur_month, cur_day, 8, 30),
+                    maxDate: new Date(2030, 11, 31, 17, 30), showHour:false,showMinute:false,showSecond:false,timeText:"",timeFormat: '',currentText:"Today"
+                });
+
+                $("#start_time").timepicker({timeFormat: 'hh:mm tt',ampm: true,hour: '8',minute:'0'});
+                $("#end_time").timepicker({timeFormat: 'hh:mm tt',ampm: true,hour: '17',minute:'0'});
+
+                $('#event_client_choice').attr('placeholder', 'All Vendors of the Client will be auto-selected');
+                $('#event_vendor_choice').attr('placeholder', 'All Clients of the Vendor will be auto-selected');
+
+            });
+
+            function dateDisable(){
+                var val = jQuery("#event_type").val();
+                if(val == 1){
+                    //alert(val);
+                    //$('#endDate img').show();
+                    jQuery('#end_date').removeAttr('disabled');
+                }
+                else if(val == 0){
+                    //$('#endDate img').hide();
+                    jQuery('#end_date').attr('disabled', 'disabled');
+                }
+            }
+
+            function dateEnable(){
+                jQuery('#event_type').change(function(){
+                    var val = jQuery("#event_type").val();
+                    if(val == 1){
+                        //$('#endDate img').show();
+                        jQuery('#end_date').removeAttr('disabled');
+                        var start_date = (jQuery('#start_date').val());
+                        var d = new Date(start_date);
+                    }
+                    else if(val == 0){
+                        //$('#endDate img').hide();
+                        jQuery('#end_date').attr('disabled', 'disabled');
+                    }
+                })
+            }
+
+            function _init_autoComplete(id, getController){
+
+                $(id)
+                // don't navigate away from the field on tab when selecting an item
+                .bind( "keydown", function( event ) {
+
+                    if ( event.keyCode === $.ui.keyCode.TAB &&
+                        $( this ).data( "autocomplete" ).menu.active ) {
+                        event.preventDefault();
+                    }
+                })
+                .autocomplete({
+                    source: function( request, response ) {
+                        $.getJSON( getController, {
+                            term: extractLast( request.term )
+                        }, response);
+                    },
+                    search: function() {
+                        // custom minLength
+
+                        var term = extractLast( this.value );
+                        if ( term.length < 1 ) {
+
+                            return false;
+                        }
+                    },
+                    focus: function() {
+                        // prevent value inserted on focus
+                        return false;
+                    },
+                    select: function( event, ui ) {
+                        var terms = split( this.value );
+                        // remove the current input
+                        terms.pop();
+                        // add the selected item
+                        terms.push( ui.item.value );
+                        // add placeholder to get the comma-and-space at the end
+                        terms.push( "" );
+                        this.value = terms.join( ", " );
+                        return false;
+                    }
+
+                });
+            }
+
+            function split( val ) {
+                return val.split( /,\s*/ );
+            }
+            function extractLast( term ) {
+                return split( term ).pop();
+            }
+            function ltrim(text) {
+                return text.replace(/^\s+/g, "");
+            }
+
+            function addVendor(){
+                $("#addVendor").click(function(){
+                    var idVal = $("#event_client_choice").val();
+                    var ids = idVal.split(",")
+                    for(var i=1;i<ids.length;i++){
+                        var name = ltrim(ids[i-1])
+                        $.ajax({
+                            type: "POST",
+                            dataType: 'json',
+                            beforeSend: function() { $('#wait1').show(); },
+                            complete: function() { $('#wait1').hide(); $('#event_client_choice').val('')},
+                            url: "<?php echo $this->baseUrl("admin/event/getlicensedVendor?orgName=") ?>"+name,
+                            success: function(msg){
+                                if(msg == ""){
+                                    $.jGrowl("No approved vendor of "+name+" exits.");
+                                }
+                                else{
+                                    $.jGrowl("All vendors of "+name+" has been added.");
+                                }
+                                jQuery.each(msg, function(key, val) {
+                                    src = document.getElementById('left_vendor');
+                                    for (var i = 0; i < src.options.length; i++)
+                                    {
+                                        if (src.options[i].value==val)
+                                        {
+                                            src.options[i].selected=true;
+                                        }
+                                    }
+                                    zendDoubleList.move('left_vendor', 'right_vendor');
+                                });
+                            }
+                        });
+                        addMessage("growling")
+                    }
+                });
+            }
+            
+            function addClient(){
+                $("#addClient").click(function(){
+                    var idVal = $("#event_vendor_choice").val();
+                    var ids = idVal.split(",")
+                    for(var i=1;i<ids.length;i++){
+                        var name = ltrim(ids[i-1])
+                        $.ajax({
+                            type: "POST",
+                            beforeSend: function() { $('#wait2').show(); },
+                            complete: function() { $('#wait2').hide(); $('#event_vendor_choice').val('')},
+                            dataType: 'json',
+                            url: "<?php echo $this->baseUrl("admin/event/getlicensedClient?orgName=") ?>"+name,
+                            success: function(msg){
+                                if(msg == ""){
+                                    $.jGrowl("No approved client of "+name+" exits.");
+                                }
+                                else{
+                                    $.jGrowl("All clients of "+name+" has been added.");
+                                }
+                                jQuery.each(msg, function(key, val) {
+                                    src = document.getElementById('left_client');
+                                    for (var i = 0; i < src.options.length; i++)
+                                    {
+                                        if (src.options[i].value==val)
+                                        {
+                                            src.options[i].selected=true;
+                                        }
+                                    }
+                                    zendDoubleList.move('left_client', 'right_client');
+                                });
+                            }
+                        });
+                        addMessage("growling")
+                    }
+                });
+            }
+
+    var zendDoubleList =
+        {
+        move: function(srcId, destId)
+        {
+            var src = document.getElementById(srcId);
+            var dest = document.getElementById(destId);
+            for (var i = 0; i < src.options.length; i++)
+            {
+                if (src.options[i].selected)
+                {
+                    dest.options[dest.length] = new Option(src.options[i].text, src.options[i].value);
+                    src.options[i] = null;
+                    --i;
+                }
+            }
+        }
+    };
+
+    function addMessage(msg) {
+        var timeid = new Date().getTime();
+        var html = "";
+        html = '<p class="message" id="msg'+timeid
+               +'">(id: '+timeid + "): "+msg
+               +'&nbsp;&nbsp;&nbsp;<a href="#d" onClick="delMessage('+timeid+');">remove</a></p>'
+        $('#float-messages').prepend(html);
+        $('#msg'+timeid)
+            .slideDown(200)
+            .animate({opacity: 1.0},4000) // few seconds to show message
+            .fadeOut(500,function() {
+                delMessage($(this).attr('id'));
+        });
+}
+
+       function _init_checkboxes(){
+            $("input[type=checkbox]:checked").each(function(){
+                toggle_checkboxes($(this));
+            })
+            $("input[type=checkbox]").click(function(){
+                //alert($(this))
+                toggle_checkboxes($(this));
+            })
+        }
+
+        function toggle_checkboxes(obj){
+            $name=obj.attr("name")
+
+            if ($name == 'send_seperate_invitation_vendor')
+            {
+                if (obj.is(':checked')) {
+                    $('#left_vendor').attr('disabled', 'disabled');
+                    $('#right_vendor').attr('disabled', 'disabled');
+                } else {
+                    $('#left_vendor').removeAttr('disabled');
+                    $('#right_vendor').removeAttr('disabled');
+                }
+            }
+            else if ($name == 'send_seperate_invitation_client')
+            {
+                if (obj.is(':checked')) {
+                    $('#left_client').attr('disabled', 'disabled');
+                    $('#right_client').attr('disabled', 'disabled');
+                } else {
+                    $('#left_client').removeAttr('disabled');
+                    $('#right_client').removeAttr('disabled');
+                }
+            }
+        }
+
+
+   jQuery(document).ready( function($) {
+       
+        $("#previewBtn").click(function(e){
+            e.preventDefault();
+            var pageContent = ($(this).attr('rel'));
+            var title = $("#notification_title").val();
+            var message = tinyMCE.get('notification_message').getContent();
+            //alert(message);
+            if(title.length === 0){
+                title = "<span style='color:red;'>Please enter notification title!</span>";
+            }
+            if(message.length === 0){
+                message = "<span style='color:red'>Please enter notification message!</span>";
+            }
+
+            $("#dialog-preview").html(message);
+            $( "#dialog-preview" ).dialog({
+                resizable: false,
+                height:'auto',
+                width: 642,
+                modal: true,
+                title: title,
+                buttons: {
+                    "Ok": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        });
+
+		console.log("got here: " + $('#box3Filter').attr('size'));
+		
+		$('#box3Filter').keyup(function(){
+				filter($('#box3Filter').val(), $('#box3Statuses').attr('value'));
+			});
+
+		$('#box3Statuses').change(function(){
+					filter($('#box3Filter').val(), $('#box3Statuses').attr('value'));
+			});
+    });
+
+   function filter(text, status){
+	   console.log("filtering: " + text + " " + status);
+	   var html="";
+		var checker = [];
+
+
+		$('#right_vendor>option').each(function(){
+			checker.push($.trim($(this).attr('value')));
+		});
+			if (status == "all"){
+				$('.jqFindVendorGroup>.jqVendorItem').each(function(){
+					var index = $.trim($(this).attr('title'));
+	 	 			var bFound = false;
+
+					checker.forEach(function(val){
+						if (val == index) bFound = true;
+					});
+	 			
+					if ($(this).text().toLowerCase().indexOf(text.toLowerCase()) >= 0 && bFound == false){
+						html += "<option value=\"" + $.trim($(this).attr('title')) + "\" label=\"" + $.trim($(this).text()) + "\">" + $.trim($(this).text()) + "</option>";
+					}
+				});
+			} else {
+				var selector = '.jqFindVendorGroup[title="' + status + '"]>.jqVendorItem';
+				$(selector).each(function(){
+					
+					var index = $.trim($(this).attr('title'));
+	 	 			var bFound = false;
+
+					checker.forEach(function(val){
+						if (val == index) bFound = true;
+					});
+					
+					if ($(this).text().toLowerCase().indexOf(text.toLowerCase()) >= 0 && bFound == false){
+						html += "<option value=\"" + $.trim($(this).attr('title')) + "\" label=\"" + $.trim($(this).text()) + "\">" + $.trim($(this).text()) + "</option>";
+					}
+				});
+			}
+
+			$('#left_vendor').html(html);
+	   }
+</script>

@@ -1,0 +1,177 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('vendors/vendor-sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="license_title">
+    <h2>Licenses</h2>
+    <div class="alphabetical_filters">Search by Alphabet:&nbsp;&nbsp;
+        <?php
+        foreach (range('A', 'Z') as $char) {
+            echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+        }
+        ?>
+    </div>
+</div>
+<div class="spacer"></div>
+<div class="licensed_client">
+    <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="clients-data-table">
+        <thead>
+            <tr>
+                <th class="head0" width="70%">Client Name</th>
+                <th class="head1" width="30%">Number</th>
+            </tr>            
+        </thead>
+    </table>
+</div>
+<div class="licenses">
+    <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="licenses-data-table">
+        <thead>
+            <tr>
+                <th class="head0" width="35%">Client Name</th>
+                <th class="head1" width="25%">Vendor Applying</th>
+                <th class="head0" width="15%">Submitted On</th>
+                <th class="head1" width="25%">Status</th>
+            </tr>            
+        </thead>
+    </table>
+</div>
+
+<div class="hidden">
+    <span class="status_filters">
+        Licensing Status:
+        <select name="status" id="licStatus">
+            <option value="0">All</option>
+            <?php
+            if($this->status_array) {
+                foreach($this->status_array as $val=>$status) {
+            ?>
+            <option value="<?= $val?>" <?php echo $val == 3 ? "selected" : ''; ?>><?= $status ?></option>
+            <?php
+                    //echo '<option value="'.$val.'">'.$status.'</option>';
+                }
+            }
+            ?>
+        </select>
+    </span>
+</div>
+
+<style type="text/css">
+    .license_title h2 {float: left;}
+    .alphabetical_filters{
+        margin:0 0 0 10px;
+        float: right;
+    }
+    a.letter_filter{
+    }
+    .licenses {width:65%;float:right;}
+    .licensed_client {width:34%;float:left;}
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+</style>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable, oVendorTable, statusSelect = jQuery('.status_filters'), alphFilter = jQuery('.aphabetical_filters');
+    $(window).bind('load',function(){
+        init_license_dt('');
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();
+        init_license_link();
+        init_client_dt('');
+        $(document).on('click', '.client_license_link',function(){
+            //oTable.fnFilter($(this).text());
+            oTable.fnDestroy();
+            init_license_dt($(this).attr('rel'), $('#licStatus').val());
+            $('#licenses-data-table').css('width', '100%');
+        });
+        $(document).on('change', '#licStatus',function(){
+            oVendorTable.fnDestroy();
+            init_client_dt($(this).val());
+            oTable.fnDestroy();
+            init_license_dt('', $(this).val());
+            $('#clients-data-table').css('width', '100%');
+            $('#licenses-data-table').css('width', '100%');
+        });
+    });
+    
+    function init_license_dt(client, status) {
+        oTable=$('#licenses-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 15,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/clients/ajax-get-licenses-dt'+(client ? '/client/'+ client : '')+(status ? '/status/'+ status : ''),
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Clients:"                
+            },
+            "aaSorting": [[2,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 3 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                //$('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after(alphFilter);
+            }            
+        });
+    }
+    function init_client_dt(status) {
+        oVendorTable=$('#clients-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 15,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/clients/ajax-get-licensed-clients-dt/status/'+status,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search:"                
+            },
+            "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] }, { "bSortable": false, "aTargets": [ 1 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('.licensed_client .dataTables_info').html("&nbsp;");
+                //$('.licensed_client .dataTables_length').html("&nbsp;");
+                $('.licensed_client .dataTables_filter').html("&nbsp;");
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length').html(statusSelect);
+            }            
+        });
+    }
+    
+    function init_vendor_link(){
+        $(document).on("click", "a.vendor_link", function(){ 
+            window.location.href=site_url+"/admin/vendors/contact/id/"+$(this).attr('rel');
+        });
+    }
+    
+    function init_license_link(){
+        $(document).on("click", "a.lic_link", function(){ 
+            window.location.href=site_url+"/admin/vendors/license-review/id/"+$(this).attr('rel');
+        });
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                oTable.fnDraw();                
+                return;
+            }
+        });
+    }
+    
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>

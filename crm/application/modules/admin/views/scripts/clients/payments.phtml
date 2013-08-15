@@ -1,0 +1,88 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('clients/sidebar-menus.phtml', array('selected' => 'payments', 'id' => $this->client->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->client->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Client Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->client->user_status)); ?></h4>       
+        </div>
+    </div>        
+</div>
+<br />
+<hr size="1" noshade />
+<form class="form" id="history_form" method="post">
+        <table width="400">
+            <tr>
+                <td>
+                    <?php
+                    $current_year = Date("Y");
+                    $years = range($current_year + 1, $current_year - 5);
+                    $year_dropdown_vals = array();
+                    foreach ($years as $year) {
+                        $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 2);
+                    }
+                    echo $this->formLabel("fiscal_year", "Fiscal Year");
+                    ?>
+                </td>
+                <td>
+                    <?php
+                    echo $this->formSelect("fiscal_year", "", array(), $year_dropdown_vals);
+                    ?>      
+                </td>
+                <td>
+                    <?php
+                    echo $this->formLabel("quarter", "Quarter");
+                    ?>
+                </td><td>
+                    <select name="quarter" id="quarter" >
+                        <option value=1>Q1</option>
+                        <option value=2>Q2</option>
+                        <option value=3>Q3</option>
+                        <option value=4>Q4</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="submit" class="button button_black" id="view_history">Go</button> 
+                </td>
+            </tr>
+        </table>
+<div class="clear"></div>
+</form>
+<div class="clear"></div>
+<div class="spacer"></div>
+<div class="one">
+    <div id="payment_records_container">
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    var client_id="<?php echo $this->client->id; ?>";
+    $(function(){
+        client_payments.init_form();
+    });
+    client_payments={
+        init_form:function(){
+            $("#history_form").on('submit',function(){
+                $.ajax({
+                    url : site_url+"/admin/clients/ajax-get-client-payment-reports/id/"+client_id,
+                    type : 'post',
+                    data : $("#history_form").serialize(),
+                    success : function(response){
+                        $("#payment_records_container").html(response);
+                    }
+                });
+                return false;
+            })
+        }        
+    }
+</script>

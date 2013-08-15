@@ -1,0 +1,163 @@
+<?php
+$current_controller = Zend_Controller_Front::getInstance()->getRequest()->getControllerName();
+$current_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+$user = Zend_Auth::getInstance()->getIdentity();
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <?php echo $this->headTitle(); ?>
+
+        <link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/style.css" />
+        <!--[if IE 9]><link rel="stylesheet" media="screen" href="<?php //echo $this->baseUrl("assets");      ?>/css/ie9.css"/><![endif]-->
+        <!--[if IE 8]><link rel="stylesheet" media="screen" href="<?php //echo $this->baseUrl("assets");      ?>/css/ie8.css"/><![endif]-->
+        <!--[if IE 7]><link rel="stylesheet" media="screen" href="<?php //echo $this->baseUrl("assets");      ?>/css/ie7.css"/><![endif]-->
+        <?php echo $this->headLink(); ?>
+        <script type="text/javascript"> var site_url="<?php echo $this->baseUrl(); ?>"; </script>
+        <?php if (APPLICATION_ENV == "production"): ?>
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <?php else: ?>
+            <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>            
+        <?php endif; ?>
+        <?php $this->headScript()->appendFile($this->baseUrl("assets/js/plugins/jquery-ui-1.8.16.custom.min.js")); ?>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery.validate.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/custom/general.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery.jgrowl.js"></script>
+        <?php echo $this->headScript(); ?>        
+    </head>
+
+    <body class="bodygrey">
+
+
+        <div class="headerspace"></div>
+
+        <div class="header">
+
+            <!--logo-->
+            <a href="<?php echo $this->baseUrl('/admin'); ?>" class="logo"><img src="<?php echo $this->baseUrl("assets"); ?>/images/logo.png" alt="Logo" /></a>          
+            <?php $current_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+            <div class="mainmenu">
+                <ul>
+                    <li<?php echo $current_controller == "vendors" || $current_controller == "design" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/vendors'); ?>" class="dashboard"><span>Vendors</span></a></li>
+                    <li<?php echo $current_controller == "clients" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients'); ?>" class="elements"><span>Clients</span></a></li>
+                    <li<?php echo $current_controller == "events" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/event'); ?>" class="reports"><span>Events</span></a></li>
+                    <li<?php echo $current_controller == "notification" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/notification'); ?>" class="users"><span>Notifications</span></a></li>                    
+                    <?php if ($user->account_type == 1){?><li<?php echo $current_controller == "portal" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/portal'); ?>" class="management"><span>Website Management</span></a></li><?php }?>                    
+                </ul>
+            </div><!--tabmenu-->
+
+            <div class="accountinfo">
+                <?php /* ?>                <img src="<?php echo $this->baseUrl("assets") . ($user->picture ? '/files/user/thumbs/_thumb' . $user->picture : '/images/avatar.png'); ?>" alt="Avatar" width="50" />
+                  <?php */ ?>                <div class="info">
+                    <h3><?php echo $user->organization_name; ?></h3>
+                    <small><?php echo $user->email; ?></small>
+                    <p>
+                        <a href="<?php echo $this->baseUrl("admin/index/setting") ?>">Account Settings</a> <a href="<?php echo $this->baseUrl("admin/jobs"); ?>">Background Jobs</a> <a href="<?php echo $this->baseUrl("index/logout"); ?>">Logout</a>
+                    </p>
+                </div><!--info-->
+            </div><!--accountinfo-->
+        </div><!--header-->
+
+
+        <div class="sidebar">
+            <div id="accordion">
+                <div class="content" style="display: block;">
+                    <?php echo $this->placeholder('main_side_bar'); ?>                                        
+                </div>
+                <h3 class="open"></h3>
+            </div>
+
+            <br clear="all" />
+
+        </div><!--leftmenu-->
+
+
+        <div class="maincontent">
+            <?php if ($current_controller == "vendors" || $current_controller == "design" || $current_controller == "reports"): ?>
+                <ul class="submenu">                
+                    <li><a href="javascript:;" id="quick_search"><span>Quick Lookup</span></a></li>
+                    <li<?php echo (in_array($current_action, array("index", "search")) && $current_controller == "vendors" ) ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl('admin/vendors/search'); ?>"><span>Search</span></a></li>
+                    <li<?php echo in_array($current_action, array("licenses", "license-review")) ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl('admin/vendors/licenses'); ?>"><span>Lisc. Agreements</span></a></li>
+                    <li<?php echo $current_controller == "design" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl("admin/design"); ?>"><span>Designs</span></a></li>
+                    <li<?php echo $current_controller == "reports" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl("admin/reports"); ?>"><span>Royalty Reports</span></a></li>
+                    <li<?php echo $current_action == "invoice" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl("admin/vendors/invoice"); ?>"><span>Invoices</span></a></li>
+                    <?php if($user->account_type === 1): ?>
+                    <li<?php echo $current_action == "all-payments" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl("admin/vendors/all-payments"); ?>"><span>Payments</span></a></li>
+                    <?php endif; ?>
+                    <li<?php echo $current_action == "add" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl('admin/vendors/add'); ?>"><span>Add A Vendor</span></a></li>
+                    <li<?php echo $current_action == "registrants" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl('admin/vendors/registrants'); ?>"><span>Registrants</span></a></li>
+                    <li<?php echo $current_action == "web-profile-approval" ? ' class="current"' : '' ?>><a href="<?php echo $this->baseUrl('admin/vendors/web-profile-approval'); ?>"><span>Web Profile Approval</span></a></li>
+                </ul><!--submenu-->
+            <?php endif; ?>
+
+            <?php if ($current_controller == "clients"): ?>            
+                <ul class="submenu">                
+                    <li<?php echo $current_action == 'search' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients/search'); ?>"><span>Search</span></a></li>
+                    <li<?php echo $current_action == 'lisc-agreements' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients/lisc-agreements'); ?>"><span>Licensing Agreements</span></a></li>
+                    <?php if ($user->account_type == 1){?><li<?php echo $current_action == 'payment-reports' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients/payment-reports'); ?>"><span>Quarterly Payment Reports</span></a></li>
+                    <li<?php echo in_array($current_action, array('master-templates', 'addendums', 'add-addendum')) ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients/master-templates'); ?>"><span>Master Licensing Templates</span></a></li> <?php }?>
+    <!--                    <li<?php echo $current_action == 'all-payments' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients/all-payments'); ?>"><span>Payments</span></a></li>-->
+                    <li<?php echo ($current_action == 'add' || $current_action == 'add-legal' || $current_action == 'add-operation' || $current_action == 'add-client-notes' || $current_action == 'add-lic-template') ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/clients/add'); ?>"><span>Add A Client</span></a></li>
+                </ul><!--submenu-->
+            <?php endif; ?>
+
+            <?php if ($current_controller == "portal"): ?>            
+                <ul class="submenu">                
+                    <?php if($user->account_type === 1): ?>
+                    <li<?php echo $current_action == 'users' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/portal/users'); ?>"><span>Users</span></a></li>
+                    <?php endif; ?>
+                    <li<?php echo $current_action == 'banners' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/portal/banners'); ?>"><span>Banner Management</span></a></li>
+                    <li<?php echo $current_action == 'white-label' ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('admin/portal/white-label'); ?>"><span>White Label Management</span></a></li>
+                </ul><!--submenu-->
+            <?php endif; ?>
+            <!--            
+            <div class="breadcrumbs">
+               <a href="dashboard.html">Dashboard</a>
+               <span>Table Styling</span>
+            </div>
+            -->
+
+            <div class="left">
+                <?php if (count($this->messages)) : ?>
+                    <?php
+                    $this->messages = array_unique($this->messages);
+                    ?>
+                    <div class="clear"></div>
+                    <script type="text/javascript">
+                        $(function(){
+    <?php foreach ($this->messages as $message) : ?>                    
+        <?php if ($message <> "") : ?>
+                        $.jGrowl("<?php echo $message ? $this->escape($message) : ''; ?>", { header: 'Message'});
+        <?php endif; ?>
+    <?php endforeach; ?>
+            /*
+            $.extend( $.fn.jGrowl.prototype , {
+                    
+                defaults: {
+                    pool: 		0,
+                    header: 		'',
+                    check: 		1000,
+                    life: 		7000,
+                    closeTemplate: '&times;'
+                }
+            });*/
+        });
+                    </script>
+                <?php endif; ?>
+                <?php echo $this->layout()->content ?>
+            </div><!--left-->
+
+            <br clear="all" />
+
+        </div><!--maincontent-->
+
+        <br />
+        <div class="footer footer_float">
+            <div class="footerinner">
+                &copy; 2011. Greek Licensing Portal
+            </div><!-- footerinner -->
+        </div><!-- footer -->
+
+    </body>
+</html>

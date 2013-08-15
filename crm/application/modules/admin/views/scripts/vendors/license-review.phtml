@@ -1,0 +1,900 @@
+<?php
+    $this->placeholder('main_side_bar')->captureStart();
+    //echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('id'=>$this->license->vendor_id->id));
+    $this->placeholder('main_side_bar')->captureEnd();
+    //echo $this->license->status;
+    $this->headTitle('Pending License Review');
+    //$this->BUtils()->doctrine_dump($this->license);
+    $link_checker = 0;
+    $link_builder = '';
+
+    if (!is_null($this->sample_link_saver_array_make)) {
+        $link_checker = 1;
+        $link_builder = implode(',', $this->sample_link_saver_array_make);
+    }
+    if (!is_null($this->license->vendor_id->first_name)) {
+        $first_name = $this->license->vendor_id->first_name;
+    } else {
+        $first_name = '';
+    }
+?>
+<style type="text/css">
+@font-face {
+	font-family: signed;
+	src: url('http://poweros.softura.com/crm/black_jack.ttf');
+}
+</style>
+
+<h2 style="height:40px;">
+        <?php echo $this->license->status === 4 ? 'License Agreement Details' : 'Pending License Review'; ?>
+       <?php
+       if($this->license->file_path !='') {?>
+        	<a id="f_delete_agreement" class="blueButton" href="javascript:;" rel="<?php $this->baseUrl($ths->license->file_path); ?>">Delete Uploaded License File</a>
+        	<a id="f_file_url" class="blueButton" target="_blank" href="<?php echo $this->baseUrl($this->license->file_path); ?>">View Uploaded License</a>
+        <?php } else {?>
+        	<a id="f_upload_agreement" class="blueButton" href="javascript:;">Upload License File</a>
+        <?php }?>
+    	<a id="f_statement" class="addNewButton" href="javascript:;" rel="<?php echo $this->license->vendor_id->id; ?>">View Financial Statement</a>
+</h2>
+
+<form action="" method="post" id="license_approval_form">
+    <div class="">
+        <div class="inputdiv1">
+            Vendor Name <br /><?php echo $this->form->vendor_name; ?>
+            <?php //echo $this->form->vendor_id;  ?>
+        </div>
+        <div class="inputdiv">
+            Client By Org Name <br /><?php echo $this->form->client_name; ?>
+            <?php //echo $this->form->client_id;  ?>
+        </div>
+        <div class="inputdiv">
+            License Number <br /><?php echo $this->form->license_number; ?>
+        </div>
+        <div class="inputdiv">
+            Sharing <br /><?php echo $this->form->sharing; ?>
+        </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="">
+        Vendor Type <br /><?php echo $this->form->vendor_type; ?>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="">
+        <div class="inputdiv1">
+            Royalty Structure <br /><?php echo $this->form->royalty_structure; ?>
+        </div>
+        <div class="inputdiv">
+            Royalty Commission <br /><?php echo $this->form->royalty_commission; ?>
+        </div>
+        <div class="inputdiv">
+            Annual Fee <br /><?php echo $this->form->annual_advance; ?>
+        </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->royalty_description; ?>
+    </div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->grant_of_license; ?>
+    </div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->sample_status; ?> Sample Received
+        <?php echo $this->form->payment_status; ?> Payment Received<br/>
+    </div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->vendor_products; ?>
+        <div class="spacer"></div>
+        Supplier Name<br/>
+        <?php echo $this->form->supplier_name; ?>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        Target Audience<br/>
+        <?php echo $this->form->target_audience; ?>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <input type="radio" name="insurance_radio" class="radio_cls" value="With_Insurance" checked/> &nbsp;With Insurance &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="radio" name="insurance_radio" class="radio_cls" value="Without_Insurance" />&nbsp;Without Insurance
+        <div class="spacer"></div>
+        <?php echo $this->form->agreement_statement; ?>
+        <div class="spacer"></div>
+
+        <?php
+        if ($this->sample_link_saver) {
+            $counter = 0;
+            echo "Product Samples";
+            echo '<div class="clear"></div>';
+            ?>
+            <div style="float:left; width:930px"><ul style="list-style:none" class="container_image">
+                    <?php
+                    //$filepath = $this->baseUrl("assets/files/samples/") . ($this->license->status == 3 ? '' : 'specific/');
+
+                    foreach ($this->sample_link_saver as $sample) {
+//                echo "<div class='sample'>"
+//                    .($this->license->status == 3 ? "<a href='javascript:;' class='remove'>X</a>&nbsp;&nbsp; " : "")
+//                    ."<a href='".$filepath.$sample->file_url."' target='_blank'><img src='".$this->baseUrl("assets/images/").($sample->file_extension == 'pdf' ? 'icon_pdf_16x16.png' : (in_array($sample->file_extension, array('jpg', 'gif', 'png')) ? 'icon_image.gif' : 'icon_msw.png'))."' width='16' /> $sample->title</a>".$this->form->sample_file->setValue($sample->id)
+//                    ."</div>";
+
+                        /* -------------------- */
+                        if (isset($this->sample_link_saver)) {
+                            //$sample_link_saver[$counter] = "'" . $sample->file_url . "'";
+                            ?>
+
+                            <li id="imageContainer" class="sample detail_design_view" style="float:left;position:relative; height: 110px; width: 110px; margin-bottom: 20px; margin-right: 20px; ">
+                                <div style="position:absolute; right: -8px; top: -11px">
+                                    <?php if ($this->license->status == 3) {
+                                        ?>
+                                        <a href="javascript:;" class="remove" rel='<?php echo $sample ?>' > <img src='<?php echo $this->baseUrl("assets/images/delete.png") ?>'> </a>
+
+                                    <?php } ?>
+                                </div>
+                                <a id="sample_image" href="javascript:;" rel="<?php echo $sample ?>"  >
+                                    <img style="height:75px; width: 110px" src="<?php echo $this->baseUrl("assets/files/samples/products/thumbs/") . $sample; ?>" class="list_pic" onerror="this.src='<?php echo $this->baseUrl("assets/images/no_image.jpg"); ?>';"/>
+                                    <br> <h5 style="width:125px;overflow:hidden;height:30px;line-height:30px;"><?php //echo $sample->title;  ?></h5>
+                                </a>
+                                <?php
+                                $counter++;
+                            } else {
+                                ?>
+                                <a href="<?php echo $this->baseUrl('assets/files/samples/products/') ?>" onclick="loadDetailsView(this); return false;" >
+                                    <img style="height:75px; width: 110px" src="<?php echo $this->baseUrl("assets/images/no_image.jpg"); ?>" class="list_pic"/>
+                                </a>
+                            <?php } ?>
+
+                        </li>
+                        <?php
+                        /* ---------------------- */
+                    }
+                    ?>
+                </ul></div>
+            <div class="clear"></div>
+
+            <?php
+        } else {
+            echo "No Sample Recieved";
+            ?>
+            <div class="spacer"></div>
+            <div style="float:left; width:930px"><ul style="list-style:none" class="container_image"></ul></div>
+
+            <?php
+        }
+        if ($this->license->status == 3) {
+            ?>
+            <div class="clear"></div>
+            <?php echo $this->form->add_sample; ?>
+            <div class="spacer"></div>
+        <?php } ?>
+
+        <?php echo $this->form->license_specific_note; ?>
+        <div class="spacer"></div>
+        <?php echo $this->form->recom_for_vendor; ?>
+        <div class="spacer"></div>
+        <?php echo $this->form->recom_for_client; ?>
+    </div>
+    <?php if ($this->license->status == 3) {
+        ?>
+        <?php echo $this->form->approved; ?>
+        <?php echo $this->form->reject; ?>
+        <?php echo $this->form->approve; ?>
+        <?php echo $this->form->save; ?>
+        <?php //print_r($sample_link_saver);
+    } ?>
+    <div class="spacer"></div>
+    <div class="one_fifth" style="margin-left:10px;display: none" id="submit_wait">
+        <img style="margin-top:8px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif">
+    </div>
+    <input type="hidden" id="sample_product_list_link" name="sample_product_list_link"/>
+    <input type ="hidden" id="hidden_mail_body" name="hidden_mail_body"/>
+    <input type ="hidden" id="mail_subject_text" name="mail_subject_text"/>
+    <input type ="hidden" id="edited_agreement" name="edited_agreement"/>
+
+    <!-- @author Masud, hidden input field added for changing royalty advance and royalty commission for fixing #193 bug-->
+    <input type="hidden" name="rlt_adv" id="rlt_adv" value="<?php echo isset($this->rlt_adv) ? $this->rlt_adv : ''; ?>" />
+    <input type="hidden" name="rlt_com" id="rlt_com" value="<?php echo isset($this->rlt_com) ? $this->rlt_com : ''; ?>" />
+
+    <div id="dialog-preview-notified" class="notified-class" title="" style="display:none;">
+        <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+    </div>
+    <div id="mail-send" style="display:none">
+        <div style="width:630px; height:auto">
+            <div style="padding: 10px;">
+                Subject:<br/>
+                <input type="text" name="mail_subject" id="mail_subject" style="width:600px;" value="">
+            </div>
+            <div class="clear"></div>
+            <div id="decline_reasons" style="padding: 10px;">&nbsp;</div>
+            <div style="width:610px; height:auto;padding: 10px;">
+                <?php echo $this->form->email_body_text; ?>
+            </div>
+        </div>
+    </div>
+</form>
+<?php
+if ($this->license->status == 4) {
+    ?>
+    <div style="width:850px;float:left;">
+        <div class="one_half" style="margin-right:0px">
+            <h3>Vendor Signature</h3>
+            Digital Signature <br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_signature ?>"style="font-family: signed;"><br>
+	    Title<br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_title ?>" ><br>
+            Date<br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="
+		<?php 
+			echo $this->license->vendor_sign_date!=NULL ? $this->license->vendor_sign_date->format('m-d-y H:i:s') : '' 
+		?>" >
+	<br>
+        </div>
+        <div class="one_half">
+            <h3>Client Signature</h3>
+            Digital Signature <br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->client_signature ?>" style="font-family: signed;"><br>
+	    Title<br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->client_title ?>" ><br>
+            Date<br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->client_sign_date!=NULL ? $this->license->client_sign_date->format('m-d-y H:i:s') : '' ?>" ><br>
+        </div>
+    </div>
+
+<?php }?>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification{color:#000000;background-color:#A79269;}
+    .text_dimmed{opacity:.5;height: 22px;border: 1px solid #DDDDDD;padding: 4px;}
+    .inputdiv1 {float:left;min-width:320px;padding-right: 20px;}
+    .inputdiv {float:left;padding-right: 20px;}
+    #license_approval_form .text {width: auto;}
+    .sample img {vertical-align: text-bottom;}
+    .remove {margin-bottom: -100px;}
+</style>
+
+<script type="text/javascript">
+
+    var sample_image_value = new Array();
+    var first_name = '';
+    var rlt_adv = $('#rlt_adv').val();
+    var rlt_com = $('#rlt_com').val();
+
+    tinyMCE.init({
+        mode : "exact",
+        elements : "agreement_statement",
+        theme : "advanced",
+        height: "300",
+        theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+        theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+        theme_advanced_buttons3 : "",
+        theme_advanced_toolbar_location : "top",
+        theme_advanced_toolbar_align : "left",
+        theme_advanced_statusbar_location : "bottom",
+        theme_advanced_path : false,
+        theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+        font_size_style_values : "13px, 14px,16px,18px,20px",
+        content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+        force_br_newlines : true,
+        force_p_newlines : false,
+        forced_root_block : "",
+        theme_advanced_resizing : true,
+        skin : "o2k7",
+        skin_variant : "silver",
+        theme_advanced_toolbar_location : "top",
+        theme_advanced_toolbar_align : "left"
+    });
+
+    $(window).bind('load', function(){
+        tinyMCE.get('agreement_statement').setContent($('#agreement_statement').text());
+    })
+
+    function modifyAgrrement() {
+
+        //var agreement_statement = tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML;
+	var editor = tinymce.get('agreement_statement');
+	var agreement_statement = editor.getContent();
+
+        var royalty = ($('#vendor_type').val() != '1' ? '' : '') + ($('#royalty_commission').attr('disabled') ? '$0' : $('#royalty_commission').val());
+        var annual_adv = $('#vendor_type').val() == '2' ? '$0' : $('#annual_advance').val()
+        //document.agreement_statement = $( document.agreement_statement).find('.commission').html("Commission: " + royalty +" Renewal Fee: "+annual_adv).end().html();
+        var old_commission = $(agreement_statement).find('.commission').html();
+        var new_commission = $('#annual_advance').val()+" annual advance against royalties owed, paid as an annual minimum guarantee; "+ $('#royalty_commission').val();
+        //document.agreement_statement = $( document.agreement_statement).find('.commission').html().replace(old_commission,new_commission);
+
+        //added by zea
+//        document.agreement_statement = $( document.agreement_statement).find('.commission').html(annual_adv+" annual advance against royalties owed, paid as an annual minimum guarantee; "+ $('#royalty_commission').val()).end().html();
+        //added by masud
+
+        var royalty_description = $('#royalty_description').val();
+
+	var td = $('#agreement_statement_ifr').contents().find('body tr:contains("ROYALTY:")').next().next().find('table tr:first td:eq(1)')
+	td.html(royalty_description);
+
+	$('#agreement_statement').val(agreement_statement);
+
+    }
+    function modifyAgreementGrant() {
+        var editor = tinymce.get('agreement_statement');
+	var grant_of_license = $('#grant_of_license').val();
+
+	var td = $('#agreement_statement_ifr').contents().find('body tr:contains("GRANT OF LICENSE:")').next().next().find('table tr:first td:eq(1)')
+	td.html(grant_of_license);
+
+	var agreement_statement = editor.getContent();
+	$('#agreement_statement').val(agreement_statement);
+    }
+
+    function modifyAgreement_for_product(){
+        document.agreement_statement = tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML;
+        document.agreement_statement = $(document.agreement_statement).find('.v_product').html($('#vendor_products').val()).end().html();
+        tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML = "<div>"+document.agreement_statement+"</div>";
+        $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+    }
+
+
+
+    function modifyAgreement_for_royalty(){
+	/*
+        var annual_adv = $('#vendor_type').val() == '2' ? '$0' : $('#annual_advance').val();
+        document.agreement_statement = tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML;
+
+         // @autohor Masud
+         // Added for fly changing of royalty report and royalty commission for both royalty description and agreement statement
+         //
+        var new_rlt_adv = $('#annual_advance').val();
+        var new_rlt_com = $('#royalty_commission').val();
+        var royalty_description = $('#royalty_description').val();
+        royalty_description = royalty_description.replace(rlt_adv, new_rlt_adv);
+        rlt_adv = new_rlt_adv;
+        royalty_description = royalty_description.replace(rlt_com, new_rlt_com);
+        rlt_com = new_rlt_com;
+//        console.log(royalty_description);
+        $('#royalty_description').val(royalty_description);
+        document.agreement_statement = $( document.agreement_statement).find('.commission').html($('#royalty_description').val()).end().html();
+        tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML = "<div>"+ document.agreement_statement+"</div>";
+        $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+	*/
+    }
+
+    function chooseCommission() {
+        if($('#vendor_type option:selected').val() == 1) {
+            $('#royalty_commission').removeAttr('disabled').val('8.5%');
+            //$('#annual_advance').removeAttr('disabled').val('$40.00');
+	    $('#royalty_structure').removeAttr('readonly');
+        } else if($('#vendor_type option:selected').val() == 2) {
+            $('#royalty_commission').removeAttr('disabled').val('$25');
+            $('#annual_advance').removeAttr('disabled').val('');
+            $('#royalty_structure').removeAttr('readonly');
+
+        } else if($('#vendor_type option:selected').val() == 3) {
+            $('#royalty_commission').attr('disabled', 'disabled').val('$0');
+            $('#annual_advance').attr('disabled', 'disabled').val('$0');
+	    $('#royalty_structure').removeAttr('readonly');
+            //$('#royalty_structure').val('Vendor pays a fixed annual royalty.');
+        }
+    }
+
+    function loadDetailsView(thisItem,height,width){
+        $.fancybox({
+            'href'                  : thisItem,
+            'height'                : height,
+            'width'                 : width,
+            'autoScale'             : true,
+            'autoDimensions'        : true,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'type'                  : 'iframe',
+            'transitionIn'     : 'none',
+            'transitionOut'     : 'none',
+            'speedIn'      : 100,
+            'speedOut'      : 100,
+            'overlayShow'     : true,
+            'overlayColor'     : "#FFF",
+            'onClosed'              : function() {
+                // window.location = $obj.attr('param');
+            }
+        });
+    }
+
+    $(function(){
+        chooseCommission();
+
+        $('#vendor_type').change(function(){
+            $('#vendor_type').val() == '1' ? $('#royalty_structure').val("Percentage of quarterly sales to be paid as royalty") :'';
+            chooseCommission();
+            modifyAgrrement();
+            modifyAgreement_for_royalty();
+
+
+
+        });
+        /*$('#annual_advance, #royalty_commission', '#vendor_products').keyup(function(){
+            modifyAgrrement();
+        });*/
+        $('#vendor_products').keyup(function(){
+            modifyAgreement_for_product();
+        });
+        $('#royalty_commission, #annual_advance').blur(function(){
+            modifyAgreement_for_royalty();
+        });
+
+        $(document).on('click','.sample a.remove', function(){
+            var r = ($(this).attr("rel"))
+            sample_image_value.splice($.inArray(r, sample_image_value),1);
+            $(this).parents('.sample').remove();
+        });
+
+        $(document).on("click", "#sample_image", function(){
+            var link = $(this).attr('rel');
+            link = site_url+"/admin/vendors/get-image/link/"+link;
+            loadDetailsView(link);
+            return false;
+        });
+
+        $(document).on("click", "#f_statement", function(){
+            var link = $(this).attr('rel');
+            link = site_url+"/admin/vendors/financial-info/nolayout/1/id/"+link
+            loadDetailsView(link, 800, 800);
+            return false;
+        });
+
+        $(document).on("click", "#approve", function(){
+            $('#approved').val('1');
+            if($('#vendor_type option:selected').val() == 3) {
+                $('#royalty_commission').removeAttr('disabled').val('$0');
+                $('#annual_advance').removeAttr('disabled').val('$0');
+            }
+            var value = sample_image_value.join(",");
+            $('#sample_product_list_link').val(value);
+            var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+            //$("#license_approval_form").submit();
+            $.ajax({
+                url:'<?php echo $this->baseUrl("admin/vendors/license-review/ajax/1/id/") . $this->license->id; ?>',
+                type: "POST",
+                dataType: 'json',
+                data:$('#license_approval_form').serialize()+'&agreement'+ agreement,
+                beforeSend: function() { $('#submit_wait').show(); },
+                complete: function() { $('#submit_wait').hide();},
+                success: function(msg) {
+                    $('.errors').html('');
+                    if(msg.error) {
+                        $.each(msg.message, function(k, mg){
+                            $.each(mg, function(ky, m){
+                                var html = '<ul class="errors">';
+                                html = html + '<li>'+m+'</li></ul>';
+                                $('#'+k+'-element').append(html);
+                                $.jGrowl(m);
+                            });
+                        });
+                    }
+                    else {
+                        var html ='You are about to submit a license agreement for signature to a vendor ('+$('#vendor_name').val()+') on behalf of a client ('+$('#client_name').val()+'). Are you sure you want to continue? '
+                        $( "#dialog-preview-notified" ).html(html)
+                        $( "#dialog-preview-notified" ).dialog({
+                            resizable: false,
+                            height:'auto',
+                            width: 640,
+                            beforeClose: function() {$('#approved').val('0'); },
+                            modal: true,
+                            title: "Confirmation",
+                            buttons: {
+                                "Continue": function() {
+                                    $('#mail_subject').val('A License Agreement is Ready for Signature')
+                                    $( this ).dialog( "close" );
+                                    send_mail('approve');
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+    function appendContentNotification(data){
+        $("#fancybox-content").css('background-color', '#EEEEEE');
+    }
+
+    $(document).on('click', '#add_sample', function(){
+        //alert($("#uploaded_pics").find("img").size());
+        if($("#uploaded_pics").find("img").size()<5){
+            upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+            $.fancybox({
+                'width'                 : 650,
+                'height'                : 350,
+                'title'                 : '<h4>Upload Product Sample. (Max '+upload_left+')</h4>',
+                'titlePosition'         : 'inside',
+                'autoDimensions'        : false,
+                'href'                  : site_url+"/admin/vendors/upload-files/max/"+upload_left,
+                'transitionIn'          : 'elastic',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe'
+            });
+        }else{
+            alert("You have reached the maximum number of files to be uploaded")
+        }
+        return false;
+    })
+
+    $(document).on("click", "#f_upload_agreement", function(){
+        console.log("upload?");
+
+        $.fancybox({
+            'width'			: 600,
+            'height'		: 400,
+            'href'			: "<?php echo $this->baseUrl("admin/license/popup-upload-agreement")?>/vendor_id/<?php echo $this->license->vendor_id->id; ?>/license_number/<?php echo $this->license->license_agree_number; ?>",
+            'transitionIn'	: 'none',
+            'transitionOut' : 'none',
+            'padding' 		: 10,
+            'overlayColor'	: '#FFF',
+            'type'			: 'iframe',
+            'speedIn'		: 100,
+            'speedOut'		: 100
+        });
+
+        return false;
+    });
+
+    function close_upload_dialog(){
+        	console.log('clsoing dialog');
+			location.reload();
+        }
+
+    $(document).on("click", "#f_delete_agreement", function(){
+        console.log("delete?");
+
+		var html = 'You are about to <b><u>delete</u></b> the license agreement file associated with this license. Are you sure you want to continue?';
+        
+        $("#dialog-preview-notified").html(html);
+        $("#dialog-preview-notified").dialog({
+            resizable: false,
+            height: 'auto',
+            width: 640,
+            modal: true,
+            title: "Delete",
+            buttons: {
+                "Continue": function(){
+                	$.ajax({
+                        url : site_url+"/admin/vendors/ajax-delete-agreement/license_id/<?php echo $this->license->id; ?>",
+                        type : 'post',
+                        dataType : 'json',
+                        success : function(e){
+            				console.log('success');
+    
+                           	$( this ).dialog( "close" );
+                           	location.reload();
+                        },
+                        error: function(e){
+            				console.log('error');
+            				console.log(e);
+                        }
+                    });
+                }
+            }
+        });
+    });
+    
+    $(document).on("click", "#reject", function(){
+        $('#approved').val('0');
+        var html ='You are about to <b><u>decline</u></b> a license agreement between a client ('+$('#client_name').val()+') and a vendor ('+$('#vendor_name').val()+'). Are you sure you want to continue?'
+        $( "#dialog-preview-notified" ).html(html)
+        $( "#dialog-preview-notified" ).dialog({
+            resizable: false,
+            height:'auto',
+            width: 640,
+            modal: true,
+            title: "Confirmation",
+            buttons: {
+                "Continue": function() {
+                    $( this ).dialog( "close" );
+                    $('#mail_subject').val('Your application to get licensed was declined')
+                    send_mail('decline');
+                }
+            }
+        });
+    })
+
+    function send_mail(type){
+        var title_confirmation = ""
+        var after_confirmation = ""
+        first_name = "<?php echo $first_name; ?>"
+        var mail_text = '<div style="padding:5px">Dear '+ first_name+', <br /> <br />';
+
+        if(type == "approve"){
+            $('#approved').val('1');
+            var html = 'Reason for decline:<br/><input type="text" name="decline_reason" id="decline_reason" value="' + decline_reason + '" style="width:600px;" value="">';
+            $('#decline_reasons').html(html);
+            $('#decline_reasons').css('display', 'none');
+
+            mail_text += 'The application to be licensed with a client <b>('+$('#client_name').val()+')</b> was approved and the license agreement is now ready to be signed.<br /><br />'
+            //mail_text += 'A license agreement with a company ('+$('#client_name').val()+') has been reviewed by Affinity and signed by the company. It is now ready for your review and countersignature.<br><br>'
+            mail_text += 'If you wish to proceed, you must log into your portal and sign the agreement by going to  <br />'
+            //mail_text += 'In order to view this agreement and provide an electronic signature, please log in to your portal by visiting: <br />'
+            mail_text += '<a href="<?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?>"><?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?></a><br /><br />'
+            mail_text += 'Please note that you are not officially licensed until you have been notified that '+$('#client_name').val()+' has counter-signed the agreement.<br /><br />';
+            title_confirmation = "Write the email to let the vendor know that the license agreement is ready for signature."
+            after_confirmation = "approved"
+        }
+        if(type == "decline"){
+            var html = 'Reason for decline:<br/><input type="text" name="decline_reason" id="decline_reason" value="' + decline_reason + '" style="width:600px;" value="">';
+            $('#decline_reasons').css('display', 'block');
+            $('#decline_reasons').html(html);
+            mail_text += 'The application to be licensed with a client ('+$('#client_name').val()+') was declined.<br><b>Reason for decline:</b><br><div>';
+            mail_text += '<br>If you want to re-apply, please log into your portal and click on the re-apply button next to the organization name. To log in go to: ';
+            mail_text += '<a href="<?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?>"><?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?></a><br><br>'
+            title_confirmation = "Write the email to let the vendor application to get licensed with an organization was declined"
+            after_confirmation = "declined"
+        }
+
+        mail_text += 'Regards,<br /><br />'
+        mail_text += 'Licensing Department<br />'
+        //mail_text += 'e: Registration@greeklicensing.com<br>'
+        mail_text += 'e: Licensing@greeklicensing.com<br />'
+        mail_text += 'p: 760-734-6764 ext. 140<br />'
+        mail_text += 'f:  707-202-0532 </div>';
+
+        $( "#mail-send" ).dialog({
+            open: function() {
+                tinyMCE.init({
+                    mode : "exact",
+                    elements: "email_body_text",
+                    theme : "advanced",
+                    height: "300",
+                    theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+                    theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+                    theme_advanced_buttons3 : "",
+                    theme_advanced_toolbar_location : "top",
+                    theme_advanced_toolbar_align : "left",
+                    theme_advanced_statusbar_location : "bottom",
+                    theme_advanced_path : false,
+                    theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+                    font_size_style_values : "13px, 14px,16px,18px,20px",
+                    content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+                    force_br_newlines : true,
+                    force_p_newlines : false,
+                    forced_root_block : "",
+                    theme_advanced_resizing : true,
+                    skin : "o2k7",
+                    skin_variant : "silver",
+                    theme_advanced_toolbar_location : "top",
+                    theme_advanced_toolbar_align : "left"
+                });
+                $('textarea.FormElement').each(function(index) {
+                    tinyMCE.execCommand('mceAddControl', false, $(this).attr('id'));
+                });
+                //tinyMCE.activeEditor.setContent('<span>some</span>');
+                //tinyMCE.getInstanceById('email_body_text').getBody().innerHTML = "<div>xcv</div>";
+                //tinyMCE.activeEditor.setContent(mail_text);
+                $('#email_body_text').html(mail_text)
+            },
+            resizable: false,
+            height:'auto',
+            width: 665,
+            modal: true,
+            title: title_confirmation,
+            buttons: {
+                "Send to Vendor": function() {
+                    $('#mail_subject_text').val($('#mail_subject').val());
+                    mail_text = tinyMCE.getInstanceById('email_body_text').getBody().innerHTML
+                    $('#hidden_mail_body').val(mail_text)
+                    var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+                    $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+                    $( this ).dialog( "close" );
+                    $.ajax({
+                        url:'<?php echo $this->baseUrl("admin/vendors/license-review/send_mail/1/ajax/1/id/" . $this->license->id) ?>'+'/decline_reason/'+$('#decline_reason').val(),
+                        type: "POST",
+                        dataType: 'json',
+                        data:$('#license_approval_form').serialize()+'&agreement_statement'+ agreement,
+                        beforeSend: function() { $('#submit_wait').show(); },
+                        complete: function() { $('#submit_wait').hide();},
+                        success: function(msg) {
+                            document.location = '<?php echo $this->baseUrl("admin/vendors/licenses/a_confirm/") ?>'+after_confirmation
+                        }
+                    });
+                },
+                "Cancel": function() {
+                    $('#approved').val('0')
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+    }
+
+    function add_picture_to_form(pic){
+        var delete_image_link = site_url + "/assets/images/delete.png";
+        var thumbs_image_link = site_url + "/assets/files/samples/products/thumbs/"+pic;
+        if($("#uploaded_pics").find("img").size()<5){
+            var html = '<li id="imageContainer" class="sample detail_design_view" style="float:left;position:relative; height: 110px; width: 110px; margin-bottom: 20px; margin-right: 20px;">';
+            html = html+'<div style="position:absolute; right: -8px; top: -11px">';
+            html = html +'<a href="javascript:;" class="remove" rel="'+pic+'" > <img src="'+delete_image_link+'"> </a></div>';
+            html = html +'<a id="sample_image" href="javascript:;" rel="'+pic+'"  >';
+            html = html +'<img src="'+thumbs_image_link+'" class="list_pic"/>';
+            html = html + '<br> &nbsp</h5></a></li>' ;
+
+            $('.container_image').append(html);
+            sample_image_value.push(pic);
+        }else{
+            alert("Maximum 5 pictures can be added");
+        }
+    }
+
+    $(window).bind("load", function() {
+        modifyAgrrement();
+
+        var link = "<?php echo $link_checker ?>";
+        if(link == 1){
+            var values = new Array(<?php echo $link_builder ?>);
+            sample_image_value = values;
+        }
+
+    });
+
+    //for adding reason for declining with email
+    var message = '';
+    var count = 0;
+    var decline_reason = '';
+    $(document).on('keyup', '#decline_reason', function(){
+        if(count == 0){
+            message = tinyMCE.getInstanceById('email_body_text').getBody().innerHTML;
+            count++;
+        }
+        decline_reason = $('#decline_reason').val();
+        var message_text = message.replace('<div>', $('#decline_reason').val()+'<div>');
+        //    console.log(message);
+        tinyMCE.activeEditor.setContent(message_text);
+    });
+
+    $(window).bind("load", function() {
+        var url = site_url+"/assets/images/printer.png";
+        var url_pdf = site_url+"/assets/images/icon_pdf_16x16.png";
+        var loader = site_url+"/assets/images/loading.gif";
+        var html_print = '<div style="width:150px;float:right;" ><a href="javascript:;" class="preview_pdf" style="float:right"><img src="'+url_pdf+'" />Preview in PDF </a></div>\n\
+                          <div style="width:150px;float:right" >&nbsp;</div>\n\
+                           <div id="submit_wait1" style="width:150px; float:right; display:none">Loading PDF&nbsp; <img src="'+loader+'"</div>';
+
+        $('#agreement_statement-label').css('width', '837px');
+        $('#agreement_statement-label').append(html_print);
+        if($.browser.mozilla){
+            $('#agreement_statement-label').css('width', '977px');
+        }
+
+    });
+
+    $(document).on('click','.print', function(){
+        printContract($('#agreement_statement').val());
+    });
+
+    function printContract(data) {
+        var c_name = "<?php echo $this->license->client_name; ?>";
+        var v_name = "<?php echo $this->license->vendor_name; ?>"
+        var mywindow = window.open('', 'Print Agreement', 'height=400,width=750');
+        mywindow.document.write('<html><head><title>Agreement Between '+c_name+' and '+v_name+' </title>');
+        /*optional stylesheet*/ //mywindow.document.write('<link rel="stylesheet" href="main.css" type="text/css" />');
+        mywindow.document.write('</head><body>');
+        mywindow.document.write(data);
+        mywindow.document.write('</body></html>');
+        mywindow.document.close();
+        mywindow.print();
+        return true;
+    }
+
+//    $(document).on('click','.radio_cls', function(){
+//        var checked_val = $('input[name=insurance_radio]:checked').val()
+//    });
+
+    $(document).on('click','.radio_cls', function(){
+        var checked_val = $('input[name=insurance_radio]:checked').val()
+        if(checked_val == "Without_Insurance"){
+            $.ajax({
+                url:'<?php echo $this->baseUrl("admin/vendors/license-Template/license/null/id/".$this->license->id)?>',
+                type: "POST",
+                data:'',
+                dataType: 'json',
+                success: function(msg) {
+                    tinyMCE.get('agreement_statement').setContent(msg.template);
+                    modifyAgrrement();
+                    modifyAgreement_for_product();
+                    modifyAgreement_for_royalty();
+                }
+            });
+        }
+
+        if(checked_val == "With_Insurance"){
+            $.ajax({
+                url:'<?php echo $this->baseUrl("admin/vendors/license-Template/license/insurance/id/".$this->license->id)?>',
+                type: "POST",
+                data:'',
+                dataType: 'json',
+                success: function(msg) {
+                    tinyMCE.get('agreement_statement').setContent(msg.template);
+                    modifyAgrrement();
+                    modifyAgreement_for_product();
+                    modifyAgreement_for_royalty();
+                }
+            });
+        }
+    });
+
+    function review_pdf(){
+        var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+        $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+        $.ajax({
+                url:'<?php echo $this->baseUrl("admin/vendors/printinpdf/")?>',
+                type: "POST",
+                data:$('#license_approval_form').serialize()+'&agreement_statement'+ agreement,
+                dataType: 'json',
+                beforeSend: function() { $('#submit_wait1').show(); },
+                complete: function() { $('#submit_wait1').hide();},
+                success: function(msg) {
+                    pdf_url = msg.name
+                    $.fancybox({
+                        'href'                  : site_url+"/admin/vendors/pdflink/filename"+pdf_url,
+                        'height'                : 40,
+                        'width'                 : 300,
+                        'autoScale'             : true,
+                        'autoDimensions'        : true,
+                        'transitionIn'          : 'none',
+                        'transitionOut'         : 'none',
+                        'type'                  : 'iframe',
+                        'transitionIn'     : 'none',
+                        'transitionOut'     : 'none',
+                        'speedIn'      : 100,
+                        'speedOut'      : 100,
+                        'overlayShow'     : true,
+                        'overlayColor'     : "#FFF",
+                        'onClosed'              : function() {
+                            // window.location = $obj.attr('param');
+                        }
+                    });
+                }
+            });
+    }
+
+    $(document).on('click','.preview_pdf', function(){
+       review_pdf();
+    });
+
+    $(document).on('click','#save', function(){
+        var value = sample_image_value.join(",");
+        $('#sample_product_list_link').val(value);
+        var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+        $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+        $.ajax({
+                url:'<?php echo $this->baseUrl("admin/vendors/save/id/" . $this->license->id)?>',
+                type: "POST",
+                data:$('#license_approval_form').serialize()+'&agreement_statement'+ agreement,
+                dataType: 'json',
+                beforeSend: function() { $('#submit_wait').show(); },
+                complete: function() { $('#submit_wait').hide();},
+                success: function(msg) {
+                    $.jGrowl(msg.message)
+                }
+            });
+    });
+</script>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+
+	$('#grant_of_license').data('old', $('#grant_of_license').val());
+	$('#royalty_description').data('old', $('#royalty_description').val());
+        event_functions._initialize();
+
+        $(document).on('blur', 'textarea#royalty_description', event_functions.update_royalty_description);
+        $(document).on('blur', 'textarea#grant_of_license', event_functions.update_grant_of_license);
+    });
+
+    event_functions = {
+        _initialize : function(){
+
+        },
+        update_royalty_description : function(){
+            modifyAgrrement();
+        },
+	update_grant_of_license : function(){
+	    modifyAgreementGrant();
+	}
+    }
+</script>

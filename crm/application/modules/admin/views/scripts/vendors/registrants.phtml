@@ -1,0 +1,219 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('selected'=>'contact','id'=>$this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div id="view-content">
+    <div  class="one_fourth">
+        <div id="wait1">
+            Loading...
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div class="">
+        <ul class="submenu" id="page_select" style="border:0 none; padding: 0px;">
+            <li class="current" id="pending"><a rel="Pending" href="javascript:;">Review</a></li>
+            <li id="approved"><a rel ="Activated" href="javascript:;">Approved</a></li>
+            <li id="declined"><a rel="Declined" href="javascript:;">Declined</a></li>
+        </ul>
+        <div class="spacer"></div>                
+        <div>            
+            <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="registrant-data-table">
+                <thead>
+                    <tr>
+                        <th class="head1" width="20%">Company Name</th>
+                        <th class="head0" width="10%">Status</th>
+                        <th class="head1" width="10%">Reg. Date</th>
+                        <th class="head0" width="10%">Approve Date</th>
+                        <th class="head1" width="10%">Decline Date</th>
+                        <th class="head0" width="10%">Action</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>                
+    </div>
+</div>
+<div id="dialog-confirm" class="notified-class" title="" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var page='Pending';
+    $(window).bind('load',function(){
+        $("#wait1").hide();
+        $("#page_select").find("a").click(function(){
+            page = ($(this).attr('rel'));
+            $("#pending").removeClass("current")
+            $("#approved").removeClass("current")
+            $("#declined").removeClass("current")
+            if(page == 'Declined'){
+                $("#declined").addClass("current")
+            }else if( page == 'Activated'){
+                $("#approved").addClass("current")
+            }
+            else{
+                $("#pending").addClass("current")
+            }
+            oTable.fnDestroy();
+            init_oTable_initialize(page);
+          });
+        init_oTable_initialize(page);
+        init_server_search_fix();   // Will search only hitting enter not keypress        
+    });
+
+    function init_oTable_initialize(page){
+        oTable=$('#registrant-data-table').dataTable({
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-registrants/reg_status/'+page,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search by Company: "
+            },
+            "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] },{ "bSortable": false, "aTargets": [ 1 ] }, { "bSortable": true, "aTargets": [ 2 ] }, { "bSortable": true, "aTargets": [ 3 ] }, { "bSortable": true, "aTargets": [ 4 ] }, { "bSortable": false, "aTargets": [ 5 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                
+            },
+            "fnDrawCallback":function(){
+                //$("#details").fancybox();
+                init_vendor_link();
+            }
+        });
+    }
+
+    function init_vendor_link(){
+        $(document).on('click','a.review_link, a.view_link, a.declined_view',function(){
+            $id = $(this).attr('rel');                                                
+            $url = site_url+"/admin/vendors/review-registrant/id/"+$id+"/link/"+$(this).attr('class');                        
+            $.fancybox({
+                'width'                 : 860,
+                'height'                : 480,
+                'href'                  :  $url,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        })
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+
+    /** Datatable code **/    
+    
+    function execute_refresh(msg){
+        $.fancybox.close();   
+        $.jGrowl(msg);
+        oTable.fnDraw();
+    }    
+    
+    function execute_approval(id, status){
+        $.fancybox.close();        
+        var message = "Are you sure you want to allow this vendor to access their Vendor Portal account?";
+        $("#dialog-confirm").text(message);
+        $( "#dialog:ui-dialog" ).dialog("destroy");
+        $( "#dialog-confirm" ).dialog({
+            resizable: false,
+            width: 400,
+            height:'auto',
+            modal: true,
+            title: "Confirmation",
+            buttons: {
+                "Yes": function() {   
+                    window.location.href = site_url+"/admin/vendors/review-registrant/id/"+id+"/status/"+status;
+                    $( this ).dialog( "close" ); 
+                },
+                "Cancel": function() {                    
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        
+    }
+        
+    function execute_parent(id, status){
+        $.fancybox.close();   
+        $url = site_url+"/admin/vendors/review-registrant/id/"+id+"/status/"+status;   
+        init_review_registrant($url)
+    }    
+    
+    function init_review_registrant(thisItem){
+        $.fancybox({
+                'width'                 : 680,
+                'height'                : 482,
+                'href'                  :  thisItem,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+    }
+</script>
+
+<style type="text/css">
+    #decline_ctn{display: block;}
+    .aphabetical_filters{
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+
+    #events-data-table { border-collapse: collapse; }
+    #events-data-table tr td { padding: 8px 10px; border-right: 1px solid #fff; border-bottom: 1px solid #ddd; vertical-align: top;}
+    #events-data-table thead th { padding: 8px 10px; color: #ccc; text-shadow: 1px 1px #444; font-size: 12px; text-transform: uppercase; border-right: 1px solid #fff; }
+    #events-data-table thead th { font-weight: normal; text-align: left; }
+    #events-data-table tr td:last-child { border-right: 0; }
+    #events-data-table tr:last-child td { border-bottom: 0;}
+    #events-data-table tr:hover { background: #cacaca; }
+    #events-data-table tr.selected { background: #fffccc; }
+    #events-data-table .odd { background-color: #eaeaea; }
+    #events-data-table .even { background-color: #ddd; }
+
+    div.jGrowl{
+        z-index: 900000;
+    }
+    div.jGrowl.top-right {
+	right: 				0px;
+	top: 				100px;
+    }
+    div.jGrowl div.jGrowl-notification{
+           color:#000000;
+           background:#A79269 ;
+    }
+</style>

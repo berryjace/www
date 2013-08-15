@@ -1,0 +1,27 @@
+<h3>Correspondence Details</h3>    
+<hr size="1" noshade />
+<div class="clear"></div>
+
+<div class="one">    
+    <p>
+        <b>Subject </b><br />
+        <?php echo !is_null($this->correspondence->subject) ? html_entity_decode($this->correspondence->subject) : ''; ?>
+    </p>
+    <p>
+        <b>Note Description </b><br />
+        <pre><?php echo !is_null($this->correspondence->note) ? html_entity_decode($this->correspondence->note) : ''; ?></pre>
+    </p>
+</div>
+
+<style type="text/css">    
+    textarea#description{width: 735px; height: 300px; overflow: scroll;}
+    pre {
+        white-space: -moz-pre-wrap; /* Mozilla, supported since 1999 */
+        white-space: -pre-wrap; /* Opera */
+        white-space: -o-pre-wrap; /* Opera */
+        white-space: pre-wrap; /* CSS3 - Text module (Candidate Recommendation) http://www.w3.org/TR/css3-text/#white-space */
+        word-wrap: break-word; /* IE 5.5+ */
+        font-family: DroidSansRegular, "Segoe UI", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+        font-size: 13px;
+    }
+</style>

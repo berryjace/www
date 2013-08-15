@@ -1,0 +1,180 @@
+<?php if (sizeof($this->items)): ?>
+    <?php
+    $quarters = array('1' => 'First', '2' => 'Second', '3' => 'Third', '4' => 'Fourth');
+    $alt = true;
+    ?>
+    <h4>Payment ID : <?php echo $this->items[0]->payment_id; ?></h4>
+    <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+        <thead>
+    	<tr role="row">
+    	    <th>Client</th>
+    	    <th>Date</th>
+    	    <th>Payment Year</th>
+    	    <th>Quarter</th>
+    	    <th>Payment Month</th>
+    	    <th>Late Pymnt</th>
+    	    <th>Current Amt</th>
+    	    <th>Adv. Paid</th>
+    	    <th>Sharing</th>
+    	    <th>% to AMC</th>
+    	    <th>Amt to AMC</th>
+    	    <th>Amt to Client</th>
+    	    <th></th>
+    	</tr>
+        </thead>
+        <tbody>
+	    <?php foreach ($this->items as $item): ?>
+
+		<?php
+		$amcAmount = 0;
+		$subTotal = 0;
+
+		if (isset($item->pmt_id->invoice)) {
+		    if (($item->amount_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+			if ($item->sharing == 1) {
+			    $amcAmount = ($item->amount_paid * $item->percent_amc);
+			}
+			$subTotal = $item->amount_paid - $amcAmount;
+		    } elseif (($item->late_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+			if ($item->sharing == 1) {
+			    $amcAmount = ($item->late_paid * $item->percent_amc);
+			}
+			$subTotal = $item->late_paid - $amcAmount;
+		    } elseif (($item->adv_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+			if ($item->sharing == 1) {
+			    $amcAmount = ($item->adv_paid * $item->percent_amc);
+			}
+			$subTotal = $item->adv_paid - $amcAmount;
+		    } else {
+			$amcAmount = 0;
+			$subTotal = 0;
+		    }
+		} else {
+		    if (($item->amount_paid)) {
+			if ($item->sharing == 1) {
+			    $amcAmount = ($item->amount_paid * $item->percent_amc);
+			}
+			$subTotal = $item->amount_paid - $amcAmount;
+		    } elseif (($item->late_paid)) {
+			if ($item->sharing == 1) {
+			    $amcAmount = ($item->late_paid * $item->percent_amc);
+			}
+			$subTotal = $item->late_paid - $amcAmount;
+		    } elseif (($item->adv_paid)) {
+			if ($item->sharing == 1) {
+			    $amcAmount = ($item->adv_paid * $item->percent_amc);
+			}
+			$subTotal = $item->adv_paid - $amcAmount;
+		    } else {
+			$amcAmount = 0;
+			$subTotal = 0;
+		    }
+		}
+		?>
+		<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+		    <td><?php echo $item->client->organization_name; ?></td>
+		    <td><?php echo $item->record_date->format("m/d/Y"); ?></td>
+		    <td><?php echo $item->payment_year; ?></td>
+		    <td><?php echo is_null($item->payment_quarter) ? 'N/A' : $quarters[$item->payment_quarter]; ?></td>
+		    <td><?php echo $item->payment_month; ?></td>
+		    <td class="late_paid"><?php echo $item->late_paid; ?></td>
+		    <td class="amount_paid"><?php echo $item->amount_paid; ?></td>
+		    <td class="adv_paid"><?php echo $item->adv_paid; ?></td>
+		    <td class="sharing"><?php echo $item->sharing ? "Yes" : "No"; ?></td>
+		    <td class="percent_amc"><?php echo $item->percent_amc; ?></td>
+		    <td class="amcAmount"><?php echo $amcAmount; ?></td>
+		    <td class="subTotal"><?php echo $subTotal; ?></td>
+		    <td class="action_edit"><a href="javascript:void(0);" data-id="<?php echo $item->id; ?>" class="updater" >Edit</a></td>
+		</tr>
+	    <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>
+<script>
+    $(function(){
+
+	$('.updater').on('click', function(e){
+	    e.preventDefault();
+	    var answer = confirm("Please make sure to update the corresponding invoice to reflect the changes made here. Are you sure you want to edit this payment record?")
+	    if (answer){
+		makeEditable($(this));
+	    }
+
+	});
+    });
+    function makeEditable(obj)
+    {
+	var id = $(obj).attr('data-id');
+	var td1 = $(obj).parents('tr').find('td.late_paid');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td1.html());
+	td1.html(inp);
+	var td2 = $(obj).parents('tr').find('td.amount_paid');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td2.html());
+	td2.html(inp);
+	var td3 = $(obj).parents('tr').find('td.adv_paid');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td3.html());
+	td3.html(inp);
+	var td4 = $(obj).parents('tr').find('td.sharing');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td4.html());
+	td4.html(inp);
+	var td5 = $(obj).parents('tr').find('td.percent_amc');
+	var inp = $('<input type=text style="width:30px;" />');
+	inp.val(td5.html());
+	td5.html(inp);
+	var td6 = $(obj).parents('tr').find('td.action_edit');
+	var inp = '<a href="javascript:void(0);" onclick="updatePaymentLineItem(this)" class="saver" data-id="'+id+'">Save<a>';
+	//inp.val(td6.html());
+	td6.html(inp);
+	$(obj).remove();
+
+    }
+    function updatePaymentLineItem(obj)
+    {
+	var id = $(obj).attr('data-id');
+	var tr = $(obj).parents('tr');
+	var late_paid1 = tr.find('td.late_paid');
+	var inp = late_paid1.find('input[type="text"]');
+	var late_paid = $(inp).val();
+	var amount_paid1 = tr.find('td.amount_paid');
+	var inp = amount_paid1.find('input[type="text"]');
+	var amount_paid = $(inp).val();
+	var adv_paid1 = tr.find('td.adv_paid');
+	var inp = adv_paid1.find('input[type="text"]');
+	var adv_paid = $(inp).val();
+	var sharing1 = tr.find('td.sharing');
+	var inp = sharing1.find('input[type="text"]');
+	var sharing = $(inp).val();
+	var percent_amc1 = tr.find('td.percent_amc');
+	var inp = percent_amc1.find('input[type="text"]');
+	var percent_amc = $(inp).val();
+	var actionEdit = tr.find('td.action_edit');
+
+	$.ajax({
+	    'url'	:   site_url+"/admin/vendors/update-vendor-payment-line-items/id/"+id+"/late_paid/"+late_paid+"/amount_paid/"+amount_paid+"/adv_paid/"+adv_paid+"/sharing/"+sharing+"/percent_amc/"+percent_amc,
+	    'type'	:   'POST',
+	    dataType: 'json',
+
+	    'success':  function(response){
+		var amcAmount = response.amcAmount;
+		var subTotal = response.subTotal;
+		tr.find('td.amcAmount').html(amcAmount);
+		tr.find('td.subTotal').html(subTotal);
+	    }
+
+	});
+
+	late_paid1.html(late_paid);
+	amount_paid1.html(amount_paid);
+	adv_paid1.html(adv_paid);
+	sharing1.html(sharing);
+	percent_amc1.html(percent_amc);
+
+	actionEdit.html(' <a href="javascript:void(0);" onclick="makeEditable(this)"  class="updater" data-id="'+id+'">Edit<a>');
+
+
+    }
+</script>

@@ -1,0 +1,594 @@
+/*
+Theme Name: greeklicensing
+Theme URI: http://www.bluelinerny.com
+Author: nurulamin
+Author URI: http://www.nurulam.in
+Description: HTML5 starter theme based off Ian Stewart's HTML5 Toolbox Theme with other goodies added plus chunks of Paul Irish's HTML5 Boilerplate mixed in for good measure. Shake well. 
+Version: 0.8.7
+*/
+
+/* html5doctor.com Reset Stylesheet \\v1.6.1 \\ Last Updated: 2010-09-17 \\ http://richclarkdesign.com \\ @rich_clark */
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var,
+b, i,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+  margin:0;
+  padding:0;
+  border:0;
+  outline:0;
+  font-size:100%;
+  background:transparent;
+}
+
+
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section { display:block; }
+nav ul { list-style:none; }
+blockquote, q { quotes:none; }
+blockquote:before, blockquote:after,
+q:before, q:after { content:''; content:none; }
+a { margin:0; padding:0; font-size:100%; vertical-align:baseline; background:transparent; }
+ins { background-color:#ff9; color:#000; text-decoration:none; }
+mark { background-color:#ff9; color:#000; font-style:italic; font-weight:bold; }
+del { text-decoration: line-through; }
+abbr[title], dfn[title] { border-bottom:1px dotted; cursor:help; }
+/* tables still need cellspacing="0" in the markup */
+table { border-collapse:collapse; border-spacing:0; }
+hr { display:block; height:1px; border:0; border-top:1px solid #ccc; margin:1em 0; padding:0; }
+input, select { vertical-align:middle; }
+
+/*
+ *
+ * Base Typography 
+ *
+ */
+body { font:13px/1.231 sans-serif; *font-size:small; }
+select, input, textarea, button { font:99% sans-serif; }
+pre, code, kbd, samp { font-family: monospace, sans-serif; }
+
+/*
+ *
+ * Base Styles 
+ *
+ */
+body, select, input, textarea { 
+  /* #444 looks better than black: twitter.com/H_FJ/statuses/11800719859 */ 
+  color: #444; 
+  /* set your base font here, to apply evenly */
+  /* font-family: Georgia, serif;  */   
+}
+/* Headers (h1,h2,etc) have no default font-size or margin,
+   you'll want to define those yourself. */ 
+h1,h2,h3,h4,h5,h6 { font-weight: bold; }
+/* always force a scrollbar in non-IE */ 
+html { overflow-y: scroll; }
+/* Accessible focus treatment: people.opera.com/patrickl/experiments/keyboard/test */
+a:hover, a:active { outline: none; }
+a, a:active, a:visited { color:  #600; }
+a:hover { color: #000; }
+ul, ol { margin-left: 1.8em; }
+ol { list-style-type: decimal; }
+/* Remove margins for navigation lists */
+nav ul, nav li { margin: 0; } 
+small { font-size: 85%; }
+strong, th { font-weight: bold; }
+td, td img { vertical-align: middle; } 
+sub { vertical-align: sub; font-size: smaller; }
+sup { vertical-align: super; font-size: smaller; }
+pre { 
+  padding: 15px; 
+  /* www.pathf.com/blogs/2008/05/formatting-quoted-code-in-blog-posts-css21-white-space-pre-wrap/ */
+  white-space: pre; /* CSS2 */
+  white-space: pre-wrap; /* CSS 2.1 */
+  white-space: pre-line; /* CSS 3 (and 2.1 as well, actually) */
+  word-wrap: break-word; /* IE */
+}
+textarea { overflow: auto; } /* thnx ivannikolic! www.sitepoint.com/blogs/2010/08/20/ie-remove-textarea-scrollbars/ */
+.ie6 legend, .ie7 legend { margin-left: -7px; } /* thnx ivannikolic! */
+/* align checkboxes, radios, text inputs with their label
+   by: Thierry Koblentz tjkdesign.com/ez-css/css/base.css  */
+input[type="radio"] { vertical-align: text-bottom; }
+input[type="checkbox"] { vertical-align: bottom; }
+.ie7 input[type="checkbox"] { vertical-align: baseline; }
+.ie6 input { vertical-align: text-bottom; }
+/* hand cursor on clickable input elements */
+label, input[type=button], input[type=submit], button { cursor: pointer; }
+/* webkit browsers add a 2px margin outside the chrome of form elements */  
+button, input, select, textarea { margin: 0; }
+/* colors for form validity */
+input:valid, textarea:valid   {  }
+input:invalid, textarea:invalid { 
+      border-radius: 1px;
+    -moz-box-shadow: 0px 0px 5px red; 
+ -webkit-box-shadow: 0px 0px 5px red; 
+         box-shadow: 0px 0px 5px red;
+}
+.no-boxshadow input:invalid, 
+.no-boxshadow textarea:invalid { background-color: #f0dddd; }
+/* These selection declarations have to be separate.
+   No text-shadow: twitter.com/miketaylr/status/12228805301 
+   Also: hot pink. */
+::-moz-selection{ background: #AEBB25; color:#fff; text-shadow: none; }
+::selection { background:#AEBB25; color:#fff; text-shadow: none; } 
+/*  j.mp/webkit-tap-highlight-color */
+a:link { -webkit-tap-highlight-color: #AEBB25; } 
+/* make buttons play nice in IE:    
+   www.viget.com/inspire/styling-the-button-element-in-internet-explorer/ */
+button {width: auto; overflow: visible;}
+/* bicubic resizing for non-native sized IMG: 
+   code.flickr.com/blog/2008/11/12/on-ui-quality-the-little-things-client-side-image-resizing/ */
+.ie7 img {-ms-interpolation-mode: bicubic;}
+
+/*
+ *
+ * Nonsemantic Base Styles 
+ *
+ */
+/* for image replacement */
+.ir { display: block; text-indent: -999em; overflow: hidden; background-repeat: no-repeat; text-align: left; direction: ltr; }
+/* Hide for both screenreaders and browsers
+   css-discuss.incutio.com/wiki/Screenreader_Visibility */
+.hidden { display: none; visibility: hidden; } 
+/* Hide only visually, but have it available for screenreaders 
+   www.webaim.org/techniques/css/invisiblecontent/  &  j.mp/visuallyhidden  */
+.visuallyhidden { position: absolute !important;    
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px); }
+/* Hide visually and from screenreaders, but maintain layout */
+.invisible { visibility: hidden; }
+/* >> The Magnificent CLEARFIX: Updated to prevent margin-collapsing on child elements << j.mp/bestclearfix */
+.clearfix:before, .clearfix:after {
+  content: "\0020"; display: block; height: 0; visibility: hidden;	
+} 
+.clearfix:after { clear: both; }
+/* Fix clearfix: blueprintcss.lighthouseapp.com/projects/15318/tickets/5-extra-margin-padding-bottom-of-page */
+.clearfix { zoom: 1; }
+
+/*
+ *
+ * Media queries for responsive design
+ * These follow after primary styles so they will successfully override. 
+ *
+ */
+@media all and (orientation:portrait) { 
+  /* Style adjustments for portrait mode goes here */
+}
+@media all and (orientation:landscape) { 
+  /* Style adjustments for landscape mode goes here */
+}
+/* Grade-A Mobile Browsers (Opera Mobile, iPhone Safari, Android Chrome)  
+   Consider this: www.cloudfour.com/css-media-query-for-mobile-is-fools-gold/ */
+@media screen and (max-device-width: 480px) {  
+  /* Uncomment if you don't want iOS and WinMobile to mobile-optimize the text for you
+     j.mp/textsizeadjust 
+  html { -webkit-text-size-adjust:none; -ms-text-size-adjust:none; } */
+}
+
+/*
+ *
+ * Base Print Styles, inline to save the HTTP request
+ *
+ */
+@media print {
+  * { background: transparent !important; color: #444 !important; text-shadow: none !important; }
+  a, a:visited { color: #444 !important; text-decoration: underline; }
+  a:after { content: " (" attr(href) ")"; } 
+  abbr:after { content: " (" attr(title) ")"; }
+  .ir a:after { content: ""; }  /* Don't show links for images */
+  pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
+  thead { display: table-header-group; } /* css-discuss.incutio.com/wiki/Printing_Tables */ 
+  tr, img { page-break-inside: avoid; }
+  @page { margin: 0.5cm; }
+  p, h2, h3 { orphans: 3; widows: 3; }
+  h2, h3{ page-break-after: avoid; }
+}
+
+/*
+ *
+ * Structure
+ *
+ */
+#page {
+	display: block;
+}
+#primary {
+	float: left;
+	margin: 0 -350px 0 0;
+	width: 100%;
+}
+#content {
+	margin: 0 355px 0 0;
+	line-height:22px
+}
+#content p{ margin-bottom:20px; font-size:14px}
+#content h2{ color:#222;  font-size:16px; font-weight:bold; text-shadow:#aaa  0 0 2px; margin-bottom:10px; line-height:26px}
+#content p.quote{ background:#f5f5f5; padding:20px 30px; border:1px solid #eee; font-size:18px; font-weight:bold; font-style:italic;text-shadow:#aaa  0 0 2px; color:#666}
+#main { width:1171px; margin:0 auto}
+#main .widget-area {
+	float: right;
+	overflow: hidden;
+	width: 300px;
+}
+#colophon {
+	height:40px;
+	clear: both;
+	display: block;
+	width: 100%;
+}
+
+/* Increase the size of the content area for templates without sidebars */
+.full-width #content,
+.image-attachment #content,
+.error404 #content {
+	margin: 0;
+}
+
+/* Alignment */
+.alignleft {
+	display: inline;
+	float: left;
+}
+.alignright {
+	display: inline;
+	float: right;
+}
+.aligncenter {
+	clear: both;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
+/*
+ *
+ * Header
+ *
+ */
+#site-title {
+	font-size: 2em;
+	font-weight: bold;
+	margin: .67em 0;
+}
+#site-description {
+	font-size: 1em;
+	font-weight: normal;
+	margin: 0 0 1em;
+}
+
+
+
+/*
+ *
+ * Content
+ *
+ */
+#content nav {
+	display: block;
+	overflow: hidden;
+}
+#content nav .nav-previous {
+	float: left;
+	width: 50%;
+}
+#content nav .nav-next {
+	float: right;
+	text-align: right;
+	width: 50%;
+}
+#content #nav-above {
+	display: none;
+}
+.paged #content #nav-above,
+.single #content #nav-above {
+	display: none;
+}
+.paged #content #nav-below,
+.single #content #nav-below {
+	display: none;
+}
+#nav-below {
+	margin: 1em 0 0; display:none
+}
+.page-link {
+	margin: 0 0 1em;
+}
+
+
+/*
+ *
+ * Images
+ *
+ */
+/*
+Resize images to fit the main content area.
+- Applies only to images uploaded via WordPress by targeting size-* classes.
+- Other images will be left alone. Use "size-auto" class to apply to other images.
+*/
+img.size-auto,
+img.size-full,
+img.size-large,
+img.size-medium,
+.attachment img,
+.widget-area img {
+	max-width: 100%; /* When images are too wide for containing element, force them to fit. */
+	height: auto; /* Override height to match resized width for correct aspect ratio. */
+}
+img.alignleft {
+	margin-right: 1em;
+}
+img.alignright {
+	margin-left: 1em;
+}
+.wp-caption {
+	padding: .5em;
+	text-align: center;
+}
+.wp-caption img {
+	margin: .25em;
+}
+.wp-caption .wp-caption-text {
+	margin: .5em;
+}
+
+/* Forms - Class for labelling required form items */
+.required {
+	color: #cc0033;
+}
+
+
+/*
+ *
+ * Comments
+ *
+ */
+article.comment {
+	display: block;
+}
+#respond input[type=text] {
+	float: left;
+	margin: 0 1em 0 0;
+	width: 60%;
+}
+#respond .comment-form-comment label {
+	display: none;
+}
+#respond textarea {
+	margin: 0 1em 1em 0;
+	float: left;
+	width: 80%;
+}
+#respond .form-allowed-tags {
+	clear: both;
+	width: 80%;
+}
+#respond .form-allowed-tags code {
+	display: block;
+}
+
+
+/*
+ *
+ * Footer
+ *
+ */
+
+
+#colophon {
+	clear: both;
+	width: 100%;
+	background:#aebb25;
+	text-align:center;
+	margin-top:20px
+	}
+#colophon div{ padding:10px}
+#colophon p,#colophon a{color: #5b6304; text-align:center; font-size:11px; padding:0; margin:0;}
+
+#whitelabel-footer {
+	clear: both;
+	width: 100%;	
+	text-align:center;
+	margin-top:20px
+	}
+#whitelabel-footer div{ padding:10px}
+#whitelabel-footer p,#whitelabel-footer a{color: #5b6304; text-align:center; font-size:11px; padding:0; margin:0;}
+
+
+
+#menu-main{background:url(images/greeklicensing_menu_bg.jpg) repeat-x; height:177px; margin-bottom:20px}
+#menu-main ul{ margin:0; padding:0; width:1171px; margin:0 auto;}
+#menu-main ul li{ list-style:none; float:left; text-indent:-9999px}
+
+#menu-main li a.home{ background:url(images/greeklicensing_menu_img.jpg) left -177px no-repeat; width: 289px; height:177px; display:block}
+#menu-main li a.home:hover, #menu-main li.current_page_item a.home{ background-position:left top}
+
+#menu-main li a.about{ background:url(images/greeklicensing_menu_img.jpg) no-repeat -289px -177px; width: 124px; height:177px; display:block}
+#menu-main li a.about:hover, #menu-main li.current_page_item a.about{ background-position:-289px  top}
+
+#menu-main li a.find{ background:url(images/greeklicensing_menu_img.jpg) no-repeat -413px -177px; width: 187px; height:177px; display:block}
+#menu-main li a.find:hover, #menu-main li.current_page_item a.find{ background-position:-413px  top}
+
+#menu-main li a.become{ background:url(images/greeklicensing_menu_img.jpg) no-repeat -600px -177px; width: 215px; height:177px; display:block}
+#menu-main li a.become:hover, #menu-main li.current_page_item a.become{ background-position:-600px  top}
+
+
+#menu-main li a.vendor{ background:url(images/greeklicensing_menu_img.jpg) no-repeat -816px -177px; width: 127px; height:177px; display:block}
+#menu-main li a.vendor:hover, #menu-main li.current_page_item a.vendor{ background-position:-816px  top}
+
+#menu-main li a.client{ background:url(images/greeklicensing_menu_img.jpg) no-repeat -943px -177px; width: 120px; height:177px; display:block}
+#menu-main li a.client:hover, #menu-main li.current_page_item a.client{ background-position:-943px  top}
+
+
+#menu-main li a.contact{ background:url(images/greeklicensing_menu_img.jpg) no-repeat -1063px -177px; width: 109px; height:177px; display:block}
+#menu-main li a.contact:hover, #menu-main li.current_page_item a.contact{ background-position:-1063px  top}
+
+
+#col1{ width:300px; margin-right:20px; float:left; text-align:left}
+#col2{ width:530px; margin-right:20px; float:left; text-align:left}
+#col3{ width:280px; margin-left:20px; float:right; text-align:left}
+#h_search{ background:url(images/greeklicensing_home_search_bg.jpg) no-repeat; height:140px; width:272px; padding:10px; margin-bottom:20px}
+
+h3{ color:#662219;  font-size:18px; font-weight:bold; text-shadow:#d78074  0 0 2px; margin-bottom:10px}
+h1{ color:#222;  font-size:26px; font-weight:bold; text-shadow:#aaa  0 0 2px; margin-bottom:10px; line-height:26px}
+h4{ color:#222;  font-size:16px; font-weight:bold; text-shadow:#aaa  0 0 2px; margin-bottom:10px; line-height:26px}
+#sitedesignedfor { margin:0; padding:0}
+#sitedesignedfor li{ list-style:none; line-height:24px; color:#666; font-weight:bold; background:url(images/greeklicensing_bullet.jpg) no-repeat left 5px; padding-left:20px; font-size:12px}
+
+
+input[type="text"],
+textarea, input[type="password"]{
+	background: #fff;
+	border: 1px solid #ccc;
+	width:90%;
+	padding: 12px 10px ;
+	margin-bottom:10px;
+	border-radius:5px;
+	-moz-border-radius:5px
+	
+}
+#col3 ul{ margin:0; padding:0;}
+#col3 li {list-style:none; margin-bottom:20px}
+#col3 li li{ padding:10px 0; list-style:none; margin:0; border-bottom:1px  dotted #662219}
+#col3 li li  span a{ text-decoration:none; font-weight:bold; font-size:11px; color:#662219}
+#col3 li li a{ text-decoration:none; }
+#col3 li h2{color:#662219;  font-size:22px; font-weight:bold; text-shadow:#d78074  0 0 2px; margin-bottom:10px }
+#step3{ margin:0}
+#step3 li{ list-style:none}
+#step3 li.one{ background:url(images/bullet_one.jpg) no-repeat; padding-left:35px; margin-bottom:20px; min-height:25px}
+#step3 li.two{ background:url(images/bullet_two.jpg) no-repeat; padding-left:35px; margin-bottom:20px; min-height:25px}
+#step3 li.three{ background:url(images/bullet_three.jpg) no-repeat; padding-left:35px; margin-bottom:20px; min-height:25px}
+
+.white {
+	color: #444; font-weight:bold;
+	border: solid 1px #b7b7b7;
+	background: #fff;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ededed));
+	background: -moz-linear-gradient(top,  #fff,  #ededed);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ededed');
+	padding:8px 12px;
+	-webkit-border-radius: .4em; 
+	-moz-border-radius: .4em;
+}
+.white:hover {
+	background: #ededed;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#dcdcdc));
+	background: -moz-linear-gradient(top,  #fff,  #dcdcdc);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#dcdcdc');
+}
+.white:active {
+	color: #999;
+	background: -webkit-gradient(linear, left top, left bottom, from(#ededed), to(#fff));
+	background: -moz-linear-gradient(top,  #ededed,  #fff);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#ffffff');
+}
+
+
+
+.brown {
+	color: #fff;
+	border: solid 1px #652219;
+	background: #652219;
+	background: -webkit-gradient(linear, left top, left bottom, from(#953325), to(#652219));
+	background: -moz-linear-gradient(top,  #953325,  #652219);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#953325', endColorstr='#652219');
+	padding:8px 12px;
+	-webkit-border-radius: .4em; 
+	-moz-border-radius: .4em;
+}
+.brown:hover {
+	background: #616161;
+	background: -webkit-gradient(linear, left top, left bottom, from(#8a2f23), to(#551b14));
+	background: -moz-linear-gradient(top,  #8a2f23,  #551b14);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#8a2f23', endColorstr='#551b14');
+}
+.brown:active {
+	color: #fff;
+	background: -webkit-gradient(linear, left top, left bottom, from(#652219), to(#953325));
+	background: -moz-linear-gradient(top,  #652219,  #953325);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#652219', endColorstr='#953325');
+}
+
+#categoryposts-2 h2{ background:url(images/rss-icon.png) no-repeat right center; border-bottom:1px solid #652219; padding-bottom:5px}
+#recent-tweets h2{ background:url(images/icon-twitter.gif) no-repeat right center; border-bottom:1px solid #652219; padding-bottom:5px}
+
+.selectgorg{height:40px; width:262px; margin-bottom:10px; margin-top:50px; padding:10px;-webkit-border-radius: .4em; 
+	-moz-border-radius: .4em; border:1px solid #ebdab7; cursor:pointer}
+	.selectgorg:hover{ background:#faf6ef; border:1px solid #ead09a}
+	
+	
+	
+	
+	
+#branding .banner-div{ margin:0; padding:0; width:1171px; margin:0 auto;}	
+#branding .banner-div img.header_img{ max-height: 200px; width: auto!important;}
+	
+	
+	#menu-main2{background:url(images/greeklicensing_menu2_bg.jpg) repeat-x; height:111px; margin-bottom:20px}
+#menu-main2 ul{ margin:0; padding:0; width:1171px; margin:0 auto;}
+#menu-main2 ul li{ list-style:none; float:left; text-indent:-9999px}
+
+#menu-main2 li a.home{ background:url(images/greeklicensing_menu2_img.jpg) left -111px no-repeat; width: 240px; height:111px; display:block}
+#menu-main2 li a.home:hover, #menu-main2 li.current_page_item a.home{ background-position:left top}
+
+#menu-main2 li a.ourclients{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -240px  -111px; width: 108px; height:111px; display:block}
+#menu-main2 li a.ourclients:hover, #menu-main2 li.current_page_item a.ourclients{ background-position:-240px  top}
+
+#menu-main2 li a.about{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -348px  -111px; width: 97px; height:111px; display:block}
+#menu-main2 li a.about:hover, #menu-main2 li.current_page_item a.about{ background-position:-348px  top}
+
+#menu-main2 li a.find{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -444px -111px; width: 182px; height:111px; display:block}
+#menu-main2 li a.find:hover, #menu-main2 li.current_page_item a.find{ background-position:-444px  top}
+
+#menu-main2 li a.become{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -628px -111px; width: 210px; height:111px; display:block}
+#menu-main2 li a.become:hover, #menu-main2 li.current_page_item a.become{ background-position:-628px  top}
+
+
+#menu-main2 li a.vendor{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -840px -111px; width: 128px; height:111px; display:block}
+#menu-main2 li a.vendor:hover, #menu-main2 li.current_page_item a.vendor{ background-position:-840px  top}
+
+#menu-main2 li a.client{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -966px -111px; width: 104px; height:111px; display:block}
+#menu-main2 li a.client:hover, #menu-main2 li.current_page_item a.client{ background-position:-966px  top}
+
+
+#menu-main2 li a.contact{ background:url(images/greeklicensing_menu2_img.jpg) no-repeat -1071px -111px; width: 100px; height:111px; display:block}
+#menu-main2 li a.contact:hover, #menu-main2 li.current_page_item a.contact{ background-position:-1071px  top}
+
+#col3 li a.outlink{ text-decoration:none; }
+#col3 li a.pdf{ text-decoration:none; }
+#clientslist td{ vertical-align:top}
+
+.entry-meta{ display:none}
+#comments{ display:none}
+.entry-content{ margin-bottom:30px}
+a.pagor {
+	height:20px;
+	padding-left:4px;
+	padding-right:4px;
+	display:block;
+	float:left;
+	border:1px solid #CCC;
+	color: #444;
+	margin-right:4px;
+	text-decoration:none;
+	text-align:center;
+}
+
+a.pagor:hover {
+	background:#ADDADC;
+	border:1px solid #33A8AD;
+	color:white;
+}
+
+a.selected {
+	background:#A3E9EC;
+	border:1px solid #6DCED2;
+}

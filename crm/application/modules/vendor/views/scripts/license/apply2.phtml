@@ -1,0 +1,89 @@
+<?php
+$errorsMessages = $this->form->getMessages();
+//print_r($errorsMessages);
+?>
+<div id="view-content">
+    <h4>Licensing Application</h4>
+    <div class="one"><img src="<?php echo $this->baseUrl("assets"); ?>/images/application_steps_2.png" alt="Step2" title="Step2" /></div>
+    <div class="spacer clear"></div>
+    <form id="form2" action="<?php echo $this->url(array('controller' => 'license', 'action' => 'apply3')); ?>" method="post" >
+        <div class="form_default">
+            <fieldset>
+                <legend>2. Select The Organization(s) for which you are applying</legend>
+                <div class="one">
+                    <h4>Organizations :</h4>
+                    <div class="one">
+                        <div style="padding:5px 0">
+                            <?php
+                            if (isset($errorsMessages['client_id']['isEmpty']))
+                                echo '<div style="color:red;">' . $errorsMessages['client_id']['isEmpty'] . '</div>';
+                            ?>
+                            <div>
+                                <ul style="list-style:none">
+                                    <?php
+                                    foreach ($this->form->client_id->options as $key => $options) {
+                                        if (in_array($key, $this->client_ids)) {
+                                            ?>
+                                            <li style="width:300px; float: left"><input id="client_id-<?php echo $key; ?>" type="checkbox" value="<?php echo $key; ?>" name="client_id[]" checked><?php echo " " . $options; ?> </li>
+                                            <?php
+                                        } else {
+                                            ?>
+                                            <li style="width:300px; float: left"><input id="client_id-<?php echo $key; ?>" type="checkbox" value="<?php echo $key; ?>" name="client_id[]"><?php echo " " . $options; ?> </li>
+                                            <?php
+                                        }
+                                    }
+                                    ?>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="spacer clear"></div>
+                
+                <div class="one">
+                    <div class="one_third">
+                        <?php $session = new Zend_Session_Namespace('default'); ?>
+                        <button type="button" class="button button_black detail_button" onclick="previousToPart1('<?php echo $session->client_id; ?>')">Previous</button>
+                        <button type="submit" class="button button_black detail_button">Next</button>
+                    </div>
+                </div>
+                <div class="spacer clear"></div>
+            </fieldset>
+        </div>  
+    </form>
+</div>
+<script type="text/javascript" >
+    //jQuery.noConflict();
+    jQuery(document).ready( function($) {
+        var $form = $('#form2');
+
+        $form.submit( function() {
+            $.ajax({
+                type: 'POST',
+                beforeSend: function() { $('#wait').show(); },
+                complete: function() { $('#wait').hide(); },
+                url: $form.attr( 'action' ),
+                data: $form.serialize(),
+                success: function( response ) {
+                    appendContentWrapper(response);
+                }
+            });
+
+            return false;
+        });
+    });
+
+    function previousToPart1(uid){
+        //uid=$(this).attr("id");
+        jQuery.ajax({
+            dataType: 'html',
+            beforeSend: function() { $('#wait1').show(); },
+            complete: function() { $('#wait1').hide(); },
+            success: function(data){
+                appendContentWrapper(data)
+            },
+            type: 'GET',
+            url: '<?php echo $this->url(array('controller' => 'license', 'action' => 'apply1')); ?>?prev=yes&uid='+uid
+        });
+    }
+</script>

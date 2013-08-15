@@ -1,0 +1,19 @@
+<br /><br />
+<div id="view-content">
+    <table>
+        <thead>
+            <th>Fiscal year</th>
+            <th>Quarter</th>
+            <th>Report</th>
+        </thead>
+        <tbody>
+            <?php foreach($this->reports as $report) { ?>
+            <tr>
+                <td><?php echo $report->fiscal_year ?></td>
+                <td><?php echo $report->quarter ?></td>
+                <td><a href="<?php echo $this->url(array('controller' => 'payments', 'action' => 'download-report', 'module' => 'client', 'report' => $report->report)); ?>" target="_blank">Download</a></td>
+            </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+</div>

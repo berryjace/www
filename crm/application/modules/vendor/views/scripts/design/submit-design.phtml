@@ -1,0 +1,54 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml',array('selected'=>'design'));
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('design/sub-menu-bar.phtml', array('selected'=>'submit-design'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<h2>Product Design Submission</h2>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<a href="javascript:;" onclick="add_picture()" class="addNewButton">Upload Design(s)</a>
+<div class="spacer"></div>
+<form action="" method="POST" enctype="multipart/form-data" id="design_form">
+<div id="uploaded_pics"></div>
+<div class="spacer"></div>
+<div class="btn_container"></div>
+</form>
+<script type="text/javascript">
+    function add_picture(){
+        
+        if($("#uploaded_pics").find("img").size()<5){
+            upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+            $.fancybox({
+                'width'                 : 750,
+                'height'                : 330,
+                'title'                 : '<h4>Add designs above. All image files must be JPG, GIF, or PNG. Max 5 design submissions at a time.</h4>',
+                'titlePosition'         : 'inside',
+                'autoDimensions'        : false,
+                'href'                  : site_url+"/vendor/design/upload-picture/max/"+upload_left,
+                'transitionIn'          : 'elastic',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe'
+            });
+        }else{
+            alert("You have reached the maximum number of files to be uploaded")
+        }
+        return false;
+    }
+    function add_picture_to_form(pic){        
+        if($("#uploaded_pics").find("img").size()<5){
+            $("#uploaded_pics").append('<input type="hidden" name="pics[]" value="'+pic+'" />');
+            $("#uploaded_pics").append('<img src="'+site_url+'/assets/files/design/thumbs/_thumb'+pic+'" style="margin-right:5px;" />');
+            $(".btn_container").html() == '' ? $(".btn_container").html('<input type="submit" value="Submit Design(s) for Approval" class="button button_blue" />') : '';
+        }else{
+            alert("Maximum 5 pictures can be added");
+        }
+    }
+</script>
+<style type="text/css">
+    .addNewButton{margin-left: 0px; float: left;}
+</style>

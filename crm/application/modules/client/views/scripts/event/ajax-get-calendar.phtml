@@ -1,0 +1,17 @@
+<?php if(sizeof($this->events)) {?>
+    <?php foreach($this->events as $event) {?>
+    <div class="events">
+        <img src="<?php echo $this->baseUrl("assets/images/calendar.png");?>" />
+        <?php echo date("M d, Y", strtotime($event['start_time'])); ?><br />
+        <?php echo $event['title']; ?><br />
+        <p><a href="javascript:;" rel="<?php echo $event['id'];?>" class="event_details"><?php echo "Details"; ?></a></p>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <?php }?>
+    <div class="pagination-control" align="left">
+        <?php echo $this->paginationControl($this->events, 'Sliding', '/layout/calendar-pagination.phtml'); ?>
+    </div>
+<?php } else{ ?>
+    <div>No event to show</div>
+<?php } ?>

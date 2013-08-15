@@ -1,0 +1,77 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('clients/sidebar-menus.phtml',array('selected'=>'artwork','id'=>$this->client->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="sample_div">
+    <a href="javascript:;" onclick="add_picture()" class="addNewButton" style="margin-left: 0px; float: left;">Upload Artwork</a>
+    <div class="spacer"></div>
+</div>
+<form method="post" action="">
+    <div id="uploaded_pics"></div>
+    <div class="spacer"></div>
+    <div class="btn_container"></div>
+</form>
+<script type="text/javascript">
+
+    $(window).load(function(){
+
+        $(document).on('click', '.sample_div a.remove', function(){
+            $(".message").addClass('loading');
+            //$(this).parents('#vendors-data-table tr').remove();
+            $.ajax({
+                url:'<?php echo $this->baseUrl('admin/clients/ajax-del-artworks/'); ?>',
+                dataType:'json',
+                type:'post',
+                data:'id='+ $(this).attr('rel'),
+                success: function(msg) {
+                    if(msg.success == true) {
+                        $('.message').removeClass('errors').removeClass('loading').addClass('success'); //.append(msg.message);
+                        $.jGrowl(msg.message);
+                        oVendorTable.fnDraw();
+                    } else {
+                        $('.message').removeClass('success').removeClass('loading').addClass('errors'); //.append(msg.message);\
+                        $.jGrowl(msg.message);
+                    }
+                }
+            });
+        });
+    });
+    
+    function add_picture(){
+        if($("#uploaded_pics").find("img").size()<5){
+            upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+            $.fancybox({
+                'width'                 : 750,
+                'height'                : 330,
+                'title'                 : '<h4>Upload Artwork. (Max '+upload_left+')</h4>',
+                'titlePosition'         : 'inside',
+                'autoDimensions'        : false,
+                'href'                  : site_url+"/admin/clients/upload-files/max/"+upload_left,
+                'transitionIn'          : 'elastic',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe'
+            });
+        }else{
+            alert("You have reached the maximum number of files to be uploaded")
+        }
+        return false;
+    }
+    
+    function add_picture_to_form(pic){        
+        if($("#uploaded_pics").find("img").size()<5){
+            $("#uploaded_pics").append('<div><input type="text" name="title[]" />\n\
+                                        <input type="hidden" name="pics[]" value="'+pic+'" /><div class="spacer"></div>\n\
+                                        <img src="'+site_url+'/assets/files/artworks/thumbs/<?php echo base64_encode('_thumb')?>'+pic+'" /></div>');
+            $(".btn_container").html() == '' ? $(".btn_container").html('<input type="submit" id="submit_artwork" value="Submit" class="button button_blue detail_button" />') : '';
+        }else{
+            alert("Maximum 5 pictures can be added");
+        }
+    }
+</script>
+<style type="text/css">
+    .sample_div .errors {color:red}
+    .sample_div .success {color:green}
+    .sample_div {width:65%;}
+    #uploaded_pics div {width:160px;float: left;padding: 4px;text-align:center;border: 1px solid #ccc;margin-right: 5px;}
+</style>

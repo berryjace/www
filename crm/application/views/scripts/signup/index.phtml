@@ -1,0 +1,117 @@
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery.maskedinput.js"></script>
+ <div id="login_wrap">
+    <?php
+    if($this->type=='vendor')
+        {
+    ?>
+        <h1 class="h1">Request Access to Vendor Gateway</h1><br />
+    <?php
+        }else{
+    ?>
+        <h1 class="h1">Signup as <?php echo ($this->type!=''?ucfirst($this->type):''); ?></h1><br />
+    <?php
+        }
+    ?>    
+    
+    <form action="" method="POST" id="<?php echo $this->form->getName(); ?>">
+        <div class="form_container_left">
+            <?php echo $this->form->username; ?>                    
+            <?php echo $this->form->password; ?>            
+        </div>
+        <div class="form_container_right">
+            <?php echo $this->form->email; ?>
+            <?php echo $this->form->confirm_password; ?>
+        </div>
+        <div class="clear"></div>
+        <hr size="1" noshade />
+        
+        <div class="spacer"></div>
+        <div class="form_container_left">
+            <?php echo $this->form->organization_name; ?>
+            <?php echo $this->form->address_line_1; ?>
+            <?php echo $this->form->address_line_2; ?>
+            <div class="one_half">
+                <?php echo $this->form->city; ?>
+            </div>
+            <div class="one_third">
+                <?php echo $this->form->zip; ?>
+            </div>
+            <div class="clear"></div>
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="form_container_right">
+            <?php echo $this->form->company_email; ?>
+            <?php echo $this->form->phone_1; ?>
+            <?php echo $this->form->phone_2; ?>
+            <?php echo $this->form->fax; ?>
+            <?php echo $this->form->web_page; ?>
+        </div>
+        <div class="clear"></div>
+        <input type="submit" value=" Register " class="btn" />
+    </form>
+</div>
+
+<style type="text/css">
+    #signup_form input{
+        padding:4px 7px;
+    }
+    #signup_form dd{
+        margin:0
+    }
+    .left_panel{
+        float: left;
+        width:380px;
+    }
+    #signup_form .one_third{
+        float:left;
+        margin:0 10px 0 0;
+    }
+    #signup_form .one_third input{
+        width: 82px;
+    }   
+    ul.errors li{
+        font:11px tahoma,arial,helvetica;
+        color:#D20;
+    }
+    p.error{
+        font:11px tahoma,arial,helvetica;
+        color:#D20;
+        margin-top: -5px;
+    }
+</style>
+
+<script type="text/javascript">
+     $(document).ready(function () {
+       $('#phone_1').mask("(999) 999-9999");
+       $('#phone_2').mask("(999) 999-9999");
+       $('#fax').mask("(999) 999-9999");
+       });
+    var signup_js={
+        validate_form:function(){
+            jQuery("#signup_form").validate({
+                errorElement : 'p',
+                rules : {
+                    username : {required:true},
+                    organization_name : {required:true},
+                    email : {required:true,email:true},
+                    password : {required:true},
+                    confirm_password : {required:true, equalTo: "#password"}
+                },
+                messages : {
+                    username : {required:"Enter Username"},
+                    organization_name : {required:"Enter Company Name"},
+                    email : {required:"Enter Email",email : "Enter a valid email"},
+                    password : {required:"Enter Password"},
+                    confirm_password : {required:"Confirm Password", equalTo: "Passwords don't match"}
+                },
+                submitHandler : function(form){
+                    form.submit();
+                }
+            })
+        }
+    };
+    
+    $(function(){
+        signup_js.validate_form();
+    })
+</script>

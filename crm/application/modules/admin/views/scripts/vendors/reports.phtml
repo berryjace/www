@@ -1,0 +1,46 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('selected'=>'reports','id'=>$this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<a href="<?php echo $this->baseUrl("admin/vendors/add-report"); ?>">Add report</a>
+<h2>Vendor's Report</h2>
+<div class="spacer"></div>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" width="200">
+    <thead>
+        <tr>
+            <th class="head0">Vendor Name</th>
+            <!--th class="head1">Status</th-->
+        </tr>
+    </thead>
+        <?php 
+        if($this->reports) {
+            foreach($this->reports as $report) {
+        ?>
+        <tr>
+            <td class="head0"><a href="<?php echo $this->baseUrl("admin/vendors/reports-by/vendor_id/").$report[0]['id']; ?>"><?php echo $report[0]['organization_name']?></a></td>
+            <!--td class="head1"><?php //$report->vendor->status == null ? 'pending' : '' ?></td-->
+        </tr> 
+            <?php } ?>
+        <?php } ?>
+</table>
+<div class="hidden">
+    <span class="aphabetical_filters">
+        <?php
+        foreach (range('A', 'Z') as $char) {
+            echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+        }
+        ?>
+    </span>
+</div>
+<script type="text/javascript">
+    $(window).bind('load',function(){
+        
+    });    
+    
+    
+</script>
+
+<style type="text/css">
+    .dyntable {width:300px;}
+</style>   

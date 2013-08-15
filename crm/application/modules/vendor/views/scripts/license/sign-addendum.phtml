@@ -1,0 +1,98 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml',array('selected'=>'license'));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">    
+    <span style="float:left;"><h2>Addendum</h2></span>
+    <span style="float:right"><a href="<?php echo $this->baseUrl("vendor/license/addendums"); ?>" class="addNewButton">Addendums</a></span>
+</div>
+<div class="spacer"></div>
+<hr size="1" />
+
+<div class="addendum">
+    <?php echo $this->addendum->create_date->format('F, d Y | h:i A e'); ?>
+    <p><?php echo $this->addendum->reason; ?></p>
+    <div class="spacer"></div>
+    
+    <?php echo $this->addendum->content?>    
+    <div class="spacer"></div>
+    
+    <b>Greek organizations for which this addendum applies.</b>    
+    <div class="one" id="license_template">
+        <?php if(sizeof($this->addendumUsers)) { ?>
+        <ul class="greek_name">
+            <?php 
+            foreach($this->clients as $client) {
+                if(in_array($client['id'], $this->addendumUsers)) {
+            ?>
+            <li><?php echo $this->form->greek_org->setCheckedValue($client['id'])->setValue($client['id'])." ".$client['greek_name']; ?></li>
+                <?php } else { ?>
+            <li><?php echo $this->form->greek_org->setCheckedValue($client['id'])->setValue('')." ".$client['greek_name']; ?></li>
+                <?php } ?>
+            <?php } ?>
+        </ul>
+        <?php } else{ ?>
+        There are no "Greek organizations" applies for this addendum.
+        <?php } ?>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <form action="" method="post" id="addendum_sign_form" name="<?php echo $this->form->getName(); ?>">
+        <div class="one">
+            <?php echo $this->form->vendor_name; ?> 
+            <div class="spacer"></div>
+            <?php echo $this->form->signator_name; ?> 
+            <div class="spacer"></div>
+            <?php echo $this->form->signator_title; ?> 
+            <div class="spacer"></div>
+            <?php echo $this->form->submit; ?> 
+        </div>
+    </form>
+</div>
+<style type="text/css">
+    .addendum {padding: 5px;width:800px;}
+    .addendum p {font-weight:bold;}
+    #license_template .greek_name {list-style: none;width:850px;}
+    ul.greek_name li {width:70px;float:left;}
+</style>
+<script type="text/javascript">
+    
+    $(document).ready(function(){        
+        $('#vendor_name').attr('disabled', 'disabled');
+    });
+    
+    
+    
+    $("#addendum_sign_form").on('submit',function(){
+            $form=$(this);
+            if(!validated){
+                $.ajax({
+                    type: 'post',
+                    data : $("#addendum_sign_form").serialize(),
+                    dataType: 'json',
+                    success: function(e){
+                        $valid=$.isEmptyObject(e) ? true : false;
+                        if(!$valid){
+                            $form.find('.error').removeClass('error');
+                            $form.find('.js_gen_errors').remove();
+                            for(var i in e){
+                                $.map( e[i], function(val, k) {
+                                    $('input[name='+i+']').addClass('error')
+                                    .after('<ul class="errors js_gen_errors"><li>'+val+'</li></ul>');
+                                });                            
+                            }
+                            return false;
+                        }else{
+                            validated=true;
+                            $form.find('.error').removeClass('error');
+                            $form.find('.js_gen_errors').remove();
+                            $form[0].submit();
+                            return true;
+                        }
+                    }
+                });
+                return false;
+            }
+        })
+</script>

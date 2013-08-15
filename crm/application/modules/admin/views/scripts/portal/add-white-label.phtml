@@ -1,0 +1,115 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery-miniColors/jquery.miniColors.min.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/js/jquery-miniColors/jquery.miniColors.css"));
+?>
+<form action="" method="POST" enctype="multipart/form-data">
+    <div class="one_third min-width-380">
+        <label><?php echo (false === $this->client_id) ? 'Select ' : ''; ?>Organization<br />
+            <select name="client"<?php echo (false !== $this->client_id) ? ' disabled="disabled"' : ''; ?>>
+                <?php foreach ($this->clients as $client): ?>
+                    <option <?php echo (false !== $this->client_id AND $this->client_id == $client->id) ? ' selected="selected" ' : '' ?>value="<?php echo $client->id; ?>"><?php echo $client->organization_name; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </label>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="one_third">
+        <?php echo $this->form->url; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="one">
+        <?php echo $this->form->header_name; ?>
+    </div>
+
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="one">
+        <?php if (sizeof($this->label)): ?>
+            <?php if ($this->label->header_file <> ""): ?>
+                <img src="<?php echo $this->baseUrl("assets/files/labels/thumbs/_thumb{$this->label->header_file}"); ?>" alt="header image" />
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php echo $this->form->header_image; ?>
+        <span class="desc">Choose an image to replace the current one. The optimal size of the logo should be 960px X 85px</span>
+    </div>
+
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="one_third">
+        <?php echo $this->form->header_link; ?>
+    </div>
+    
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="floatleft twocol">
+        <?php echo $this->form->bg_color; ?>
+        <div class="color_selector"></div>
+    </div>
+    <div class="floatleft twocol">
+        <?php echo $this->form->button_color; ?>
+        <div class="color_selector"></div>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="floatleft twocol">
+        <?php echo $this->form->font_color; ?>
+        <div class="color_selector"></div>
+    </div>
+    <div class="floatleft twocol">
+        <?php echo $this->form->footer_color; ?>
+        <div class="color_selector"></div>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="one">
+        <span class="desc">Please click "Save" before you preview.</span>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <?php if($this->existingUrl) {?>
+    <a href="<?php echo $this->baseUrlLink.$this->existingUrl; ?>" target="_blank">
+    <?php echo $this->formButton("submit", "Preview", array('type' => 'button', 'class' => 'button button_green preview')); ?>&nbsp; &nbsp; 
+    </a>
+    <?php } ?>
+    <?php echo $this->formButton("submit", "Save", array('type' => 'submit', 'class' => 'button button_brown')); ?>
+</form>
+<style type="text/css">
+    .floatleft .text{
+        width:150px;
+    }
+    .twocol{
+        width:240px;
+    }
+    .min-width-380{
+        min-width: 380px;
+    }
+</style>
+
+<script type="text/javascript">
+    $(function(){
+        $(".color-picker").miniColors({
+            letterCase: 'uppercase',
+            change: function(hex, rgb) {
+            }
+        });
+        $('select[name=client]').on('change',function(){
+            $val=$(this).val();
+            $.ajax({
+                type:'post',
+                url : site_url+'/admin/portal/ajax-get-label',
+                data : 'client='+$val,
+                dataType : 'json',
+                success : function(e){
+                    if(e.exists=='yes'){
+                        window.location.href=site_url+'/admin/portal/add-white-label/client/'+e.client_id;
+                    }
+                    if(e.exists=='no'){
+                        $('#url').val(e.url);
+                    }
+                }
+            })
+        })
+    })
+</script>

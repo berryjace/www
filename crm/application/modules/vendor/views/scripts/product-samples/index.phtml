@@ -1,0 +1,140 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml',array('selected'=>'product-samples'));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<h2>Product Samples</h2>
+<div class="spacer"></div>
+<div class="sample_div">
+    <div class="message">&nbsp;</div>
+    <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="vendors-data-table">
+        <thead>
+            <tr>
+                <th class="head0">Upload Date</th>
+                <th class="head1" width="80">File</th>
+                <th class="head0" width="50"></th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script type="text/javascript">
+
+    $(window).load(function(){
+
+        oVendorTable=$('#vendors-data-table').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "iDisplayLength": 15,            
+                "sPaginationType": "full_numbers",
+                "sAjaxSource": site_url+'/vendor/product-samples/ajax-get-vendor-samples-dt/',
+                "sServerMethod": "POST",
+                "sSearch":false,
+                "oLanguage": {
+                    "sSearch": "Search:"                
+                },
+                "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+                "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] }, { "bSortable": false, "aTargets": [ 1 ] }, { "bSortable": false, "aTargets": [ 2 ] }],  // Turning sorting on/off for cols
+                "fnInitComplete": function (oSettings, json) {
+                    $('.sample_div .dataTables_filter').html("&nbsp;");
+                    $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length').html('<a href="javascript:;" onclick="add_picture()" class="testt">Upload New Product Samples</a>');
+                    //$('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label').after($('.aphabetical_filters'));
+                }            
+            });
+        $(document).on('click', '.sample_div a.remove', function(){
+            $(".message").addClass('loading');
+            //$(this).parents('#vendors-data-table tr').remove();
+            $.ajax({
+                url:'<?php echo $this->baseUrl('vendor/product-samples/ajax-del-product-samples/'); ?>',
+                dataType:'json',
+                type:'post',
+                data:'id='+ $(this).attr('rel'),
+                success: function(msg) {
+                    if(msg.success == true) {
+                        $('.message').removeClass('errors').removeClass('loading').addClass('success').append(msg.message);
+                        oVendorTable.fnDraw();
+                    } else {
+                        $('.message').removeClass('success').removeClass('loading').addClass('errors').append(msg.message);
+                    }
+                }
+            });
+        });
+    });
+    
+    function add_picture(){
+        if($("#uploaded_pics").find("img").size()<5){
+            upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+            $.fancybox({
+                'width'                 : 750,
+                'height'                : 330,
+                'title'                 : '<h4>Add Samples. (Max '+upload_left+')</h4>',
+                'titlePosition'         : 'inside',
+                'autoDimensions'        : false,
+                'href'                  : site_url+"/vendor/product-samples/upload-files/max/"+upload_left,
+                'transitionIn'          : 'elastic',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe'
+            });
+        }else{
+            alert("You have reached the maximum number of files to be uploaded")
+        }
+        return false;
+    }
+    
+    function add_picture_to_form(pic){        
+        if($("#uploaded_pics").find("img").size()<5){
+            $.ajax({
+                url:'<?php echo $this->baseUrl('vendor/product-samples/'); ?>',
+                dataType:'json',
+                type:'post',
+                data:'pics='+pic,
+                success: function(msg) {
+                    if(msg.success == true) {
+                        $('.message').removeClass('errors').removeClass('loading').addClass('success').append(msg.message);
+                        oVendorTable.fnDraw();
+                        $('#uploaded_pics').html('');
+                    } else {
+                        $('.message').removeClass('success').removeClass('loading').addClass('errors').append(msg.message);
+                    }
+                }
+            });
+//            $("#uploaded_pics").append('<input type="hidden" name="pics[]" value="'+pic+'" />');
+//            $("#uploaded_pics").append('<a href="'+site_url+'/assets/files/samples/'+pic+'">'+pic+"</a><br />");
+//            $(".btn_container").html() == '' ? $(".btn_container").html('<input type="button" id="submit_sample" value="Submit Sample" />') : '';
+        }else{
+            alert("Maximum 5 pictures can be added");
+        }
+    }
+</script>
+<style type="text/css">
+    .sample_div .errors {color:red}
+    .sample_div .success {color:green}
+    #sample_form .loading { background: url('/amc/assets/images/loading.gif') right center no-repeat;width:100px }
+    .ui-autocomplete-loading { background: white url('/amc/assets/images/loading.gif') right center no-repeat; }
+    .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+    }
+    /* IE 6 doesn't support max-height
+     * we use height instead, but this forces the menu to always be this tall
+     */
+    * html .ui-autocomplete {
+            height: 200px;
+    }
+    .sample_div {width:65%;}
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+</style>

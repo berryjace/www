@@ -1,0 +1,61 @@
+<h2>Edit Contact</h2>
+<hr size="1" noshade />
+
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">
+    <?php echo $this->form->editContact; ?>
+    <div class="spacer"></div>
+    <div class="form_container_left">
+        <div class="one_third">
+            <?php echo $this->form->sal; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->first_name; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->last_name; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->title; ?>
+        <?php //echo $this->form->address_line1; ?>
+        <div class="one_third">
+            <?php //echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php //echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php //echo $this->form->zipcode; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->email; ?>
+
+    </div>
+
+    <div class="clear">
+        <?php echo $this->form->phone; ?>
+        <?php //echo $this->form->phone_ext; ?>
+        <?php echo $this->form->mobile; ?>
+        <?php //echo $this->form->fax; ?>
+        <?php echo $this->form->contact_type; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+        <button type="submit" id="submitEdit" class="button button_black detail_button" style="float: left;">Submit</button>
+        <div class="clear"></div>
+    <div class="one">
+<!--        <button type="submit" id="submitEdit" class="button button_black detail_button" style="float: left;">Submit</button>-->
+    </div>
+    <div class="clear"></div>
+</form>
+<style type="text/css">
+    #first_name, #last_name, #city, #state, #zipcode, #sal{
+        width:110px;
+    }
+</style>
+<script type="text/javascript">
+ $(document).ready( function($) {
+    if(('<?php echo $this->msg; ?>') !=""){
+        window.parent.execute_parent('<?php echo $this->msg; ?>');
+    }
+ });
+</script>

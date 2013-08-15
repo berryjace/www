@@ -1,0 +1,47 @@
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+</style>
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('clients/sidebar-menus.phtml', array('selected' => 'client_notes', 'id' => $this->client->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<div class="one">
+    <div class="one_third">
+       <h2><?php echo $this->client->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Client Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->client->user_status)); ?></h4>       
+        </div>
+    </div>        
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<form action="" method="POST" enctype="multipart/form-data" id="client_setup_form">
+    <div class="spacer"></div>
+    <form action="" method="POST" enctype="multipart/form-data" id="client_note_form">
+        <?php echo $this->form->note; ?>
+        <div class="spacer"></div>
+        <button type="submit" class="button button_black detail_button">Save</button>
+    </form>
+    
+
+</form>
+
+
+<style type="text/css">
+    #city,#state,#zip_code{
+        width:110px;
+    }
+</style>

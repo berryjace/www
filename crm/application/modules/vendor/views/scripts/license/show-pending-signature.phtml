@@ -1,0 +1,16 @@
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-ui/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/dbllist/jQuery.dualListBox-1.3.js"></script>
+<br /><br />
+<div id="view-content">
+    <p>View script for controller <b>License</b> and script/action name <b>showPendingSignature</b></p>
+</div>
+<div class="one_fourth">
+    <?php echo $this->form->start_date; ?>
+</div>
+<script>
+$(document).ready(function(){
+    $('#start_date').datetimepicker({
+        showHour:false,showMinute:false,showSecond:false
+    });
+});
+</script>

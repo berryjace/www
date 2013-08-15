@@ -1,0 +1,137 @@
+<div class="one"><h3>Guidelines and Usage Rules</h3></div>
+<div class="spacer clear"></div>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" class="dyntable" id="usageguides-data-table">
+    <thead>            
+        <tr>                
+            <th width="10%" class="head1">Type</th>
+            <th width="25%" class="head0">Title</th>
+            <th width="50%" class="head1">Description</th>                
+            <th width="15%" class="head0">Action</th>
+        </tr>
+    </thead>
+</table>
+<div class="hidden">
+    <span class="aphabetical_filters">
+        <?php
+        foreach (range('A', 'Z') as $char) {
+            echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+        }
+        ?>
+    </span>
+</div>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var alphabet_list = jQuery(".hidden").html();
+    $(document).on('click',"#usageguides-data-table_paginate a", function(){
+         $('#master_checkbox').removeAttr("checked");
+    })
+    $(window).bind('load',function(){
+        init_oTable_initialize();
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_view_usageguide_link();
+        init_download_usageguide_link();                
+    });
+    
+    function init_oTable_initialize(){
+        oTable=$('#usageguides-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/vendor/artwork/ajax-Get-Usage-Guides-Dt/id/<?php echo $this->id;?>',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Usage Guide by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[
+                { "bSortable": true, "aTargets": [0] },
+                { "bSortable": true, "aTargets": [1] },
+                { "bSortable": false, "aTargets": [2] },
+                { "bSortable": false, "aTargets": [3] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after(alphabet_list);
+            }
+        } );
+    }
+
+    function init_download_usageguide_link(){
+        $(document).on("click", "a.download_link", function(){
+            window.location.href=site_url+"/vendor/artwork/download/file/"+$(this).attr('rel');
+        });
+    }
+    
+    function init_view_usageguide_link(){
+        $(document).on("click", "a.view_link", function(){
+            var link = site_url+"/vendor/artwork/view-usage-guide/id/"+$(this).attr('rel')+"/user_id/"+$(this).attr('rev');
+            loadDetailsView(link);
+            return false;
+        });
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                //oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $(document).on('click', '.letter_filter',function(){
+            oTable.fnDestroy();
+            init_oTable_initialize(page);
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        display: none;
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+
+    #usageguides-data-table { border-collapse: collapse; }
+    #usageguides-data-table tr td { padding: 8px 10px; border-right: 1px solid #fff; border-bottom: 1px solid #ddd; vertical-align: top;}
+    #usageguides-data-table thead th { padding: 8px 10px; color: #ccc; text-shadow: 1px 1px #444; font-size: 12px; text-transform: uppercase; border-right: 1px solid #777; }
+    #usageguides-data-table thead th { font-weight: normal; text-align: left; }
+    #usageguides-data-table tr td:last-child { border-right: 0; }
+    #usageguides-data-table tr:last-child td { border-bottom: 0;}
+    #usageguides-data-table tr:hover { background: #cacaca; }
+    #usageguides-data-table tr.selected { background: #fffccc; }
+    /*
+    #usageguides-data-table .head0 { background-color: #A79269; }
+    #usageguides-data-table .head1 { background-color: #77623d; }
+    */
+    #usageguides-data-table .odd { background-color: #eaeaea; }
+    #usageguides-data-table .even { background-color: #ddd; }
+    div.jGrowl.top-right {
+	right: 				0px;
+	top: 				100px;
+    }
+    div.jGrowl div.jGrowl-notification{
+           color:#000000;
+           background:#A79269 ;
+    }
+
+</style>

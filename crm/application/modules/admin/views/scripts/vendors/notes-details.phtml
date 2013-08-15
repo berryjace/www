@@ -1,0 +1,37 @@
+<h3>Note Details</h3>    
+<hr size="1" noshade />
+<div class="clear"></div>
+
+<div class="one">
+    <h3>Last Modified date:</h3>
+    <?php echo $this->vendor_notes->updated_at->format("M d, Y h:i A"); ?>
+    <div class="clear"></div>
+    <h3>Note:</h3>
+    <textarea id="description"><?php echo $this->vendor_notes->note; ?></textarea>
+</div>
+
+<style type="text/css">    
+    textarea#description{width: 735px; height: 300px; overflow: scroll;}
+    pre {
+        white-space: -moz-pre-wrap; /* Mozilla, supported since 1999 */
+        white-space: -pre-wrap; /* Opera */
+        white-space: -o-pre-wrap; /* Opera */
+        white-space: pre-wrap; /* CSS3 - Text module (Candidate Recommendation) http://www.w3.org/TR/css3-text/#white-space */
+        word-wrap: break-word; /* IE 5.5+ */
+        font-family: DroidSansRegular, "Segoe UI", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+        font-size: 13px;
+    }
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            $('#description').attr('readonly','readonly');
+        }
+    }    
+</script>

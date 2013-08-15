@@ -1,0 +1,42 @@
+<?php if (sizeof($this->items)): ?>
+    <?php
+    $quarters = array('1' => 'First', '2' => 'Second', '3' => 'Third', '4' => 'Fourth');
+    $alt = true;
+    ?>
+    <h4>Payment ID : <?php echo $this->items[0]->payment_id; ?></h4>
+    <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+        <thead>
+            <tr role="row">
+                <th>Client</th>
+                <th>Date</th>
+                <th>Payment Year</th>
+                <th>Quarter</th>
+                <th>Payment Month</th>
+                <th>Pmt Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($this->items as $item): ?>
+                <?php
+                if ($item->amount_paid) {
+                    $totalAmount = $item->amount_paid;
+                } elseif ($item->late_paid) {
+                    $totalAmount = $item->late_paid;
+                } elseif ($item->adv_paid) {
+                    $totalAmount = $item->adv_paid;
+                } else {
+                    $totalAmount = '';
+                }
+                ?>
+                <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                    <td><?php echo $item->client->organization_name; ?></td>
+                    <td><?php echo $item->record_date->format("m/d/Y"); ?></td>
+                    <td><?php echo $item->payment_year; ?></td>
+                    <td><?php echo $quarters[$item->payment_quarter]; ?></td>
+                    <td><?php echo $item->payment_month; ?></td>
+                    <td><?php echo $totalAmount; ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>

@@ -1,0 +1,47 @@
+<?php echo $this->form; ?>
+<script type="text/javascript">
+    $(function(){
+        $("#actions_form").on('submit',function(){
+            if($.trim($("#action_needed").val())=="" && $.trim($("#resolution").val())=="" && $.trim($("#greek_org").val())==""){
+                alert('Please write Action and Reslution');
+                $("#action_needed")[0].focus();
+                $("#resolution")[0].focus();
+            }else{
+                $.ajax({
+                    url:site_url+'/admin/vendors/ajax-save-actions/',
+                    dataType:'json',
+                    data : $('#actions_form').serialize()+'&vid='+<?php echo $this->vendor->id; ?>,
+                    type:'post',
+                    success:function(e){                   
+                        <?php if ($this->is_popup == "yes"): ?>
+                            window.parent.$.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        <?php else: ?>
+                            $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        <?php endif; ?>
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                            $('#actions_form')[0].reset();
+                        }
+                        $('#action_needed').val('');
+                        $('#resolution').val('');
+                    }
+                });
+            }
+            return false;            
+        });
+<?php if (sizeof($this->actions)): 
+        if (!is_null($this->actions->assignment_date)) {
+            $assignment_date = ( (int) $this->actions->assignment_date->format("Y") > 0 ? $this->actions->assignment_date->format("M d, Y H:i A") : 'N/A');
+        } else {
+            $assignment_date = 'N/A';
+        }  
+?>        
+            $('label[for=greek_org]').prepend('<h2><b><?php echo $this->vendor->organization_name; ?></b></h2>Vendor Status : <b><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></b><br/>Date : <?php echo $assignment_date; ?><hr size="1" /><br/>');
+<?php endif; ?>
+    });
+</script>
+<style type="text/css">
+    .text,.textarea{
+        width:420px;
+    }
+</style>

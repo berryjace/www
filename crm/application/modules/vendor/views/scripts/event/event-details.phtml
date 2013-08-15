@@ -1,0 +1,62 @@
+<?php
+//print_r($this->events);
+?>
+<div id="view-content">
+    <h3>Event Details</h3>
+    <hr size="1" noshade />
+    
+    <div class="one">
+        <div class="left_div">
+            <h3>Date:</h3>
+        </div>
+        <div class="right_div">
+        <?php
+            $start_time = explode(',', $this->events->start_time->format('M-d-Y, h:ia'));
+            $end_time = explode(',', $this->events->end_time->format('M-d-Y, h:ia'));
+            if($start_time['0'] == $end_time['0']){
+                echo $this->events->start_time->format('M d, Y h:ia');
+            }
+            else{
+                echo $this->events->start_time->format('M d, Y h:ia')." <strong> - </strong> ".$this->events->end_time->format('M d, Y h:ia');
+            }
+        ?>
+        </div>
+    </div>        
+    <div class="spacer clear"></div>
+    
+    <div class="one">
+        <div class="left_div">
+            <h3>Location:</h3>
+        </div>
+        <div class="right_div">
+            <?php echo $this->events->location; ?>
+        </div>
+    </div>
+    <div class="spacer clear"></div>        
+    
+    <div class="one">
+        <div class="left_div">
+            <h3>Title:</h3>
+        </div>
+        <div class="right_div">
+            <?php echo $this->events->title; ?>
+        </div>
+    </div>
+    <div class="spacer clear"></div>        
+    
+    <div class="one">
+        <div class="left_div">
+            <h3>Message:</h3>
+        </div>
+        <div class="right_div">
+            <?php echo $this->events->message; ?>
+        </div>
+    </div>     
+    <div class="spacer clear"></div>        
+</div>
+
+<style type="text/css">
+    .left_div{width: 15%; height: auto; float: left;}
+    .right_div{width: 75%; height: auto; margin-left: 0px; float: left;}
+    .one{width: 100%;}
+</style>

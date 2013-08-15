@@ -1,0 +1,231 @@
+ <div id="view-content">
+    <h1 class="pageTitle">Notifications</h1>
+    <a class="addNewButton" href="<?php echo $this->baseUrl()?>/admin/notification/add">+Add New Notification</a>
+    <ul class="submenu" id="page_select" style="border:0 none; padding: 0px;">
+        <li class="current" id="all"><a rel="all" href="javascript:;">All</a></li>
+    </ul>
+    <div class="spacer clear"></div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="dyntable" id="notifications-data-table">
+        <thead>
+            <tr>
+                <td id="event_del" colspan="6" style="padding:0">
+                    <div class="sTableOptions" style="border:none 0">
+                          <a class="button delete" id="deleteAll">
+                            <span>Delete</span>
+                          </a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th width="5%" class="head0"><input type="checkbox" id="master_checkbox"></th>
+                <th width="15%" class="head1">Notification Date</th>
+                <th width="30%" class="head0">Notification Title</th>
+                <th width="28%" class="head1">Notification Message</th>
+                <th width="10%" class="head0">Notify</th>
+                <th width="12%" class="head1">Action</th>
+            </tr>
+        </thead>
+    </table>
+    <div class="hidden">
+        <span class="aphabetical_filters">
+            <?php
+            foreach (range('A', 'Z') as $char) {
+                echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+            }
+            ?>
+        </span>
+    </div>
+</div>
+<div id="dialog-confirm" title="Are you sure you want to delete?" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Notification will be permanently deleted and cannot be recovered. Are you sure?</p>
+</div>
+
+<script type="text/javascript">
+ $(document).ready( function($) {
+    $("#wait1").hide();
+ });
+</script>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var page='all';
+    var alphabet_list = jQuery(".hidden").html();
+    $(document).ready( function($) {
+        $('#master_checkbox').removeAttr("checked");
+    });
+    $(document).on('click',"#notifications-data-table_paginate a", function(){
+         $('#master_checkbox').removeAttr("checked");
+    })
+    $(window).bind('load',function(){
+        $("#page_select").find("a").click(function(){
+            page = ($(this).attr('rel'));
+            $("#all").removeClass("current")            
+            $("#"+page).addClass("current")
+            oTable.fnDestroy();
+            init_oTable_initialize(page);
+          });
+        init_oTable_initialize(page);
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_notification_link();
+        init_col_color();
+        init_row_delete();
+        init_toggleChecked();
+        init_delete_all_checked();
+    });
+    
+    function init_oTable_initialize(page){
+        oTable=$('#notifications-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 20,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/notification/ajax-Get-Notifications-Dt/targetPage/'+page,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Notifications by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 0 ] },{ "bSortable": true, "aTargets": [ 1 ] },{ "bSortable": true, "aTargets": [ 2 ] },{ "bSortable": true, "aTargets": [ 3 ] },{ "bSortable": false, "aTargets": [ 4 ] },{ "bSortable": false, "aTargets": [ 5 ] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after(alphabet_list);
+            }
+        } );
+    }
+
+    function init_notification_link(){
+        $(document).on("click", "a.view_link", function(){
+            window.location.href=site_url+"/admin/notification/edit/id/"+$(this).attr('rel');
+        });
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                //oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $(document).on('click', '.letter_filter',function(){
+            oTable.fnDestroy();
+            init_oTable_initialize(page);
+            oTable.fnFilter($(this).text());
+        });
+    }
+
+    function init_col_color(){
+        //oTable.$('td').addClass('')
+    }
+
+    function row_delete(notificationId, pageTitle){         
+            var message = pageTitle + " will be permanently deleted and cannot be recovered. Are you sure?";
+            $("#dialog-confirm").text(message);
+            $( "#dialog:ui-dialog" ).dialog( "destroy" );
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height:'auto',
+                modal: true,
+                buttons: {
+                    "Delete": function() {
+                        var mine = $( this )
+                        $.ajax({
+                            type : 'post',
+                            url: site_url+'/admin/notification/delete/',
+                            data:'notificationId='+notificationId,
+                            success: function(response) {
+                                mine.dialog( "close" );
+                                $('#master_checkbox').removeAttr("checked");
+                                oTable.fnDraw();
+                                $.jGrowl(pageTitle+" has been deleted.");
+                            }
+                        });
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+    }
+
+    function init_row_delete(){
+        $(document).on('click', '.deleteuser',function(){
+            var notificationId = ($(this).attr('rel'));
+            var notificationTitle = '"'+($(this).attr('title'))+'"';
+            //alert(notificationId+" "+notificationTitle);
+            row_delete(notificationId, notificationTitle);
+        });
+    }
+
+    function init_toggleChecked() {
+        $(document).on('click', '#master_checkbox',function(){
+            var status = this.checked;
+            $(".checkbox").each( function() {
+                $(this).attr("checked",status);
+            })
+        })
+    }
+
+    function init_delete_all_checked(){
+         $(document).on('click', '#deleteAll', function(){
+            var checkedCheckboxes = $("input:checkbox[name=notification_name]:checked");
+            var selectedValues="";
+            var i=0;
+            checkedCheckboxes.each(function () {
+               if(i==0){
+                 selectedValues = $(this).attr('rel')
+               }
+               else{
+                 selectedValues +=  ","+$(this).attr('rel');
+               }
+               i++;
+            });
+            row_delete(selectedValues,"Selected notification(s)");
+         })
+    }
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        display: none;
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+
+    #notifications-data-table { border-collapse: collapse; }
+    #notifications-data-table tr td { padding: 8px 10px; border-right: 1px solid #fff; border-bottom: 1px solid #ddd; vertical-align: top;}
+    #notifications-data-table thead th { padding: 8px 10px; color: #ccc; text-shadow: 1px 1px #444; font-size: 12px; text-transform: uppercase; border-right: 1px solid #fff; }
+    #notifications-data-table thead th { font-weight: normal; text-align: left; }
+    #notifications-data-table tr td:last-child { border-right: 0; }
+    #notifications-data-table tr:last-child td { border-bottom: 0;}
+    #notifications-data-table tr:hover { background: #cacaca; }
+    #notifications-data-table tr.selected { background: #fffccc; }
+   #notifications-data-table .odd { background-color: #eaeaea; }
+    #notifications-data-table .even { background-color: #ddd; }
+    div.jGrowl.top-right {
+	right: 				0px;
+	top: 				100px;
+    }
+    div.jGrowl div.jGrowl-notification{
+           color:#000000;
+           background:#A79269 ;
+    }
+
+</style>

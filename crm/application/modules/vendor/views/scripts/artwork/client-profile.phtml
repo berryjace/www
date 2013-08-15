@@ -1,0 +1,138 @@
+<?php
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('artwork/sub-menu-bar.phtml', array('selected'=>'client-profile', 'id'=>$this->user->id));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-ui/jquery-ui-timepicker-addon.js"></script>
+<h2><?php echo $this->user->organization_name; ?></h2>
+<hr size="1" />
+<div class="spacer"></div>
+<div id="view-content">
+    <div class="form_container_left">
+        <?php echo $this->form->organization_name; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->greek_name; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="form_container_left">
+        <?php echo $this->form->organization_logo; ?>        
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->organization_symbol; ?>        
+    </div>
+    <div class="clear"></div>
+    <div class="form_container_left">
+        <?php echo $this->form->address_line1; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->phone1; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="form_container_left">
+        <?php echo $this->form->address_line2; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->phone2; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="form_container_left">
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>
+        </div>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->fax; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="form_container_left">
+        <?php echo $this->form->email; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->webpage; ?>
+    </div>
+    <div class="clear"></div>
+    
+    <hr size="1" />
+    <div class="spacer"></div>
+    <div class="form_container_left">        
+        <?php echo $this->form->greek_org_type; ?>
+    </div>
+    <div class="form_container_right">        
+        <?php echo $this->form->greek_number_of_colg_chapters;?>
+    </div>
+    <div class="clear"></div>
+
+    <div class="form_container_left">
+        <?php echo $this->form->greek_founding_year; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->greek_number_of_alumni_chapters; ?>
+    </div>
+<!--    <div class="form_container_left">
+        <?php echo $this->form->founding_address_line1; ?>
+    </div>-->
+<div class="clear"></div>
+    <div class="form_container_left">       
+        <?php echo $this->form->greek_number_of_undergrads; ?>
+    </div>
+<!--    <div class="clear"></div>-->
+<!--    <div class="form_container_left">
+        <?php echo $this->form->founding_address_line2; ?>
+    </div>-->
+    <div class="form_container_right">
+        <?php echo $this->form->greek_number_of_alumni; ?>
+    </div>
+    <div class="clear"></div>
+<!--    <div class="form_container_left">
+        <div class="one_third">
+            <?php echo $this->form->founding_city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->founding_state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->greek_founding_year; ?>
+        </div>
+        <div class="clear"></div>        
+    </div>-->
+    <div class="form_container_left">
+        <div class="one_third">
+        <?php echo $this->form->headquarters_city; ?>
+            </div>
+        <div class="one_third">
+            <?php echo $this->form->headquarters_state; ?>
+        </div>
+    </div>
+    <div class="spacer"></div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('input, select').attr('disabled', 'disabled')
+            .css({
+                "color":"#333333",
+                "background-color":"white"
+            });
+
+    });
+    
+</script>
+
+<style type="text/css">
+    #city,#state,#zip,#sal,#founding_city,#founding_state,#greek_founding_year, #headquarters_city, #headquarters_state{
+        width:110px;        
+    }
+    #first_name{
+        width:250px;
+    }
+    #greek_org_type{
+        width:100%; height: 30px;
+    }
+    #organization_logo, #organization_symbol{width: 150px; height: 25px;}
+</style>

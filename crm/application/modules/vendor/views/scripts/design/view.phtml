@@ -1,0 +1,46 @@
+<div id="view-content">
+    <h2>Design</h2><hr size="1" />
+    <div class="spacer clear"></div>
+    <?php if (sizeof($this->design)) { ?>
+        <div class="one">
+            <?php
+            echo $this->design->is_approved == 2 ? '<b>Reason for rejection :</b> ' . $this->design->note_from_admin : ($this->design->is_approved == 1 ? '<b>Note :</b> ' . $this->design->note_from_admin : '<b>Note :</b> Pending Design');
+            ?>
+        </div>
+        <div class="spacer clear"></div>
+
+        <div class="one">
+            <?php if ('' != $this->design->file_url) { ?>
+                <img src="<?php echo $this->baseUrl("assets/files/design/thumbs/_thumb2") . $this->design->file_url; ?>" width="400px" height="355px" onerror="ImgError(this);" class="list_pic" alt="Image Not Found" />
+            <?php } else { ?>
+                <img src="<?php echo $this->baseUrl("assets/images/no_image.jpg"); ?>" width="400px" height="355px" onerror="ImgError(this);" />
+            <?php } ?>
+        </div>
+        <div class="spacer clear"></div>
+
+        <?php /* if($this->design->is_approved == 2){ */ ?>
+        <!--    <div class="one">
+                <form action="<?php // echo $this->baseUrl('vendor/design/resubmit-design/id/').$this->design->id;  ?>" method="POST" id="design_form">
+                    <b>If you feel that this design needs to be reviewed further by Affinity Administrators, you may re-submit this design.</b><br />
+                    <div class="spacer clear"></div>
+                    <input type="submit" value="Re-submit Design" class="button button_blue detail_button" id="re-submit" />
+                </form>
+            </div>-->
+        <?php //} ?>
+
+    <?php } else { ?>
+        <div class="one">
+            <b>Invalid design</b>
+        </div>
+    <?php } ?>    
+</div>
+
+<script type="text/javascript">
+    /* Broken Image */
+    function ImgError(source){
+        source.src = "<?php echo $this->baseUrl("assets/images/_thumb2no_image.jpg"); ?>";
+        source.onerror = "";
+        return true;
+    }
+</script>
+

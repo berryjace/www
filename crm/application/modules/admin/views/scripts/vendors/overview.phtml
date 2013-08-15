@@ -1,0 +1,5 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('selected'=>'overview','id'=>$this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>

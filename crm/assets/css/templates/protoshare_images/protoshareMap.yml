@@ -1,0 +1,109 @@
+
+# (if there's no value or empty): no wireframe available
+# pending: haven't downloaded the image
+# downloaded: downloaded but not html convert
+# html: converted to html
+# done: this page is functional (optional)
+# ?? : wireframe missing
+# - : there's anohter redundant level hierarchy without template
+
+Login:
+
+
+VendorPortal:
+
+
+
+AdminPortal:
+
+  Vendors:
+    Designs:
+      DetailDesignView: downloaded
+      ApporvedDesignsByVendor: 
+        ApprovedDesignsByGreekOrg: downloaded
+        DetailDesingView: html
+    
+    AddAVendor: downloaded
+	
+    SpecificVendor:
+      EditSetup:
+      Clients: downloaded
+	  
+      Operations:
+        Edit: downloaded
+      
+      Contact:
+        Edit:
+      
+      Notes:
+        Edit: downloaded
+	  
+      Correspondence:
+        Edit: downloaded
+        Search: downloaded
+	  
+      Invoices:
+       Edit: downloaded
+       CreateAnInvoice: downloaded
+	  
+      Payments:
+       Edit: downloaded
+	  
+      Docs: downloaded
+	  
+      LicStatus:
+        Approved: downloaded
+        Pending: downloaded
+        
+
+	  
+    RoyaltyReports:
+	
+   
+  MasterLiscAgreement:
+
+  
+  Clients:
+
+    AddAClient: downloaded
+
+    SpecificClient:
+      EditClientSetup: pending
+      ClientVendors: pending
+      Payment:
+        EditPayments: ??
+      ClientNotes (pending):
+        EditNotes: pending
+      RoyaltyFees:
+        EditRoyaltyFees: pending
+      Correspondence:
+        EditCorrespondence: ??
+
+      LicenseTemplateWInsurance: pending -
+       
+      LicensingTemplateW/OInsurance: pending -
+        
+      Legal: pending -
+        
+      Operations: pending -
+       
+
+
+
+
+  
+  Notifications:
+  
+  Events:
+  
+  BannerManagement:
+  
+  Search:
+
+
+
+
+
+  
+ClientPortal:
+  

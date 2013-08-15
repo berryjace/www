@@ -1,0 +1,188 @@
+<?php
+//$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('vendors/vendor-sidebar-menus.phtml');
+//$this->placeholder('main_side_bar')->captureEnd();
+?>
+<?php echo $this->partial('vendors/invoice_menus.phtml'); ?>
+<div class="clear"></div>
+<div class="spacer"></div>
+<div class="one">
+    <form id="invoice_filter">
+        <?php
+
+        $current_year = Date("Y");
+        $years = range($current_year + 1, $current_year - 5);
+        $year_dropdown_vals = array();
+        $year_dropdown_vals['-']='-';
+        foreach ($years as $year) {
+            $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 0);
+        }
+
+        $year_selected = "-";
+        echo $this->formLabel("fiscal_year", "Fiscal Year ");
+        echo $this->formSelect("fiscal_year", "$year_selected", array('class' => 'filters'), $year_dropdown_vals);
+        echo str_repeat("&nbsp;", 2);
+
+//        $vendor_status = BL_AMC::parseYAML(APPLICATION_PATH . '/configs/vendor_status_for_invoice_search.yml');
+//        echo $this->formLabel("vendor_status", "Vendor Status ");
+//        echo $this->formSelect("vendor_status", 'current', array('class' => 'filters'), $vendor_status);
+
+        echo str_repeat("&nbsp;", 2);
+        $inv_types = BL_AMC::parseYAML(APPLICATION_PATH . '/configs/invoice_types.yml');
+        echo $this->formLabel("invoice_type", "Invoice Type ");
+        echo $this->formSelect("invoice_type", '', array('class' => 'filters'), $inv_types);
+
+        echo str_repeat("&nbsp;", 2);
+        echo $this->formLabel("quarter", "Quarter ");
+        echo $this->formSelect("quarter", BL_AMC::getCurrentQarter(), array('class' => 'filters'), array("" => "All", "1" => "Q1", "2" => "Q2", "3" => "Q3", "4" => "Q4"));
+
+        echo str_repeat("&nbsp;", 2);
+        $inv_statuses = BL_AMC::parseYAML(APPLICATION_PATH . '/configs/invoice_status.yml');
+        echo $this->formLabel("invoice_status", "Invoice Status ");
+        echo $this->formSelect("invoice_status", 'open', array('class' => 'filters'), $inv_statuses);
+
+        //echo str_repeat("&nbsp;", 2);
+        //$payment_statuses = BL_AMC::parseYAML(APPLICATION_PATH . '/configs/payment_status.yml');
+        //echo $this->formLabel("payment_status", "Payment Status ");
+        //echo $this->formSelect("payment_status", 'All', array('class' => 'filters'), $payment_statuses);
+        ?>
+	<button type="button" style="float:right" class="button exporter button_green">Export</button>
+    </form>
+    <div class="spacer"></div>
+    <div class="" style="width: 100%">
+        <table cellpadding="0" cellspacing="0" border="0" style="width:100%" class="dyntable" id="invoices-data-table">
+            <thead>
+                <tr>
+                    <th class="head0" width="20%">Company Name</th>
+                    <th class="head1" width="13%">Invoice Type</th>
+<!--                    <th class="head0" width="15%">Payment Status</th>-->
+                    <th class="head0" width="15%">Invoice Status</th>
+                    <th class="head1" width="15%">Payment Status</th>
+                    <th class="head0" width="12%">Invoice Total</th>
+                    <th class="head1" width="13%">Remaining Due</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification {
+        color: #000000;
+        background-color: #A79269;
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    html body.bodygrey div.maincontent div.left div.one div div#invoices-data-table_wrapper.dataTables_wrapper div#invoices-data-table_length.dataTables_length label{
+        visibility:hidden;
+    }
+    html body.bodygrey div.maincontent div.left div.one div div#invoices-data-table_wrapper.dataTables_wrapper div#invoices-data-table_filter.dataTables_filter{
+        visibility:hidden;
+    }
+    html body.bodygrey div.maincontent div.left div.one div div#invoices-data-table_wrapper.dataTables_wrapper div#invoices-data-table_info.dataTables_info{
+	visibility:hidden;
+    }
+    html body.bodygrey div.maincontent div.left div.one div div#invoices-data-table_wrapper.dataTables_wrapper div#invoices-data-table_paginate.dataTables_paginate{
+	visibility:hidden;
+    }
+    html body.bodygrey div.maincontent div.left div.one div div#invoices-data-table_wrapper.dataTables_wrapper table#invoices-data-table.dyntable tbody tr.even:last-child td{
+	border-top:#000 solid 1px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    var oTable;
+    $(window).bind('load',function(){
+        vendor_invoice.init_oTable_initialize();
+        $('.filters').on('change',vendor_invoice.init_oTable_initialize);
+//        $('a.lineitems_link').on('click', vendor_lineitems.show_invoice_lineitems);
+        init_payment_link();
+        init_lineitems_link();
+	init_export();
+    })
+
+    vendor_invoice={
+        init_oTable_initialize : function(){
+            oTable=$('#invoices-data-table').dataTable( {
+                "bServerSide": true,
+                "bProcessing": true,
+                "bFilter": true,
+                "bDestroy": true,
+                "iDisplayLength": 10000000000,
+                "sPaginationType": "full_numbers",
+                "sAjaxSource": site_url+'/admin/vendors/ajax-get-vendors-invoices2/?'+$('#invoice_filter').serialize(),
+                "aoColumnDefs": [
+                    { "bSearchable": false, "bVisible": true, "aTargets": [ 1 ] },
+                    { "bVisible": false, "aTargets": [ 1 ] }
+                ],
+                "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] },{ "bSortable": false, "aTargets": [ 1 ] },{ "bSortable": true, "aTargets": [ 2 ] },{ "bSortable": true, "aTargets": [ 3 ] },{ "bSortable": true, "aTargets": [ 4 ] }, { "bSortable": true, "aTargets": [ 5 ] }],   // Turning sorting on/off for cols
+                "sServerMethod": "POST",
+                "oLanguage": {
+                    "sSearch": "Search Vendors:"
+                },
+                "aaSorting": [[2,'asc']], // Initial sorting order when page loads
+                "fnInitComplete": function (oSettings, json) {
+                    $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+                }
+            } );
+            $('#invoices-data-table').css('width', '100%');
+        }
+    }
+
+    vendor_lineitems={
+        show_invoice_lineitems : function(){
+//            console.log(e);
+            console.log("Hello world");
+        }
+    }
+
+    function init_payment_link(){
+        $(document).on('click', 'a.payment_link', function(){
+            window.location.href = site_url+'/admin/vendors/show-invoice/inv_id/'+$(this).attr('id'); //+'/invoice_number/'+$(this).attr('rel');
+        });
+    }
+
+    function init_lineitems_link(){
+        $(document).on('click','a.lineitems_link',function(){
+            $id=$(this).attr('id');
+//            console.log($id);
+            $.fancybox({
+                'width'                 : 900,
+                'height'                : 500,
+                'href'                  :  site_url+"/admin/vendors/show-invoice-line-items/id/"+$id,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'title'                 : '<h3>Invoices Line Items</h3>',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        });
+    }
+	function init_export(){
+        $(document).on("click", "button.exporter", function(e){
+	     	window.setTimeout(function(){
+			$filter = $('#invoice_filter');
+			$url = site_url+"/admin/vendors/export-results-excel2/?"+$filter.serialize()+"&Export=1&bRegex=false&bRegex_0=false&bRegex_1=false&bRegex_2=false&bRegex_3=false&bRegex_4=false&bRegex_5=false&bSearchable_0=true&bSearchable_1=true&bSearchable_2=true&bSearchable_3=true&bSearchable_4=true&bSearchable_5=true&bSortable_0=true&bSortable_1=false&bSortable_2=true&bSortable_3=true&bSortable_4=true&bSortable_5=true&iColumns=6&iDisplayLength=10000000000&iDisplayStart=0&iSortCol_0=2&iSortingCols=1&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&mDataProp_4=4&mDataProp_5=5&sColumns=&sEcho=1&sSearch=&sSearch_0=&sSearch_1=&sSearch_2=&sSearch_3=&sSearch_4=&sSearch_5=&sSortDir_0=asc";
+              		window.location.href = $url;
+             	},50);
+        });
+    }
+</script>

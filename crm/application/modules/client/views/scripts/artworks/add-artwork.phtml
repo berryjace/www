@@ -1,0 +1,82 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('layout/sidebar-calendar.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('artworks/sub-menu-bar.phtml', array('selected'=>'index'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<div class="sample_div">
+    <a href="javascript:;" id="upload_artwork" class="addNewButton" style="float: left;margin-left: 0px;">Upload Artwork</a>
+    <div class="spacer"></div>
+    <?php if(sizeof($this->message)) { ?>
+    <div class="message<?php echo $this->message['success'] ? ' success' : ' errors'?>"><?php echo $this->message['message'];?></div>
+    <?php }?>
+</div>
+<form method="post" action="" enctype="multipart/form-data">
+    <div id="uploaded_pics"></div>
+    <div class="spacer"></div>
+    <div class="btn_container"></div>
+</form>
+<script type="text/javascript">
+
+    $(window).load(function(){
+
+        $(document).on('click', '.sample_div a.remove', function(){
+            $(".message").addClass('loading');
+            //$(this).parents('#vendors-data-table tr').remove();
+            $.ajax({
+                url:'<?php echo $this->baseUrl('client/artworks/ajax-del-artworks/'); ?>',
+                dataType:'json',
+                type:'post',
+                data:'id='+ $(this).attr('rel'),
+                success: function(msg) {
+                    if(msg.success == true) {
+                        $('.message').removeClass('errors').removeClass('loading').addClass('success').append(msg.message);
+                        oVendorTable.fnDraw();
+                    } else {
+                        $('.message').removeClass('success').removeClass('loading').addClass('errors').append(msg.message);
+                    }
+                }
+            });
+        });
+    });
+    
+    $(document).on('click', '#upload_artwork', function(){
+        if($("#uploaded_pics").find("img").size()<5){
+            upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+            $.fancybox({
+                'width'                 : 650,
+                'height'                : 350,
+                'title'                 : '<h4>Upload Artwork. (Max '+upload_left+')</h4>',
+                'titlePosition'         : 'inside',
+                'autoDimensions'        : false,
+                'href'                  : site_url+"/client/artworks/upload-files/max/"+upload_left,
+                'transitionIn'          : 'elastic',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe'
+            });
+        }else{
+            alert("You have reached the maximum number of files to be uploaded")
+        }
+        return false;
+    })
+    
+    function add_picture_to_form(pic){        
+        if($("#uploaded_pics").find("img").size()<5){
+            $("#uploaded_pics").append('<div><input type="text" name="title[]" />\n\
+                                        <input type="hidden" name="pics[]" value="'+pic+'" /><div class="spacer"></div>\n\
+                                        <img src="'+site_url+'/assets/files/artworks/thumbs/<?php echo base64_encode('_thumb')?>'+pic+'" /></div>');
+            $(".btn_container").html() == '' ? $(".btn_container").html('<input type="submit" id="submit_sample" value="Upload" class="button button_blue detail_button" />') : '';
+        }else{
+            alert("Maximum 5 pictures can be added");
+        }
+    }
+</script>
+<style type="text/css">
+    .sample_div .errors {color:red}
+    .sample_div .success {color:green}
+    .sample_div {width:65%;}
+    #uploaded_pics div {width:160px;float: left;padding: 4px;text-align:center;border: 1px solid #ccc;margin-right: 5px;}
+</style>

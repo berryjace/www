@@ -1,0 +1,67 @@
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Search By Notes</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" >
+                <?php
+                foreach ($this->user_status as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<hr size="1"/>
+
+<form action="" method="POST" enctype="multipart/form-data" id="search-notes-form">
+    <input type="hidden" name="search_type" value="notes" />   
+    <div class="spacer"></div>
+    <label>Vendor Name<br />
+        <input type="text" class="text" id="vendor_name" name="vendor_name" />
+    </label>
+    <div class="spacer"></div>    
+    <label>Description<br />
+        <input type="text" class="text" id="description" name="description" />
+    </label>
+    <div class="spacer"></div>
+    <div class="one_half">
+        <label>Date From<br />
+            <input type="text" class="text date" id="date_from" name="date_from" />
+        </label>
+    </div>
+    <div class="one_third">
+        <label>Date to<br />
+            <input type="text" class="text date" id="date_to" name="date_to" />
+        </label>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black detail_button">Search</button>
+
+</form>
+<script type="text/javascript">
+    var status = 'all';
+    $(function(){
+        $("#vendor_name")[0].focus();
+        $(".date").datepicker({
+            dateFormat:"mm/dd/yy"
+        });
+        $("#search-notes-form").on('submit',function(){
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'all';
+            }
+            window.parent.executeSearch($(this).serialize()+'&vendor_status='+status,'Search Vendors By Notes','notes');
+            return false; 
+        });
+    })
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });
+</script>

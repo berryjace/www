@@ -1,0 +1,81 @@
+<?php
+$type = '';
+$this->type == 'client' ? $type="Client": '';
+$this->type == 'vendor' ? $type="Vendor": '';
+
+?>
+<div id="login_wrap">
+    <h1 class="h1"><?php echo $type." ";?>Login </h1>
+    <div class="grid_11 alpha">
+        <div id="pform">
+            <form id="login" name="login" method="post" action="<?php echo $this->getHelper("BUrl")->absoluteUrl(); ?>">
+                <label for="username">Username</label>
+                <div class="clear"></div>
+                <input name="username" type="text" class="text" id="username" tabindex="1" value="" size="30" />
+                <div class="spacer"></div>
+                <label for="password">Password</label>
+                <div class="clear"></div>
+                <input name="password" type="password" class="text" id="password" tabindex="2" value="" size="30" />
+
+                <div class="spacer"></div>
+                <input type="checkbox" name="rememberme" id="rememberme" class="left"/>
+                <label for="rememberme" class="left">Remember me</label>            
+                <br /><br />
+                <?php if (isset($this->is_popup)) : ?>
+                    <input type="hidden" name="from_popup" value="1" />
+                <?php endif; ?>
+                <input type="submit" name="submit" id="submit" class="btn" value="Log In" />
+
+                <div class="clear"></div>
+                <?php if (!isset($this->is_popup)) : ?>
+                    <div class="push_4">&nbsp;</div>        
+                    <label for="forgot" class="left">
+                        Forgot your username or password? <a href="<?php echo $this->baseUrl("forgot/"); ?>">Click here to send a reminder to your email address</a>.
+                    </label>
+                    <div class="clear"></div>
+                    <br/>
+                     If you are already in our system, but have no username/password, <a href="<?php echo $this->baseUrl("signup/existing-user");?>">click here to use your existing data to create them.</a>
+                    
+                    <div class="push_2">&nbsp;</div>  
+                    <?php if($type=='Vendor'){?>
+                    If you don&acute;t have an account, <a href="<?php echo $this->baseUrl("signup/index/".($this->type!=''?'type/'.$this->type:'type/vendor')); ?>">click here to request access to the Vendor Gateway.</a>
+                     <?php }?>
+                     <?php if($type == 'Client'){?>
+                        If you are not yet a client, but would like information on how to protect your organization&acute;s trademarks, please <a href="<?php echo $this->BUrl()->last_slahs_omit().'/crm/contact/'?>">contact us</a> to learn more
+                     <?php }?>
+                   <!-- <label for="signup" class="left">If you dont have an account, <a href="<?php echo $this->baseUrl("signup/index/".($this->type!=''?'type/'.$this->type:'type/vendor')); ?>">click here</a> to create an account.</label>-->
+                <?php endif; ?>
+                <?php   ?>
+                <?php //echo $extra_input; ?>
+                <?php //endif;  ?>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+
+
+
+<script type="text/javascript">
+    $(function(){
+        $("#username")[0].focus(); 
+    })
+    var imgPath = '<?php echo $this->baseUrl('assets/images/'); ?>';    
+</script>
+<style type="text/css">
+    #pform label{
+        font-size:13px;
+        font-weight: normal;
+        line-height: 1.5em;
+    }
+    .social{
+        margin: 40px 0 0 10px;
+    }
+
+</style>

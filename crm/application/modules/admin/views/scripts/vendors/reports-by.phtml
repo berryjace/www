@@ -1,0 +1,68 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<a href="<?php echo $this->baseUrl("admin/vendors/add-report"); ?>">Add report</a>
+<h2><?php echo $this->vendor->organization_name?>'s Report</h2>
+<div class="spacer"></div>
+<div class="client_list">
+    <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="licenses-data-table">
+        <thead>
+            <tr>
+                <th class="head0">Company Name</th>
+                <th class="head1">Status</th>
+            </tr>
+        </thead>
+            <?php 
+            if($this->reports) {
+                foreach($this->reports as $report) {
+            ?>
+            <tr>
+                <td class="head0"><?php echo $report->user->organization_name?></td>
+                <td class="head1"><?php echo !@$report->vendor->status ? 'pending' : (@$report->vendor->status == 1 ? 'Approved' : 'Rejected') ?></td>
+            </tr> 
+                <?php } ?>
+            <?php } ?>
+    </table>
+</div>
+<div class="vendor_report">
+    <div><?php echo $this->vendor->organization_name?></div>
+    <div>The vendor has submitted their quarterly report for reivew. Click on the "Pending Approval" link below to review the report. </div>
+    <div>
+        <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="licenses-data-table">
+        <thead>
+            <tr>
+                <th class="head1">Period</th>
+                <th class="head0">Review Status</th>
+            </tr>
+        </thead>
+            <tr>
+                <td class="head1">Q3 2010</td>
+                <td class="head0">Pending Approval</td>
+            </tr> 
+            <tr>
+                <td class="head1">Q2 2010</td>
+                <td class="head0">Approved</td>
+            </tr> 
+            <tr>
+                <td class="head1">Q1 2010</td>
+                <td class="head0">Rejected</td>
+            </tr> 
+    </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(window).bind('load',function(){
+        
+    });    
+    
+    
+</script>
+
+<style type="text/css">
+    .dyntable {width:300px;}
+    .client_list {float:left;width:400px;}
+    .vendor_report {float:left;width:600px;}
+</style>   

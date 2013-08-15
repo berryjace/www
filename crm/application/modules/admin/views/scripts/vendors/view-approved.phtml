@@ -1,0 +1,60 @@
+<div class="one" id="view-content">       
+    <h2>View Registrant</h2>
+    <hr size="1"/>
+    <div class="spacer clear"></div>     
+
+    <div class="form_container_left">
+        <?php echo $this->form->username->setAttrib('readonly', 'true'); ?>                                
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->email->setAttrib('readonly', 'true');
+        ; ?>                            
+    </div>
+    <div class="spacer clear"></div>
+    <hr size="1" />
+    <div class="spacer"></div>
+
+    <div class="form_container_left">
+            <?php echo $this->form->organization_name->setAttrib('readonly', 'true'); ?>
+        <div class="spacer"></div>
+            <?php echo $this->form->address_line_1->setAttrib('readonly', 'true'); ?>
+        <div class="spacer"></div>
+            <?php echo $this->form->address_line_2->setAttrib('readonly', 'true'); ?>
+        <div class="spacer"></div>
+        <div class="one_third">
+            <?php echo $this->form->city->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="spacer clear"></div>
+            <?php echo $this->form->company_email->setAttrib('readonly', 'true'); ?>
+        <div class="spacer clear"></div>
+    </div>
+
+    <div class="form_container_right">
+            <?php echo $this->form->phone_1->setAttrib('readonly', 'true'); ?>
+        <div class="spacer"></div>
+            <?php echo $this->form->phone_2->setAttrib('readonly', 'true'); ?>
+        <div class="spacer"></div>
+            <?php echo $this->form->fax->setAttrib('readonly', 'true'); ?>
+        <div class="spacer"></div>
+            <?php echo $this->form->web_page->setAttrib('readonly', 'true'); ?>
+        <div class="spacer clear"></div>
+    </div>    
+    <div class="clear"></div>        
+
+</div>       
+
+
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #first_name{
+        width:250px;
+    }
+</style>

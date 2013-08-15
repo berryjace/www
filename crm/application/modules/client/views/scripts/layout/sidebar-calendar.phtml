@@ -1,0 +1,71 @@
+<div class="loader"><img src="<?php echo $this->baseUrl("assets/images/loading.gif"); ?>" /></div>
+<div class="calendar_header"><img src="<?php echo $this->baseUrl("assets/images/calendar.png"); ?>" />  <b>Events Calendar</b></div>
+<div class="paged-data-container" id="calendar_div">   
+    <div class="pagination-control" align="left"></div>
+</div>
+
+<script type="text/javascript">
+    $(window).bind('load',function(){
+        $.ajax({
+            beforeSend: function() { $('.loader').show(); },
+            complete: function() { $('.loader').hide(); },
+            url: site_url+"/client/event/ajax-Get-Calendar",
+            success:function(result){
+                $("#calendar_div").html(result);
+            }
+        });        
+    });
+     
+</script>
+
+<script type="text/javascript">
+jQuery(function($){
+
+    $(document).on("click", ".event_paginate", function(){
+        var link = $(this);
+        $('.loader').show();
+        var container = link.parents('.paged-data-container');
+        $.get(link.attr('href'), { format: 'html' }, function(data){
+            container.html(data);
+            $('.loader').hide();
+        }, 'html');
+        return false;
+    });
+
+    $(document).on("click", ".event_details", function(){
+        var link = site_url+"/client/event/event-details/id/"+ $(this).attr('rel');
+        loadDetailsView(link);
+        return false;
+    });
+
+});
+
+function loadDetailsView(thisItem){        
+            $.fancybox({
+                'width'                 : '60%',
+                'height'                : '100%',
+                'href'                  : thisItem,
+                'autoScale'             : true,
+                'transitionIn'          : 'none',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe',
+                'transitionIn'     : 'elastic',
+                'transitionOut'     : 'elastic',
+                'speedIn'      : 600,
+                'speedOut'      : 200,
+                'overlayShow'     : false,
+                'onClosed'              : function() {
+                   // window.location = $obj.attr('param');
+                }
+            });
+        }
+</script>
+
+<style type="text/css">    
+    .loader{width: 90%; height: 16px; margin: 0 auto;}
+    .calendar_header{width: 85%; height: 20px; padding: 5px; float: left; margin-left: 6px; background-color: #DCDAC7;}
+    .paged-data-container{
+        width: 90%;
+        margin: 0 auto;
+    }
+</style>

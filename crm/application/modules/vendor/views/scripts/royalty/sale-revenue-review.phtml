@@ -1,0 +1,248 @@
+<?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+<?php $user = Zend_Auth::getInstance()->getIdentity();
+$isAdmin = ($user->account_type == 1) ? 1 : 0;
+
+?>
+<?php if(!$isAdmin) {?>
+<div class="leftalign">
+	<a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>"
+		class="iconlink<?php echo ($action === "history") ? '' : '2'; ?>"><img
+		src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "history" ? 'white' : 'black'; ?>/settings.png"
+		class="mgright5" alt="" /><span>Royalty Report History</span> </a>
+	&nbsp;
+	<!-- 
+	 <a
+		href="<?php echo $this->baseUrl("vendor/royalty/sale-revenue"); ?>"
+		class="iconlink<?php echo ($action === "sale-revenue") ? '' : '2'; ?>"><img
+		src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "sale-revenue" ? 'white' : 'black'; ?>/plus.png"
+		class="mgright5" alt="" /><span>Add Sale Revenue</span> </a> -->
+</div>
+<?php }?>
+<div class="spacer clear"></div>
+<?php if(!$isAdmin) {?>
+<div class="notification msginfo">
+	<a class="close"></a> Based on the summary you have provided, the following royalties are due. Please note,
+	your report will not be recieved until you click "Submit Report" below.
+</div>
+<?php }?>
+<div style="display: none;">
+	<?php if(!empty($this->vendorRoyaltySubmissions)) {?>
+	<h2>
+		<?php echo $this->fiscal_year?>
+	</h2>
+	<hr />
+	<h4>
+		Uploaded:
+		<?php echo $this->vendorRoyaltySubmissions[0]->uploaded_on->format('M d, Y');?>
+	</h4>
+	<ul class="unstyled" >
+		<?php foreach ($this->vendorRoyaltySubmissions as $uploadedFile){?>
+		<li><a href="<?php echo $this->baseUrl($uploadedFile->file_url)?>"
+			target="_blank"><?php echo pathinfo($uploadedFile->file_url, PATHINFO_BASENAME)?>
+		</a></li>
+		<?php }?>
+	</ul>
+	<?php }?>
+</div>
+<div class="spacer clear"></div>
+<div class="one">
+	<?php if(!$isAdmin) {?>
+	<h1><?php echo $this->vendor->organization_name;?></h1>
+	<h3>Royalty Report Summary</h3>
+	<h3>
+	<b><?php echo 'Q'.$this->summary_data['quarter']; ?>
+	</b>&nbsp;<b><?php echo $this->summary_data['fiscal_year']; ?> FY (Sales </b><?php if ($this->summary_data['quarter'] == 1){
+		echo "July-September ";
+	} else if ($this->summary_data['quarter']==2){
+		echo "October-December ";
+	} else if ($this->summary_data['quarter']==3){
+		echo "January-March ";
+	} else {
+		echo "April-June ";
+	}
+	if ($this->summary_data['quarter'] < 2){
+	echo substr($this->summary_data['fiscal_year'], 0, 4);
+	} else {
+	echo substr($this->summary_data['fiscal_year'], 0, 2) . substr($this->summary_data['fiscal_year'], 5, 2);
+	}?>)
+	</h3>
+	<br />
+	<?php }?>
+	<?php //if(empty($this->vendor_reporting_type) || $this->vendor_reporting_type == 1)  {?>
+	<table cellpadding="0" cellspacing="0" border="1" class="sTable2"
+		width="100%">
+		<thead>
+			<tr role="row">
+				<th align="left">Organization Name</th>
+				<th align="left">Total Gross Sales</th>
+				<th align="left">Royalty Calculation</th>
+				<th align="left">Royalty Generated</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php $alt = true; $i = 0; ?>
+			<?php //$num_rows = sizeof($this->summary_data['clients']); ?>
+			<?php foreach ($this->summary_data['clients'] as $client): ?>
+			<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+				<td><?php echo $client;  ?></td>
+				<td><?php echo $this->BUtils()->getCurrency($this->summary_data['gross_sales'][$i]);  ?>
+				</td>
+				<td><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' : $this->summary_data['royalty_commission'][$i].'%'; ?>
+				</td>
+				<!--<td><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?>
+				</td>
+			 	<td><?php echo $this->BUtils()->getCurrency(is_null($this->summary_data['annual_advance'][$i]) ? 0 : $this->summary_data['annual_advance'][$i]);  ?>
+				</td> -->
+				<td><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?>
+				</td>
+			</tr>
+			<?php $i++; ?>
+			<?php endforeach; ?>
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td class="total_row"><!-- Total--></td>
+				<td class="total_col"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?> Total Due
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<div class="spacer clear"></div>
+<?php if(!$isAdmin) {?>
+<?php }?>
+<div class="rightalign">
+	<?php if(!$isAdmin) {?>
+	<button name="back" id="back" class="button button_black">Return to Previous Page</button>
+	<button name="submit_report" id="submit_report"
+		class="button button_black">Submit Report</button>
+	<?php } else {?>
+
+	<a href="javascript:void(0);" class="blueButton" id="approve">Approve</a>
+	<a href="javascript:void(0);" id="reject" class="blackButton">Reject</a>&nbsp;&nbsp;
+	<?php }?>
+</div>
+
+<style type="text/css">
+div.jGrowl div.jGrowl-notification {
+	color: #000000;
+	background-color: #A79269;
+}
+
+.status {
+	width: 120px;
+}
+
+.button_pos {
+	width: 176px;
+	float: right;
+}
+
+.button_payment {
+	width: 50%;
+	float: right;
+}
+
+#city,#state,#zip {
+	width: 114px;
+}
+
+.total_row {
+	text-align: right;
+	font-weight: bold;
+}
+
+.total_col {
+	font-weight: bold;
+}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        $(document).on('click', '#approve', event_functions.approve_or_reject);
+        $(document).on('click', 'button#submit_report', event_functions.submit_report);
+        $(document).on('click', 'button#back', event_functions.back);
+    });
+
+    event_functions = {
+        _initialize : function(){
+        },
+        submit_report : function(){
+            //window.location.href = site_url+'/vendor/invoice/show-invoice/inv_id/<?php echo $this->invoice_id?>';
+            $.ajax({
+				'url'	:	site_url+'/vendor/royalty/ajax-create-invoice/submission_hash/<?php echo $this->submission_hash;?>/year/<?php echo $this->fiscal_year;?>/quarter/<?php echo $this->quarter;?>',
+				'type'	:	'post',
+
+				'success':	function(data){
+					console.log(data);
+					var d = $.parseJSON(data)
+					if(d.success == true) {
+						window.location.href = site_url+'/vendor/royalty/sale-revenue-summary/invoice_id/' + d.invoice_id;
+					}
+				},
+				'error': function(XMLHttpRequest, textStatus, errorThrown){
+
+					console.log("error in request ");
+                }
+				
+
+			})
+        },
+        back : function(){
+            console.log("redirecting");
+			window.history.go(-1);
+        },
+        approve_or_reject : function(e){
+          $url = site_url+'/admin/reports/approve-or-reject/type/Approved/rid/<?php echo $this->summary_data['submission_hash']?>/rtype/hash';
+          console.log($url);
+          loadPopupView($url);
+      }
+    };
+    $(function(){
+        $('#reject').on('click', function(e){
+            e.preventDefault();
+            if(confirm('You are about to reject royalty report that you have uploded. If you click "Yes", the royalty report file will be deleted from the database. Are you sure you want to continue? ')) {
+                $.ajax({
+                    'url'	:	site_url+'/vendor/royalty/ajax-delete-report/submission_hash/<?php echo $this->summary_data['submission_hash']?>',
+                    'type'	:	'post',
+                    'dataType'	:	'json',
+                    'success'	:	function(d){
+                        if(d.code == 'success') {
+                            window.location.href = site_url+'/admin/reports/get-reports/vendor_id/<?php echo $this->summary_data['vendor_id']?>'
+                        }
+                     }
+                });
+            }
+        });
+    });
+    function loadPopupView(url){
+        $.fancybox({
+            'width'                 : 700,
+            'height'                : 500,
+            'href'                  : url,    
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'               
+        });        
+        return false;
+    }
+    
+    function close_popup(){
+        $.fancybox.close();
+    }
+    
+    function execute_refresh(msg){
+        $.fancybox.close();        
+        $.jGrowl(msg);
+        setTimeout(function() { 
+            window.location.href = site_url+"/admin/reports";
+        }, 1500);
+    }
+</script>

@@ -1,0 +1,538 @@
+<?php
+$this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.css'));
+?>
+<div id="tab-1-warning" class="notification msgalert" style="display:none;" >
+	<a class="close"></a> Warning, you have left unsaved data in the "Fill out report by sales" tab. If you fill out and submit information in the "Fill out report by Greek Org" tab, you will lose any data entered in the other tab.
+</div>
+<div id="tab-2-warning" class="notification msgalert" style="display:none;" >
+	<a class="close"></a> Warning, you have left unsaved data in the "Fill out report by Greek Org" tab. If you fill out and submit information in the "Fill out report by sales" tab, you will lose any data entered in the other tab.
+</div>
+<form class="form">
+    <h4>Select the fiscal year and quarter for which you are submitting your royalty report.</h4><br />
+    <div class="form_default">
+        <div class="four_fifth">
+            <?php
+//            $last_quarter = BL_AMC::getLastQarter();
+            $current_fiscal_year = Date("Y");
+            /**
+             * If now is quarter 2 (OCT - DEC), we have to make the default fiscal year in the coming one.
+             */
+            $select_fiscal_year = $current_fiscal_year.'-'.substr(($current_fiscal_year + 1), 2);
+            
+            $current_fiscal_month = Date("m");
+            
+            $current_fiscal_month -=1;
+
+            if ($current_fiscal_month <=  0) $current_fiscal_month = 12;
+            
+            $current_quarter=  $current_fiscal_month / 4;
+            
+            $current_quarter = ($current_quarter + 2) % 4 + 1;
+            
+            if ($current_fiscal_month < 7) $select_fiscal_year = ($current_fiscal_year-1).'-'.substr($current_fiscal_year, 2);
+            
+            $current_fiscal_year = $current_quarter == 2 ? $current_fiscal_year + 1 : $current_fiscal_year;
+            $years = range($current_fiscal_year + 1, $current_fiscal_year - 5);
+            $year_dropdown_vals = array();
+            foreach ($years as $year) {
+                $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 2);
+            }
+            echo $this->formLabel("fiscal_year", "Fiscal Year");
+            echo $this->formSelect("fiscal_year", empty($this->year) ? array($select_fiscal_year): $this->year, array(), $year_dropdown_vals);
+            ?>
+            <?php
+            echo $this->formLabel("quarter", "Quarter");
+            echo $this->formSelect("quarter", empty($this->quarter) ? array($current_quarter): $this->quarter, null, array(
+                1 => "Q1 (Sales Jul 01 - Sept 30)",
+                2 => "Q2 (Sales Oct 01 - Dec 31)",
+                3 => "Q3 (Sales Jan 01 - Mar 31)",
+                4 => "Q4 (Sales April 01 - Jun 30)"
+            ));
+            ?>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+</form>
+
+<br />
+<div class="spacer"></div>
+
+<div id="tabs" class="tabs">
+    <ul>
+        <li><a href="#tabs-1">Fill out report by sales</a></li>
+        <li><a href="#tabs-2">Fill out report by Greek Org.</a></li>
+    </ul>
+    <div id="tabs-1">
+        <form id="report_by_sales" action="">
+            <h3>Quarterly Royalty Report</h3>
+            <br />
+            <table class="report_submit_table">
+                <thead>
+                    <tr class="sales_row_header">
+                        <td>Organization Name</td>
+                        <td>Product sold to</td>
+                        <td>Invoice Date</td>
+                        <td>Invoice Num</td>
+                        <td>Product Description</td>
+                        <td>QTY</td>
+                        <td>Price/Unit</td>
+                        <td>Gross Sales</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </thead>
+                <tbody>
+		    <?php if($this->tab==1 && count($this->savedRows) > 0) {?>
+			<?php foreach($this->savedRows as $key=> $row) { ?>
+			    <tr class="sales_row">
+				<td>
+				    <select name="greek_org[]" class="select">
+					<?php foreach ($this->clients as $client): ?>
+					    <option value="<?php echo $client->id; ?>" <?php echo ($row->client->id == $client->id) ? 'selected' : '' ?>><?php echo $client->organization_name; ?></option>
+					<?php endforeach; ?>
+				    </select>
+				</td>
+				<td><?php echo $this->formText("product_sold_to[]", $row->product_sold_to, array('id' => '', 'class' => 'text sold_to', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("invoice_date[]", $row->invoice_date->format('m/d/Y'), array('id' => '', 'class' => 'text inv_date', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("invoice_number[]", $row->invoice_num, array('id' => '', 'class' => 'text inv_num', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("product_description[]", $row->product_desc, array('id' => '', 'class' => 'text desc', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("qty[]", $row->quantity, array('id' => '', 'class' => 'text qty', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("price[]", $row->unit_price, array('id' => '', 'class' => 'text price', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("gross_sales[]", $row->gross_sales, array('id' => '', 'class' => 'text gross_sales', 'size' => 30)); ?></td>
+				<td>
+				    <a href="javascript:;" class="iconlink add <?php echo $key>0? 'hidden': '' ?>"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
+				    <a href="javascript:;" class="iconlink rem <?php echo $key==0? 'hidden': '' ?>"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+				</td>
+			    </tr>
+			<?php } ?>
+		    <?php } else {?>
+
+			    <tr class="sales_row">
+				<td>
+				    <select name="greek_org[]" class="select">
+					<?php foreach ($this->clients as $client): ?>
+					    <option value="<?php echo $client->id; ?>" ><?php echo $client->organization_name; ?></option>
+					<?php endforeach; ?>
+				    </select>
+				</td>
+				<td><?php echo $this->formText("product_sold_to[]", '', array('id' => '', 'class' => 'text sold_to', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("invoice_date[]", '', array('id' => '', 'class' => 'text inv_date', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("invoice_number[]", '', array('id' => '', 'class' => 'text inv_num', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("product_description[]", '', array('id' => '', 'class' => 'text desc', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("qty[]", '', array('id' => '', 'class' => 'text qty', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("price[]", '', array('id' => '', 'class' => 'text price', 'size' => 30)); ?></td>
+				<td><?php echo $this->formText("gross_sales[]", '', array('id' => '', 'class' => 'text gross_sales', 'size' => 30)); ?></td>
+				<td>
+				    <a href="javascript:;" class="iconlink add"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
+				    <a href="javascript:;" class="iconlink rem hidden"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+				</td>
+			    </tr>
+
+		    <?php }?>
+                </tbody>
+            </table>
+            <button type="submit" id="submit-report-1" class="button button_black">Submit Report</button>&nbsp; &nbsp;
+            <button type="button" class="button button_green" id="save-report-1">Save Report</button>
+        </form>
+    </div>
+    <?php ?>
+    <div id="tabs-2">
+
+        <form id="report_by_client" action="">
+            <div class="one_half"><h3>Quarterly Royalty Report</h3></div><div class="one_third"><a href="javascript:;" class="iconlink2 subgroup_add"><img src="<?php echo $this->baseUrl("assets/images/icons/small/black/plus.png"); ?>" class="mgright5" alt=""> <span>Add Another Greek Org</span></a></div>
+            <div class="clear"></div>
+            <br />
+            <div class="report_groups">
+		<?php if($this->tab==2 && count($this->savedRows) > 0) {
+		    foreach($this->savedRows as $k => $report) {?>
+
+                <div class="sub_group">
+                    <a href="javascript:;" class="iconlink2 subgroup_close"><img src="<?php echo $this->baseUrl('/assets/images/icons/small/black/close.png'); ?>" alt=""></a>
+                    <h4>Select Greek Organization</h4>
+                    <select name="clients">
+                        <?php foreach ($this->clients as $client): ?>
+                            <option value="<?php echo $client->id; ?>" <?php echo ($client->id == $k) ? 'selected' : ''?>><?php echo $client->organization_name; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <br />
+                    <br />
+                    <table class="report_submit_table">
+                        <thead>
+                            <tr class="sales_row_header">
+                                <td>Product sold to</td>
+                                <td>Invoice Date</td>
+                                <td>Invoice Num</td>
+                                <td>Product Description</td>
+                                <td>QTY</td>
+                                <td>Price/Unit</td>
+                                <td>Gross Sales</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+				<?php foreach($report as $key => $row1) {
+				    $row = unserialize($row1);
+				    ?>
+				    <tr class="sales_row">
+					<td><?php echo $this->formText("product_sold_to[]", $row->product_sold_to, array('id' => '', 'class' => 'text sold_to', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("invoice_date[]", $row->invoice_date->format('m/d/Y'), array('id' => '', 'class' => 'text inv_date', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("invoice_number[]", $row->invoice_num, array('id' => '', 'class' => 'text inv_num', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("product_description[]", $row->product_desc, array('id' => '', 'class' => 'text desc', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("qty[]", $row->quantity, array('id' => '', 'class' => 'text qty', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("price[]", $row->unit_price, array('id' => '', 'class' => 'text price', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("gross_sales[]", $row->gross_sales, array('id' => '', 'class' => 'text gross_sales', 'size' => 30)); ?></td>
+					<td>
+					    <a href="javascript:;" class="iconlink add <?php echo $key>0? 'hidden': '' ?>"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
+				    <a href="javascript:;" class="iconlink rem <?php echo $key==0? 'hidden': '' ?>"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+					</td>
+				    </tr>
+				<?php } ?>
+
+                        </tbody>
+                    </table>
+                </div>
+		<?php }
+		} else {?>
+		<div class="sub_group">
+                    <a href="javascript:;" class="iconlink2 subgroup_close hidden"><img src="<?php echo $this->baseUrl('/assets/images/icons/small/black/close.png'); ?>" alt=""></a>
+                    <h4>Select Greek Organization</h4>
+                    <select name="clients">
+                        <?php foreach ($this->clients as $client): ?>
+                            <option value="<?php echo $client->id; ?>" ><?php echo $client->organization_name; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <br />
+                    <br />
+                    <table class="report_submit_table">
+                        <thead>
+                            <tr class="sales_row_header">
+                                <td>Product sold to</td>
+                                <td>Invoice Date</td>
+                                <td>Invoice Num</td>
+                                <td>Product Description</td>
+                                <td>QTY</td>
+                                <td>Price/Unit</td>
+                                <td>Gross Sales</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+				    <tr class="sales_row">
+					<td><?php echo $this->formText("product_sold_to[]", "", array('id' => '', 'class' => 'text sold_to', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("invoice_date[]",  "", array('id' => '', 'class' => 'text inv_date', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("invoice_number[]",  "", array('id' => '', 'class' => 'text inv_num', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("product_description[]",  "", array('id' => '', 'class' => 'text desc', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("qty[]",  "", array('id' => '', 'class' => 'text qty', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("price[]",  "", array('id' => '', 'class' => 'text price', 'size' => 30)); ?></td>
+					<td><?php echo $this->formText("gross_sales[]",  "", array('id' => '', 'class' => 'text gross_sales', 'size' => 30)); ?></td>
+					<td>
+					    <a href="javascript:;" class="iconlink add"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
+					    <a href="javascript:;" class="iconlink rem hidden"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+					</td>
+				    </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+
+		<?php } ?>
+            </div>
+            <button type="button" id="submit-report-2" class="button button_black">Submit Report</button> &nbsp;&nbsp;
+	    <button type="button" class="button button_green" id="save-report-2">Save Report</button>
+        </form>
+    </div>
+</div><!-- tabs -->
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+    .form_default label {
+        float:none;
+    }
+    .report_submit_options{
+        list-style-type:none;
+        margin:20px 0 0 20px;
+    }
+    .select{margin-right: 10px;}
+    #tabs .text{ margin: 0 10px 0 0;}
+    #tabs input.sold_to{  width:130px;   }
+    #tabs input.inv_date{  width:80px;   }
+    #tabs input.inv_num{  width:80px;   }
+    #tabs input.desc{  width:120px;   }
+    #tabs input.qty{  width:50px;   }
+    #tabs input.price{  width:60px;   }
+    #tabs input.gross_sales{  width:100px;   }
+    #tabs input.greek_org{  width:100px;   }
+    #tabs .hidden{  visibility: hidden;   }
+    .report_submit_table tbody td{
+        padding:0 0 10px 0;
+    }
+    .sub_group{
+        background-color:#E9EAED;
+        border-bottom: 1px solid #DDD;
+        margin:0 0 10px 0;
+        padding:8px;
+    }
+    .subgroup_close{
+        position: absolute;right: 40px;
+    }
+</style>
+
+<script type="text/javascript">
+    $(window).on('load',function(){
+        $("#tabs").tabs({
+	    'selected': <?php echo !empty($this->tab) ? $this->tab-1 : 0?>
+	});
+
+        $('#tabs').bind('tabsselect', function(event, ui){
+            var shouldChange = false;
+
+            console.log("changing " + ui.index);
+            
+           	if (ui.index == 0){	
+                $('div[id="tabs-2"]').find('input').each(function(){
+                    if ($(this).val() && $(this).val() != '') shouldChange = true;
+           		});
+           	} else {
+               	
+                $('div[id="tabs-1"]').find('input').each(function(){
+                    if ($(this).val() && $(this).val() != '') shouldChange = true;
+           		});
+           	}
+
+           	if (shouldChange) return confirm("Warning, you have unsaved data in this tab. If you go to the other tab and submit from that tab, you will lose this data.");
+
+           	return true;
+        });
+    	
+        init_validation();
+        init_submit_form_handlers();
+        bind_date_picker($('input[name^=invoice_date]'));
+        $(document).on('click','a.add',function(){
+            $new_row=$(this).parents("tr.sales_row").clone();
+            $(this).parents("table").append($new_row);
+            $new_row.find('input').val('');
+            $new_row.find('a.add').hide();
+            $new_row.find('a.rem').removeClass('hidden');
+            bind_date_picker($new_row.find('input[name^=invoice_date]').removeClass('hasDatepicker').removeAttr('id'));
+        });
+        $("a.subgroup_add").on('click',function(){
+            $new_group=$('div.report_groups .sub_group:eq(0)').clone();
+            $('div.report_groups').append($new_group);
+            $new_group.find('tr.sales_row:gt(0)').remove();
+            $new_group.find('.subgroup_close').removeClass('hidden');
+            bind_date_picker($new_group.find('input[name^=invoice_date]').removeClass('hasDatepicker').removeAttr('id'));
+            $('div.report_groups .sold_to').last().val('');
+            $('div.report_groups .inv_date').last().val('');
+            $('div.report_groups .inv_num').last().val('');
+            $('div.report_groups .desc').last().val('');
+            $('div.report_groups .qty').last().val('');
+            $('div.report_groups .price').last().val('');
+            $('div.report_groups .gross_sales').last().val('');
+        });
+        $(document).on('click','.rem',function(){
+            $(this).parents('tr.sales_row').remove();
+        });
+
+        $(document).on('click','.subgroup_close',function(){
+            $(this).parents('.sub_group').remove();
+        });
+    });
+
+    $(document).on('ready', function(){
+      
+    });
+
+    function init_submit_form_handlers(){
+        $('#submit-report-1').on('click',function(){
+			console.log("clicky");
+            
+            if(confirm("Are you certain that the sales data is complete?")){
+                // Send the report
+                
+                console.log("confirmed");
+                
+                $form=$(this).parents("form");
+
+            //    window.location.href= site_url + "/vendor/royalty/sale-revenue";
+ 				$.ajax({
+                    url : site_url+"/vendor/royalty/ajax-save-report",
+                    data : $form.serialize()+"&quarter="+$("#quarter").val()+"&year="+$("#fiscal_year").val()+"&tab=1&id=<?php echo $this->saveId?>",
+                    type : 'post',
+                    dataType : 'json',
+//                    success : success_handler
+                    success: function(response){
+//                        console.log(response);
+                        $.jGrowl(response.message);
+                        setTimeout(function() {
+							var type = <?php echo $this->licenseType;?>;
+
+							if (type == 1){
+							     window.location.href = site_url+"/vendor/royalty/sale-revenue/save_id/"+response.id + "/vendor_id/<?php echo $this->vendor_id?>/submission_hash/<?php echo $this->submission_hash?>/year/"+$('#fiscal_year').val()+"/quarter/"+$('#quarter').val();
+			                       
+							} else {
+	                			window.location.href = site_url+"/vendor/royalty/sale-revenue-type2/year/"+$('#fiscal_year').val()+"/quarter/"+$('#quarter').val();
+							}
+                        }, 1500);
+                    }
+                });
+               /* $.ajax({
+                    url : site_url+"/vendor/royalty/ajax-submit-report",
+                    data : $form.serialize()+"&quarter="+$("#quarter").val()+"&year="+$("#fiscal_year").val()+"&id=<?php echo $this->saveId?>",
+                    type : 'post',
+                    dataType : 'json',
+                    success: function(response){
+//                        console.log(response);
+                        console.log("success");
+                        $.jGrowl(response.message);
+                        setTimeout(function() {
+                            window.location.href = site_url+"/vendor/royalty/sale-revenue-summary";
+                        }, 1500);
+                    },
+                    error: function(response){
+							var out = '';
+
+							for (var i in response){
+									out += i + ": " + response[i] + "\n";
+								}
+                        
+							console.log("error in request " + out);
+                        }
+                });*/
+            }
+            return false;
+        });
+
+	$('#save-report-1').on('click',function(){
+            if(confirm("Save this Report for now?")){
+                // Send the report
+                $form=$(this).parents("form");
+                $.ajax({
+                    url : site_url+"/vendor/royalty/ajax-save-report",
+                    data : $form.serialize()+"&quarter="+$("#quarter").val()+"&year="+$("#fiscal_year").val()+"&tab=1&id=<?php echo $this->saveId?>",
+                    type : 'post',
+                    dataType : 'json',
+//                    success : success_handler
+                    success: function(response){
+//                        console.log(response);
+                        $.jGrowl(response.message);
+                        setTimeout(function() {
+
+							var type = <?php echo $this->licenseType;?>;
+
+							if (type == 1){
+
+	                            window.location.href = site_url+"/vendor/royalty/submit/id/"+response.id+"/tab/"+response.tab;
+							} else {
+	                			window.location.href = site_url+"/vendor/royalty/sale-revenue-type2/year/"+$('#fiscal_year').val()+"/quarter/"+$('#quarter').val();
+							}
+                        }, 1500);
+                    }
+                });
+            }
+            return false;
+        });
+
+        /**
+         * It's a little tricky here now.
+         */
+        $('#submit-report-2').on('click',function(){
+            if(confirm("Are you certain that the sales data is complete?")){
+                /**
+                 * first remove all the dynamically created hidden fields
+                 */
+                $("input[name^=greek_org]").remove(); //$("input[name^=greek_orgs]").remove();
+                $('.sub_group').each(function(){
+                    $group=$(this);
+                    $(this).find('.sales_row').each(function(){
+                        $('<input>').attr({type: 'hidden',name: 'greek_org[]','value':$group.find('select[name=clients]').val()}).appendTo($(this).find("td:eq(0)"));
+                    })
+                })
+
+                $form=$(this).parents("form");
+                $.ajax({
+                    url : site_url+"/vendor/royalty/ajax-save-report",
+                    data : $form.serialize()+"&quarter="+$("#quarter").val()+"&year="+$("#fiscal_year").val()+"&tab=1&id=<?php echo $this->saveId?>",
+                    type : 'post',
+                    dataType : 'json',
+//                    success : success_handler
+                    success: function(response){
+//                        console.log(response);
+                        $.jGrowl("Successfully Submitted the report");
+                        setTimeout(function() {
+
+							var type = <?php echo $this->licenseType;?>;
+
+							if (type == 1){
+							     window.location.href = site_url+"/vendor/royalty/sale-revenue/save_id/"+response.id + "/vendor_id/<?php echo $this->vendor_id?>/submission_hash/<?php echo $this->submission_hash?>/year/"+$('#fiscal_year').val()+"/quarter/"+$('#quarter').val();
+		                            
+                            	//window.location.href = site_url+"/vendor/royalty/summary/";
+							} else {
+	                			window.location.href = site_url+"/vendor/royalty/sale-revenue-type2/year/"+$('#fiscal_year').val()+"/quarter/"+$('#quarter').val();
+							}
+                        }, 1500);
+                    }
+                });
+            }
+            return false;
+        });
+
+	/**
+         * It's a little tricky here now.
+         */
+        $('#save-report-2').on('click',function(){
+            if(confirm("Save this Report for now?")){
+                /**
+                 * first remove all the dynamically created hidden fields
+                 */
+                $("input[name^=greek_org]").remove(); //$("input[name^=greek_orgs]").remove();
+                $('.sub_group').each(function(){
+                    $group=$(this);
+                    $(this).find('.sales_row').each(function(){
+                        $('<input>').attr({type: 'hidden',name: 'greek_org[]','value':$group.find('select[name=clients]').val()}).appendTo($(this).find("td:eq(0)"));
+                    })
+                })
+
+                $form=$(this).parents("form");
+                $.ajax({
+                    url : site_url+"/vendor/royalty/ajax-save-report",
+                    data : $form.serialize()+"&quarter="+$("#quarter").val()+"&year="+$("#fiscal_year").val()+"&tab=2&id=<?php echo $this->saveId?>",
+                    type : 'post',
+                    dataType : 'json',
+//                    success : success_handler
+                    success: function(response){
+//                        console.log(response);
+                        $.jGrowl("Successfully Submitted the report");
+                        setTimeout(function() {
+                            window.location.href = site_url+"/vendor/royalty/submit/id/"+response.id+"/tab/"+response.tab;
+                        }, 1500);
+                    }
+                });
+            }
+            return false;
+        });
+
+    }
+
+    function init_validation(){
+
+    }
+
+    function success_handler(e){
+        if(e.code=='success'){
+            $.jGrowl("Successfully Submitted the report");
+            window.location.reload();
+        }
+    }
+
+    function bind_date_picker(element){
+        element.datepicker();
+    }
+
+
+</script>

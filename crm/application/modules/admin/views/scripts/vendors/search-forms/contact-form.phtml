@@ -1,0 +1,118 @@
+<!--<h2>Search By Contact</h2>-->
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Search By Contact</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" >
+                <?php
+                foreach ($this->user_status as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<hr size="1"/>
+<form action="" method="POST" enctype="multipart/form-data" id="search-contact-form">
+    <input type="hidden" name="search_type" value="contact" />
+<!--    <div class="spacer"></div>-->
+    <div class="form_container_left">
+        <?php echo $this->form->username; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->email; ?>
+    </div>
+<!--    <div class="clear"></div>-->
+<!--    <div class="spacer"></div>-->
+    <h3>Company Info</h3>
+    <div class="spacer"></div>
+<!--    <br />-->
+    <div class="form_container_left">
+        <?php echo $this->form->company_name; ?>
+        <?php echo $this->form->company_email; ?>
+        <?php echo $this->form->address_line_1; ?>
+        <?php echo $this->form->address_line_2; ?>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->user_code; ?>
+
+        <div class="one_half">
+            <?php echo $this->form->phone_1; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->phone_2; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->fax; ?>
+        <?php echo $this->form->web_page; ?>
+    </div>
+    <div class="clear"></div>
+<!--    <div class="spacer"></div>-->
+    <h3>Contact Info</h3>
+    <div class="spacer"></div>
+<!--    <br />-->
+    <div class="form_container_left">
+        <div class="one_third">
+            <?php echo $this->form->sal; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->first_name; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->job_title; ?>
+        <?php echo $this->form->contact_type; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->last_name; ?>
+        <?php echo $this->form->work_phone; ?>
+        <?php echo $this->form->mobile; ?>
+    </div>
+<!--    <div class="spacer"></div>-->
+    <button type="submit" class="button button_black detail_button">Search</button>
+</form>
+<script type="text/javascript">
+    var status = 'all';
+    $(function(){
+        $("#username")[0].focus();
+        $("#search-contact-form").on('submit',function(){
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'all';
+            }
+            window.parent.executeSearch($(this).serialize()+'&vendor_status='+status,'Search Vendors By Contact','contact');
+            return false;
+        });
+    })
+
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });
+</script>
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #first_name{
+        width:250px;
+    }
+    #phone_1,#phone_2{
+        width:150px;
+    }
+    .leftalign{float: left;}
+    .rightalign{float: right;padding-right: 10px;}
+</style>

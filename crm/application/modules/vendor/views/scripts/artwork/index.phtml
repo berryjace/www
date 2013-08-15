@@ -1,0 +1,124 @@
+<?php
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('artwork/sub-menu-bar.phtml', array('selected'=>'artwork', 'id'=>$this->user->id));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<div id="view-content">
+    <div class="one">
+        <div style="float:left">
+            <h3>Official <?php echo $this->user->organization_name; ?> Artwork</h3>
+        </div>
+        <div style="float:right"><a href="<?php echo $this->baseUrl("vendor/design/submit-design"); ?>" class="addNewButton">Submit Product Design</a></div>
+    </div>
+    <div class="spacer clear"></div>     
+
+    <?php if(sizeof($this->artworks)) {?>
+    <?php if($this->lic->__get('status') != 4){ ?>
+    <div class="one">
+        You are not currently licensed with <b><?php echo $this->user->organization_name; ?></b>. Once you are licensed, you will be able to download the following artwork.
+    </div>
+    <div class="spacer clear"></div>
+    <?php } ?>
+    <?php foreach($this->artworks as $artwork) {?>
+    <div class="design-view">
+        <?php
+            if ('' != $artwork->file_url) {	
+                $extension_format = explode('.', $artwork->file_url);            
+                $thumb_image_path = $this->baseUrl("assets/files/artworks/thumbs/".base64_encode('_thumb')) . $artwork->file_url;
+                $image_path = $this->baseUrl("assets/files/artworks/large/") . $artwork->file_url;
+            }else{
+                $thumb_image_path = $this->baseUrl("assets/images/no_image.jpg");
+                $image_path = $this->baseUrl("assets/images/no_image.jpg");
+            }
+        ?>
+        <a href="javascript:;" rel="
+	<?php
+	if ($this->lic->__get('status') == 4){
+		if ('jpg' == $extension_format[1] || 'png' == $extension_format[1]){
+			echo $image_path;
+		}
+		else{
+                	$image_path = "/crm/notfound";
+			echo $image_path;
+		}
+	}
+	else{
+		$image_path = "/crm/notallowed";
+	        echo $image_path;
+	}
+	?>
+	" class="main_link"><?php echo $artwork->title; ?></a>
+        <input type="text" name="title[]" value="<?php echo $artwork->title; ?>" class="art_title" />
+        <a href="javascript:;" class="save_art" rel="<?php echo $artwork->id; ?>"><img src="<?php echo $this->baseUrl("assets/images/save.png"); ?>"  /></a>
+        <div class="spacer"></div>
+        
+         <a href="javascript:;" rel="<?php echo $image_path; ?>" class="view_art" id="view_art">
+                    <img src="<?php echo $thumb_image_path; ?>" class="list_pic" onerror="this.src='<?php echo $this->baseUrl("assets/images/".strtolower($extension_format[1])."_75.png"); ?>';" />
+                </a>        
+        <br />
+        
+        <?php if($this->lic->__get('status') == 4){?>
+        <a href="javascript:;" class="download_art" rel="<?php echo $artwork->file_url; ?>">Download</a>        
+        <?php }else {echo "<br />";} ?>
+    </div>
+    <?php } ?>
+    <div class="spacer"></div>
+    <div align="left">
+        <?php echo $this->paginationControl($this->artworks, 'Sliding', '/layout/pagination.phtml'); ?>
+    </div>
+    <?php }else{ ?>
+    <div class="one">No artwork available.</div>
+    <?php } ?>
+    
+    <div class="spacer"></div>
+    <?php echo $this->partial('artwork/index-partial.phtml', array('id'=>$this->user->id)); ?>
+</div>
+
+
+<style type="text/css">
+    .design-view {width:180px;float: left;padding: 2px;position: relative;text-align: center;border: 1px solid #CCC;margin:4px;}
+    .design-view .del-pic {
+        color: #FFFFFF;
+        display: block;
+        font: 11px arial,helvetica;
+        left: 0;
+        padding: 1px 5px;
+        position: absolute;
+        top: 0;
+    }
+    .design-view a.main_link {line-height: 27px;}
+    .art_title, .save_art {display:none;}
+    .save_art {vertical-align: text-bottom;}
+    .link_button {float:right;}
+    .errors {color:red}
+    .success {color:green}
+</style>
+<script type="text/javascript">
+
+    //For artwork download dounload
+    $(document).on("click", ".design-view a.download_art", function(){      
+        window.location.href = site_url+"/vendor/artwork/download-artwork/file/"+$(this).attr('rel');
+        return false;
+    });
+                    
+    //For popup artwork view
+    $(document).on('click', '.design-view a.main_link', function(){        
+        loadLargeView($(this).attr('rel'));                
+        return false;
+    });    
+    
+    //For popup artwork view
+    $(document).on('click', '.design-view a.view_art', function(){        
+        loadLargeView($(this).attr('rel'));        
+        return false;
+    });
+    
+    function loadLargeView(thisItem){
+        $.fancybox({
+            'overlayShow'	: true,
+            'href'            : thisItem,  
+            'transitionIn'	: 'elastic',
+            'transitionOut'	: 'elastic'
+        });
+    }
+</script>

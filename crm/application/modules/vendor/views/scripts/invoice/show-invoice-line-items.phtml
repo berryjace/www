@@ -1,0 +1,53 @@
+<?php if (sizeof($this->items)): ?>
+    <?php
+    $quarters = array(0 => 'N/A', 1 => 'First', 2 => 'Second', 3 => 'Third', 4 => 'Fourth');
+    $alt = true;
+    $currency = new Zend_Currency('en_US');
+    ?>
+    <h4>Invoice ID : <?php echo $this->items[0]->invoice_number_li; ?></h4>
+    <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+        <thead>
+            <tr role="row">
+                <th>Line Item #</th>
+                <th>Client</th>
+                <th>Fiscal Year</th>
+                <th>Quarter</th>
+                <th>Date</th>
+                <th>Check Number</th>
+                <th>Invoice Total</th>
+                <th>Amount Paid</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $i = $total_due = $total_paid = 0; ?>
+            <?php foreach ($this->items as $item): ?>
+            <?php $i++; $total_due += $item->amount_due; $total_paid += $item->amount_paid; ?>
+                <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                    <td><?php echo $i; //$item->lineitems_number; ?></td>
+                    <td><?php echo $item->client_id->organization_name; ?></td>
+                    <td><?php echo $item->fiscal_year; ?></td>
+                    <td><?php echo $quarters[$item->quarter]; ?></td>
+                    <td><?php echo ( (int) $item->created_at->format("Y") > 0 ? $item->created_at->format("m/d/Y") : 'N/A'); ?></td>                    
+                    <td><?php echo $item->check_number; ?></td>
+                    <td><?php echo $currency->toCurrency($item->amount_due); ?></td>
+                    <td><?php echo $currency->toCurrency($item->amount_paid); ?></td>
+                </tr>
+            <?php endforeach; ?>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="total_txt">Total</td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_due); ?></td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_paid); ?></td>                    
+                </tr>
+        </tbody>
+    </table>
+<?php endif; ?>
+
+<style type="text/css">     
+    .total_txt{text-align: right; font-weight: bold;}
+    .total_amt{font-weight: bold;}
+</style>

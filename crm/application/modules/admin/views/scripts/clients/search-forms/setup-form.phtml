@@ -1,0 +1,167 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/plugins/jquery-ui-1.8.16.custom.min.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+?>
+<h2>Search By Setup</h2><hr size="1"/>
+<div class="spacer"></div>
+<form action="" method="POST" enctype="multipart/form-data" id="search-setup-form">
+    <input type="hidden" name="search_type" value="setup" />
+    <div class="form_container_left">
+        <label>Client Name<br />
+            <input type="text" class="text" id="client_name" name="client_name" />
+        </label>
+        <div class="spacer"></div>
+        <label>Greek letters<br />
+            <input type="text" class="text" id="greek_letters" name="greek_letters" />
+        </label>
+        <div class="spacer"></div>
+        <label>Description<br />
+            <input type="text" class="text" id="description" name="description" />
+        </label>
+        <div class="spacer"></div>
+        <label>Address 1<br />
+            <input type="text" class="text" id="address1" name="address1" />
+        </label>
+        <div class="spacer"></div>
+        <label>Address 2<br />
+            <input type="text" class="text" id="address2" name="address2" />
+        </label>
+        <div class="spacer"></div>
+        <label>City<br />
+            <input type="text" class="text" id="city" name="city" />
+        </label>
+        <div class="spacer"></div>
+        <div class="one_half">
+            <label>State<br />
+                <select name="state">
+                    <option value="">Select</option>
+                    <?php
+                    foreach ($this->states_list as $state) {
+                        echo "<option value=" . $state['abbrev'] . ">" . $state['name'] . "</option>";
+                    }
+                    ?>
+                </select>
+            </label>
+        </div>
+        <div class="one_third">
+            <label>Zip Code<br />
+                <input type="text" class="text" id="zip" name="zip" />
+            </label>
+        </div>
+        <div class="spacer"></div>
+        <label>Approved Contact Person<br />
+            <input type="text" class="text" id="contact_person" name="contact_person" />
+        </label>
+        <div class="spacer"></div>
+        <div class="one_half">
+            <label>Phone No.<br />
+                <input type="text" class="text" id="phone" name="phone" />
+            </label>
+        </div>        
+        <div class="one_third">
+            <label>Fax No.<br />
+                <input type="text" class="text" id="fax" name="fax" />
+            </label>     
+        </div>
+        <div class="spacer"></div>
+        <label>Email Address<br />
+            <input type="text" class="text" id="email_address" name="email_address" />
+        </label>
+        <div class="spacer"></div>
+        <label>Web Address<br />
+            <input type="text" class="text" id="web_address" name="web_address" />
+        </label>
+    </div>
+    <div class="form_container_right">
+        <label>Default Renewal Fee<br />
+            <div class="one_half">
+                <input type="text" class="text renewal_fee" id="renewal_fee_1" name="renewal_fee_1" placeholder=" BETWEEN $" onfocus="if(this.value == this.defaultValue) this.placeholder = '' " />
+            </div>
+            <div class="one_third" >
+                <input type="text" class="text renewal_fee" id="renewal_fee_2" name="renewal_fee_2" placeholder=" AND $" onfocus="if(this.value == this.defaultValue) this.placeholder = '' "  />
+            </div>
+        </label>
+        <div class="spacer"></div>
+        <label>Default Late Fee<br />
+            <div class="one_half">
+                <input type="text" class="text late_fee" id="late_fee_1" name="late_fee_1" placeholder=" BETWEEN $" onfocus="if(this.value == this.defaultValue) this.placeholder = '' " />
+            </div>
+            <div class="one_third" >
+                <input type="text" class="text late_fee" id="late_fee_2" name="late_fee_2" placeholder=" AND $" onfocus="if(this.value == this.defaultValue) this.placeholder = '' "  />
+            </div>
+        </label>
+        <div class="spacer"></div>        
+        <label>Org. Type<br />
+            <input type="text" class="text" id="org_type" name="org_type" />
+        </label>
+        <div class="spacer"></div>
+        <label>Founding Year<br />
+            <input type="text" class="text" id="founding_year" name="founding_year" />
+        </label>
+        <div class="spacer"></div>
+        <label>Number of Alumni/ae<br />
+            <div class="one_half">
+                <input type="text" class="text alumni" id="alumni_1" name="alumni_1" placeholder=" BETWEEN " onfocus="if(this.value == this.defaultValue) this.placeholder = '' " />
+            </div>
+            <div class="one_third" >
+                <input type="text" class="text alumni" id="alumni_2" name="alumni_2" placeholder=" AND " onfocus="if(this.value == this.defaultValue) this.placeholder = '' "  />
+            </div>
+        </label>       
+        <div class="spacer"></div>
+        <label>Number of UnderGrads<br />
+            <div class="one_half">
+                <input type="text" class="text undergrads" id="undergrads_1" name="undergrads_1" placeholder=" BETWEEN " onfocus="if(this.value == this.defaultValue) this.placeholder = '' " />
+            </div>
+            <div class="one_third" >
+                <input type="text" class="text undergrads" id="undergrads_2" name="undergrads_2" placeholder=" AND " onfocus="if(this.value == this.defaultValue) this.placeholder = '' "  />
+            </div>
+        </label>         
+        <div class="spacer"></div>
+        <label>Number of Alumni/ae Chapters<br />
+            <div class="one_half">
+                <input type="text" class="text alumni_chapters" id="alumni_chapters_1" name="alumni_chapters_1" placeholder=" BETWEEN " onfocus="if(this.value == this.defaultValue) this.placeholder = '' " />
+            </div>
+            <div class="one_third" >
+                <input type="text" class="text alumni_chapters" id="alumni_chapters_2" name="alumni_chapters_2" placeholder=" AND " onfocus="if(this.value == this.defaultValue) this.placeholder = '' "  />
+            </div>
+        </label>         
+        <div class="spacer"></div>
+        <label>Total UG Chapters<br />
+            <div class="one_half">
+                <input type="text" class="text ug_chapters" id="ug_chapters_1" name="ug_chapters_1" placeholder=" BETWEEN " onfocus="if(this.value == this.defaultValue) this.placeholder = '' " />
+            </div>
+            <div class="one_third" >
+                <input type="text" class="text ug_chapters" id="ug_chapters_2" name="ug_chapters_2" placeholder=" AND " onfocus="if(this.value == this.defaultValue) this.placeholder = '' "  />
+            </div>
+        </label> 
+        <div class="spacer"></div>
+        <label>Grant of Licenses<br />
+            <textarea rows="10" cols="62" id="grant_of_lic" name="grant_of_lic"></textarea>
+        </label>        
+    </div>
+
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black detail_button">Search</button>
+</form>
+<script type="text/javascript">
+    $(function(){
+        $("#client_name")[0].focus();
+        $(".date").datepicker({
+            dateFormat:"mm/dd/yy"
+        });
+        $("#search-setup-form").on('submit',function(){
+            window.parent.executeSearch($(this).serialize(),'Search Clients by Setup','setup');
+            return false;
+        });
+    })
+</script>
+<style type="text/css">
+    #state,#zip,#fax, .renewal_fee ,.late_fee,.alumni,.undergrads,.alumni_chapters,.ug_chapters{
+        width:180px;
+    } 
+    #date_from,#date_to{
+        width:135px;
+    }
+</style>

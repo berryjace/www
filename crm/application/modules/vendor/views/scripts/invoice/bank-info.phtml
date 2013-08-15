@@ -1,0 +1,72 @@
+<?php
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('invoice/sub-menu-bar.phtml', array('selected' => 'bankinfo'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<h2>Bank Information</h2>
+<hr size="1" noshade />
+<div class="spacer clear"></div>
+
+<div class="one">    
+    <b>Account Number : </b><?php echo $this->is_bank_info ? $this->bank_info->account_number : 'N/A'; ?>
+    <div class="spacer clear"></div>      
+    <b>Routing Number : </b><?php echo $this->is_bank_info ? $this->bank_info->routing_number : 'N/A'; ?>
+    <div class="spacer clear"></div>            
+    <button name="add_update" id="add_update" class="button button_black">Add or Update</button>    
+</div>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification {
+        color: #000000;
+        background-color: #A79269;
+    } 
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        $(document).on('click', 'button#add_update', event_functions.add_or_update);
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            
+        },
+        add_or_update : function(){
+            var $url = site_url+"/vendor/invoice/add-bank-info/";
+            loadPopupView($url, 650, 300);
+        }
+    }    
+    
+    function loadPopupView(url, w, h){
+        $.fancybox({
+            'width'                 : w,
+            'height'                : h,
+            'href'                  : url,    
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'               
+        });        
+        return false;
+    }
+    
+    function close_popup(){
+        $.fancybox.close();
+    }
+
+    function execute_refresh(message){
+        close_popup();
+        $.jGrowl(message);        
+        setTimeout(function() { 
+            window.location.href = site_url+'/vendor/invoice/bank-info/';
+        }, 1500);     
+    }    
+    
+</script>
+

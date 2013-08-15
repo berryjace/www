@@ -1,0 +1,46 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml',array('selected'=>'license'));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">    
+    <span style="float:left;"><h2>Addendum</h2></span>
+    <span style="float:right"><a href="<?php echo $this->baseUrl("vendor/license/addendums"); ?>" class="addNewButton">Addendums</a></span>
+</div>
+<div class="spacer"></div>
+<hr size="1" />
+
+<div class="addendum">
+    <?php echo $this->addendum->create_date->format('F, d Y | h:i A e'); ?>
+    <p><?php echo $this->addendum->reason; ?></p>
+    <div class="spacer"></div>
+    
+    <?php echo $this->addendum->content?>    
+    <div class="spacer"></div>
+    
+    <b>Greek organizations for which this addendum applies.</b>
+    
+    <form action="" method="post" id="license_template">
+        <?php if(sizeof($this->addendumUsers)) { ?>
+        <ul class="greek_name">
+            <?php 
+            foreach($this->clients as $client) {
+                if(in_array($client['id'], $this->addendumUsers)) {
+            ?>
+            <li><?php echo $this->form->greek_org->setCheckedValue($client['id'])->setValue($client['id'])." ".$client['greek_name']; ?></li>
+                <?php } else { ?>
+            <li><?php echo $this->form->greek_org->setCheckedValue($client['id'])->setValue('')." ".$client['greek_name']; ?></li>
+                <?php } ?>
+            <?php } ?>
+        </ul>
+        <?php } else{ ?>
+        There are no "Greek organizations" applies for this addendum.
+        <?php } ?>
+    </form>
+</div>
+<style type="text/css">
+    .addendum {padding: 5px;width:800px;}
+    .addendum p {font-weight:bold;}
+    #license_template .greek_name {list-style: none;width:850px;}
+    ul.greek_name li {width:70px;float:left;}
+</style>

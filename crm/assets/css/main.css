@@ -1,0 +1,56 @@
+@font-face { font-family:Droid Sans; src: url('font/DroidSans.ttf'); format('TrueType'); } 
+h1, h2, h3, h4, h5, h6, #nav ul li a{ font-family:Droid Sans; font-weight:400; color:#3d2418}
+.event { background:url(../images/bg_table_light.png) repeat-x scroll 0 0 #ECECEC; border-bottom:1px solid #cccccc; height:65px; display: block; padding: 10px 0}
+.event .calendar {background:url(/images/date.png) 2px -6px no-repeat;  color:#ffffff; text-align:center; display:block; font-size:24px; font-weight:bold; width:70px !important}
+.event .calendar .date{height:36px;}
+.event .calendar .month_n_year {font-size: 9px; word-spacing:-1px; color:#FFFFFF; text-align:center; font-weight: normal; height: 19px}
+.event .info { font-size: 11px}
+.event .info h2 {font-size: 13px; margin-bottom: 0px}
+.event .info .location{color:#736F6E; font-size:11px}
+.event .info .invite{ font-size:11px}
+.vendor_list ul{ padding:0; margin:0; }
+.vendor_list li{ padding:5px 10px; margin:0; list-style-type:none; display:block; float:left}
+.vendor_list li:hover{ background:#e2e0d1; cursor:pointer; border-radius:15px 0 15px 0}
+
+.vendor_artwork ul, .vendor_design ul{ padding:0; margin:0; }
+.vendor_artwork .sidebar_top{ width:270px}
+.vendor_artwork .sidebar_body{ width:290px; float:left}
+.vendor_artwork .sidebar_body li{ padding:5px 10px; margin:0; list-style-type:none; display:block; width:270px; float:left}
+.vendor_artwork .sidebar_body li:hover, .vendor_artwork .sidebar_body li.selected{ background:url(../images/box_top_bg.png) repeat scroll 0 0 transparent; cursor:pointer; border-radius:15px 0 15px 0}
+
+
+.vendor_design .sidebar_top{ width:200px}
+.vendor_design .sidebar_body{ width:220px; float:left}
+.vendor_design li{ padding:5px 10px; margin:0; list-style-type:none; display:block; width:200px; float:left}
+.vendor_design li:hover, .vendor_design li.selected{ background:url(../images/box_top_bg.png) repeat scroll 0 0 transparent; cursor:pointer; border-radius:15px 0 15px 0}
+
+
+.artwork_gallery li{ width:110px; /*height:160px;*/ float:left; padding:10px; margin:0 20px 20px 0; display:block; position:relative}
+
+.guidelines ul.artwork_gallery li{ width:60px; height:80px; float:left; padding:10px; margin:0 10px 20px 0; display:block; position:relative}
+
+.vendor_design .pending, .vendor_design .rejected, .vendor_design .accepted, .vendor_design .none{ position:absolute; top:0; left:0}
+
+
+.licenses_status{float:left; width:120px; text-align:right}
+.org_name { float:left; width:140px;}
+.org_symbol {float:left; width:60px;}
+.status {float:left; width:70px;}
+
+.pending{ width:10px; height:10px; /*margin:5px 5px 0 0;*/ float:left; display:block;  background:#F60; position: absolute}
+.rejected{width:10px; height:10px; /*margin:5px 5px 0 0;*/ float:left; display:block;  background: #F00; position: absolute}
+.accepted{width:10px; height:10px; /*margin:5px 5px 0 0;*/ float:left; display:block;  background: #0C0; position: absolute}
+.none{width:10px; height:10px; margin:5px 5px 0 0; float:left; display:block;  background: #CCC}
+
+/* for artwork module */
+.pending_l{ width:10px; height:10px; margin:5px 5px 0 0; float:left; display:block;  background:#F60; }
+.rejected_l{width:10px; height:10px; margin:5px 5px 0 0; float:left; display:block;  background: #F00;}
+.accepted_l{width:10px; height:10px; margin:5px 5px 0 0; float:left; display:block;  background: #0C0;}
+
+
+.buttons{ width:190px; margin-top:30px}
+.scroller { height:300px; width:380px; overflow-y:scroll; overflow-x: hidden}
+#middle_one li { padding:0px 10px; }
+#right_one { padding:0px 10px; float:right; text-align:right}
+#right_one a{ color:#F4F4F5; text-shadow:1px 1px #000000; font-weight:bold}
+.design_box{height:170px}

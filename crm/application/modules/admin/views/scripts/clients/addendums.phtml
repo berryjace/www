@@ -1,0 +1,33 @@
+<?php
+$current_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+?>
+<h2>Addendums</h2>
+<div class="spacer"></div>
+<?php //echo $this->partial('clients/master_template_menus.phtml'); ?>
+<div class="one">    
+    <a href="<?php echo $this->baseUrl("admin/clients/master-templates"); ?>" class="iconlink<?php echo $this->noinsurance ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $this->noinsurance ? "white" : "black"; ?>/settings.png" class="mgright5" alt="" /><span>With Insurance</span></a> &nbsp; 
+    <a href="<?php echo $this->baseUrl("admin/clients/master-templates/noinsurance/1"); ?>" class="iconlink<?php echo $this->noinsurance ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $this->noinsurance ? "white" : "black"; ?>/settings.png" class="mgright5" alt="" /><span>Without Insurance</span></a> &nbsp;     
+    <a href="<?php echo $this->baseUrl("admin/clients/addendums"); ?>" class="iconlink<?php echo ($current_action == 'addendums') ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo ($current_action == 'addendums') ? "white" : "black"; ?>/settings.png" class="mgright5" alt="" /><span>Addendums</span></a> &nbsp;                      
+    <a href="<?php echo $this->baseUrl("admin/clients/add-addendum"); ?>" class="iconlink<?php echo ($current_action == 'add-addendum') ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo ($current_action == 'add-addendum') ? "white" : "black"; ?>/settings.png" class="mgright5" alt="" /><span>Create Addendum</span></a> &nbsp;                             
+</div>
+
+<div class="spacer"></div>
+<?php if(sizeof($this->addendums)) { ?>
+    <?php foreach($this->addendums as $addendum) { ?>
+    <div class="addendum">
+        <?php echo $addendum->is_draft == 1 ? 'DRAFT - Yet to be submitted' : $addendum->create_date->format('F, d Y | h:i A e'); ?>
+        <p><a href="<?php echo $this->baseUrl("admin/clients/edit-addendum/id/").$addendum->id?>" class="view_more"><?php echo $addendum->reason; ?></a></p>
+        <div class="spacer"></div>
+        <?php echo substr(strip_tags($addendum->content), 0, 250).'... [<a href="'.$this->baseUrl("admin/clients/view-addendum/id/").$addendum->id.'" class="view_more">more</a>]'?>
+    </div>
+    <div class="spacer"></div>
+    
+    <?php } ?>
+    <div align="left">
+        <?php echo $this->paginationControl($this->addendums, 'Sliding', '/layout/pagination.phtml'); ?>
+    </div>
+<?php } ?>
+<style type="text/css">   
+    .addendum {padding: 5px;width:800px;}
+    .addendum p {font-weight:bold;}
+</style>

@@ -1,0 +1,56 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/plugins/jquery-ui-1.8.16.custom.min.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+?>
+<h2>Search By Correspondence</h2><hr size="1"/>
+<div class="spacer"></div>
+<form action="" method="POST" enctype="multipart/form-data" id="search-correspondence-form">
+    <input type="hidden" name="search_type" value="correspondence" />
+    <label>Client Name<br />
+        <input type="text" class="text" id="client_name" name="client_name" />
+    </label>
+    <div class="spacer"></div>
+    <label>Subject<br />
+        <input type="text" class="text" id="subject" name="subject" />
+    </label>
+    <div class="spacer"></div>
+    <label>Description<br />
+        <input type="text" class="text" id="description" name="description" />
+    </label>
+    <div class="spacer"></div>
+    <div class="one_half">
+        <label>Date From<br />
+            <input type="text" class="text date" id="date_from" name="date_from" />
+        </label>
+    </div>
+    <div class="one_third">
+        <label>Date to<br />
+            <input type="text" class="text date" id="date_to" name="date_to" />
+        </label>
+    </div>
+    <div class="clear"></div>
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black detail_button">Search</button>
+</form>
+<script type="text/javascript">
+    $(function(){
+        $("#client_name")[0].focus();
+        $(".date").datepicker({
+            dateFormat:"mm/dd/yy"
+        });
+        $("#search-correspondence-form").on('submit',function(){
+            window.parent.executeSearch($(this).serialize(),'Search Clients by Correspondence','correspondence');
+            return false; 
+        });
+    })
+</script>
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #date_from,#date_to{
+        width:135px;
+    }
+</style>

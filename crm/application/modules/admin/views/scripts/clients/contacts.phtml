@@ -1,0 +1,134 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('clients/sidebar-menus.phtml', array('selected' => 'contacts', 'id' => $this->client->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<h2>Contacts</h2>
+<div class="spacer"></div>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" class="dyntable" id="contacts-data-table">
+    <thead>
+        <tr>
+            <td colspan="9" style="padding:0">
+                <div class="sTableOptions">
+                    <a href="javascript:;" id="add_contact_link" class="iconlink2"><img src="<?php echo $this->baseUrl("assets/images/icons/small/black/plus.png"); ?>" class="mgright5" alt=""> <span>Add New</span></a>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th width="8%" class="head0">Sal.</th>
+            <th width="12%" class="head1">First</th>
+            <th width="12%" class="head0">Last</th>
+            <th width="14%" class="head1">Job Title</th>
+            <th width="10%" class="head0">Work Phone</th>                
+            <th width="10%" class="head1">Mobile</th>
+            <th width="15%" class="head0">Email</th>
+            <th width="10%" class="head1">Contact For</th>
+            <th width="9%" class="head0">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        if (count($this->clientContacts) > 0) {
+            foreach ($this->clientContacts as $contact) {
+                echo "<tr>";
+                echo "<td>" . $contact->sal . "</td>";
+                echo "<td>" . $contact->first_name . "</td>";
+                echo "<td>" . $contact->last_name . "</td>";
+                echo "<td>" . $contact->title . "</td>";
+                echo "<td>" . $contact->phone . "</td>";
+                echo "<td>" . $contact->mobile . "</td>";
+           
+                echo "<td>" . $contact->email . "</td>";
+                echo "<td>" . $contact->contact_type . "</td>";
+                echo '<td> 
+                    <a href="javascript:;" rel="' . $contact->id . '" class="edit-contact">View & Edit</a>
+                    | <a href="' . $this->baseUrl("admin/clients/delete-contact/id/" . $contact->id."/client_id/".$this->client->id) . '" class="delete-contact">Delete</a>
+                    </td>';
+                echo "</tr>";
+            }
+        }
+        ?>
+    </tbody>
+</table>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification{color:#000000;background-color:#A79269;}
+</style>
+
+<script type="text/javascript">
+    var oTable;
+    var page='all';
+    $(window).bind('load',function(){
+        init_oTable_initialize(page);
+        $(document).on('click', 'a.edit-contact', client_contact_functions.edit_contact);
+        $(document).on('click', 'a.delete-contact', client_contact_functions.delete_contact);
+        $(document).on('click', 'a#add_contact_link', client_contact_functions.add_contact);
+    });
+    
+    client_contact_functions={        
+        edit_contact: function(e){            
+            var link = site_url+"/admin/clients/edit-contact/id/"+$(e.target).attr("rel");
+            loadPopView(link);
+            return false;
+        },
+        add_contact: function(){
+            var link = site_url+"/admin/clients/add-contact/id/"+<?php echo $this->client->id; ?>;
+            loadPopView(link);
+            return false;
+        },
+        delete_contact:function(){
+            if(confirm("Are you sure to delete this contact ?")){                
+                return true;
+            }
+            return false;
+        }
+    };
+
+    function loadPopView(thisItem){        
+        $.fancybox({
+            'width'                 : 860,
+            'height'                : 410,
+            'href'                  : thisItem,
+            'autoScale'             : true,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'type'                  : 'iframe',
+            'showCloseButton' : true,
+            'speedIn'      : 100,
+            'speedOut'      : 100            
+        });
+    }
+    
+    function execute_parent(msg){
+        $.fancybox.close();   
+        $.jGrowl(msg);
+        location.reload();
+    }
+    
+    function init_oTable_initialize(page){
+        oTable=$('#contacts-data-table').dataTable( {
+            "sPaginationType": "full_numbers",
+            "bFilter" : false,
+            "bPaginate" : false,
+            "oLanguage": {
+                "sSearch": "Search Events by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[
+                { "bSortable": false, "aTargets": [0] },
+                { "bSortable": true, "aTargets": [1] },
+                { "bSortable": true, "aTargets": [2] },
+                { "bSortable": true, "aTargets": [3] },
+                { "bSortable": false, "aTargets": [4] },
+                { "bSortable": true, "aTargets": [5] },
+                { "bSortable": true, "aTargets": [6] }, 
+                { "bSortable": true, "aTargets": [7] }, 
+                { "bSortable": false, "aTargets": [8] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                //$('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after(alphabet_list);
+            }
+        } );
+    }
+</script>

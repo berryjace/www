@@ -1,0 +1,7 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('selected'=>'designs','id'=>$this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<h2><?php echo $this->vendor->organization_name; ?></h2>
+<hr size="1" />

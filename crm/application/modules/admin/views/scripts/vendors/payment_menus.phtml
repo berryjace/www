@@ -1,0 +1,8 @@
+<?php
+$action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+?>
+
+<a href="<?php echo $this->baseUrl('admin/vendors/all-payments'); ?>" class="iconlink<?php echo ($action <> 'all-payments') ? "2" : ""; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo ($action <> 'all-payments') ? "black" : "white"; ?>/document.png" class="mgright5" alt=""> <span>All-Payments</span></a>
+<a href="<?php echo $this->baseUrl('admin/vendors/paymentreports'); ?>" class="iconlink<?php echo ($action <> 'paymentreports') ? "2" : ""; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo ($action <> 'paymentreports') ? "black" : "white"; ?>/document.png" class="mgright5" alt=""> <span>Payment Reports</span></a>
+</br>
+</br>

@@ -1,0 +1,46 @@
+<div class="spacer"></div>
+<h2>Edit Clients: <span style="font-size: 13px; font-style: oblique;padding-left: 12px;"><?php echo $this->client_name; ?></span></h2> 
+<hr size="1" noshade />
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>"> 
+    <div class="spacer"></div>
+    <div class="one">       
+        <?php echo $this->form->lic_agree_num; ?>
+        <?php echo $this->form->lic_status; ?>
+        <?php echo $this->form->renewal_fee; ?>
+        <?php echo $this->form->sharing; ?>
+        <div class="spacer"></div>
+        <div class="leftalign">            
+            <button name="submit" id="submit" type="submit" class="button button_black detail_button">Submit</button>&nbsp;
+            <button name="cancel" id="cancel" type="button" class="button button_black detail_button">Cancel</button>&nbsp;
+        </div>
+    </div>
+</form>
+<style type="text/css">
+    .text{
+        width:250px; 
+    }
+    .select{
+        width:258px; 
+    }
+    .one{
+        padding-left: 10px;
+    }
+</style>    
+<script type="text/javascript">
+    $(window).bind('load', function(){            
+        edit_lic_clients_functions.init_lic_clients_message();
+        $(document).on('click', 'button#cancel', edit_lic_clients_functions.close_popup_form);    
+        $("#lic_agree_num").prop('disabled', true);
+    });
+    
+    edit_lic_clients_functions={
+        init_lic_clients_message : function(){
+            if('<?php echo $this->result['success']; ?>'){
+                window.parent.execute_refresh('<?php echo $this->result['message']; ?>');
+            }  
+        },               
+        close_popup_form : function(){
+            window.parent.close_popup();
+        }        
+    }
+</script>

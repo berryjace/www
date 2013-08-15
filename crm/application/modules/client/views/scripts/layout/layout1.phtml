@@ -1,0 +1,220 @@
+<?php
+$type = isset($this->type) ? $this->type : 'vendor';
+?>
+<?php echo $this->doctype() ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <?php echo $this->headTitle(); ?>
+        <?php echo $this->headLink(); ?>
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <!-- <link rel="stylesheet" type="text/css" media="screen" href="/css/960_12_10_10.css" /> -->
+        <?php echo $this->headLink(); ?>
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/960_12_fluid.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/reset.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/text.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/style.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/styles.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css" />
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery.pajinate.js"></script>
+            <?php echo $this->headScript(); ?>
+	<style type="text/css">
+                        body{ background:<?php echo $this->whiteLabel->bg_color; ?>;
+                                color:<?php echo $this->whiteLabel->font_color; ?>;
+                        }
+                        #tophead{ display:none}
+                        #content_wrap{ width:100%; padding:0; margin:0}
+                        #header_wrap{padding:0; margin: 0 auto; text-align: center;}
+                        #login_wrap{ width:1171px; margin:0 auto}
+                        .h1{    font-size: 26px;
+                                font-weight: bold;
+                                line-height: 26px;
+                                margin-bottom: 10px;
+                                text-shadow: 0 0 2px #AAAAAA;
+                        }
+                        #searchfilter td{ padding:5px}
+                        .outer_b{float:left; background:#ececec; margin-right:18px; margin-bottom:18px;-webkit-border-radius: .54em;
+                                 -moz-border-radius: .5em; }
+                        .logo_b{background:#fff; height:111px; width:210px; text-align:center;  border:1px solid #cfcfcf;-webkit-border-radius: .4em;
+                                -moz-border-radius: .4em; display:table-cell; vertical-align:middle}
+                        .logo_b li{ list-style:none;}
+                        .logo_b ul{ padding:0; margin:0}
+                        .logo_b li a{ display:block}
+
+                        .info_b{padding:5px; text-align:center;}
+                        .info_b span{ font-size:11px}
+                        #featured_vendor_banner{ text-align:center; padding:10px 0px 10px 10px;}
+
+                        #paging_container3{
+                            height: 10px;
+                        }
+
+                        #wrapper{
+                            margin: 0px auto;
+                            text-align: left;
+                            width: 960px;
+                        }
+
+                        .alt_content2  { padding:0; margin:0; width:300px}
+                        .alt_content2 li{ border-bottom:1px solid #efefef; }
+                        .alt_content2 li a:hover{ font-weight:bold}
+
+                        .ellipse{
+                            float: left;
+                        }
+
+                        .container{
+                            width: 260px;
+                            float: left;
+                            margin: 50px 10px 10px;
+                            padding: 20px;
+                            background-color: white;
+                        }
+
+                        .page_navigation , .alt_page_navigation{
+                            padding: 10px ; clear:both; float:right; margin-right:10px
+                        }
+
+                        .page_navigation a, .alt_page_navigation a{
+                            padding:3px 5px;
+                            margin:2px;
+                            color:white;
+                            text-decoration:none;
+                            float: left;
+                            font-family: Tahoma;
+                            font-size: 12px;
+                            background-color: #800000;
+                        }
+                        .active_page{
+                            background-color:white !important;
+                            color:black !important;
+                        }
+
+                        .content, .alt_content{
+                            color: black;
+                            margin:0;
+                        }
+
+                        .content li, .alt_content li, .content > p{
+                            padding: 5px
+                        }
+                        .left,.right{border: 0px solid;}
+                        .left{
+                            float: left;
+                        }
+                        .right{
+                            float: right;
+                            margin-right: 100px;
+                        }
+                        .right input[type=text]{
+                            width: 110px;
+                            margin-bottom: 0px !important;
+                        }
+                        .right .one_fourth{
+                            float:left;
+                            margin:0 10px 0 0;
+                        }
+                        .clear{
+                            clear: both;
+                        }
+                        .services{
+                            list-style: none;
+                            margin: 0px;
+                            padding: 0px;
+                        }
+                        .services li{
+                            padding: 5px;
+                        }
+                        .bannerCtn{
+                            border: 0px solid;
+                            margin-right:10px;
+                            text-decoration: none;
+                        }
+                        #previousCtn{
+                            float: right;
+                            margin: 18px 100px 0 0;
+                        }
+                         input{
+                            padding:4px 7px;
+                        }
+                        dd{
+                            margin:0
+                        }
+                    </style>
+    </head>
+
+    <body>
+
+
+
+
+        <!-- header -->
+        <div class="wrapper">
+            <div class="topbg">
+                <div class="container_12" id="content_wrap">
+                    <table width="90%" style="margin: auto">
+
+			<tr>
+			    <td>
+				    <div id="header_wrap">
+					<?php if (sizeof($this->whiteLabel) AND ($this->whiteLabel->header_file <> "")): ?>
+		                            <a href="<?php echo $this->whiteLabel->header_link; ?>"><img class="header_img" src="<?php echo $this->baseUrl("assets"); ?>/files/labels/<?php echo $this->whiteLabel->header_file; ?>" alt="" /></a>
+				        <?php endif; ?>
+				    </div>
+			    </td>
+			</tr>
+			<tr>
+			    <td>
+				<?php echo $this->layout()->content ?>
+			    </td>
+			</tr>
+		    </table>
+
+
+
+                    <!--                            </div>-->
+                    <!-- content end -->
+
+
+
+                    <!-- side bar -->
+
+                    <!-- This component slot depends on view.yml configuration; look for which
+                    module and component its passing as a parameter -->
+                    <?php //include_component_slot('calendar')  ?>
+
+                    <!-- side bar ends -->
+                    <!-- body end -->
+                </div>
+
+
+            </div>
+
+            <div class="clear">&nbsp;</div>
+
+            <!-- footer -->
+            <div class="footer_wrapper" style="background: <?php echo $this->whiteLabel->footer_color; ?>;">
+                <div class="container_12">
+
+                    <div class="grid_12" style="padding: 10px 0;">
+
+                        <?php echo isset($this->clientProfile) ?  $this->clientProfile->user_id->organization_name : ''; ?>
+
+                    </div>
+
+                </div>
+            </div>
+            <!-- footer end -->
+        </div>
+
+        <script language="javascript">
+            function positionFooter() { var mFoo = $(".footer_wrapper");
+                if ((($(document.body).height() + mFoo.height()) < $(window).height() && mFoo.css("position") == "fixed") || ($(document.body).height() < $(window).height() && mFoo.css("position") != "fixed")) { mFoo.css({ position: "fixed", bottom: "0px" }); }
+                else { mFoo.css({ position: "static" }); } } $(document).ready(function () { positionFooter(); $(window).scroll(positionFooter); $(window).resize(positionFooter); $(window).load(positionFooter); });
+        </script>
+
+    </body>
+</html>
+
+

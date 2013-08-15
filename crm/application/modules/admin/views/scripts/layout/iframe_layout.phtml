@@ -1,0 +1,33 @@
+<?php echo $this->doctype(); ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+        <?php echo $this->headTitle(); ?>
+        <?php echo $this->headLink(); ?>
+        <link href="<?php echo $this->baseUrl("assets"); ?>/css/62_16_10_1152.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="<?php echo $this->baseUrl("assets"); ?>/css/styles.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="<?php echo $this->baseUrl("assets"); ?>/css/pop_up.css" media="screen" rel="stylesheet" type="text/css" />
+
+        <!--[if IE]>
+        <link href="css/ie.css" media="screen" rel="stylesheet" type="text/css">
+        <![endif]-->
+        <script type="text/javascript">
+            var site_url="<?php echo $this->baseUrl(); ?>";
+        </script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-1.6.2.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-tipsy.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-custom.js"></script>
+        <?php echo $this->headScript(); ?>
+    </head>
+    <body>
+<!--        <div class="container_16">-->
+            <?php echo $this->layout()->content ?>
+<!--        </div>-->
+        <style type="text/css">
+            body{
+                background-color:#FFFFFF;
+                
+            }
+        </style>
+    </body>
+</html>

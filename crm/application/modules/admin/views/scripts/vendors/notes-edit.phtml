@@ -1,0 +1,33 @@
+<h2>Edit note</h2>
+<hr size="1" noshade />
+<div class="clear"></div>
+
+<div class="one">
+    <form name="edit_note" id="edit_note" method="POST" action="">
+        <?php echo $this->form->description; ?>
+        <div class="clear"></div>
+        <?php echo $this->form->note_id; ?>
+        <div class="spacer clear"></div>
+        <?php echo $this->form->Save; ?>
+    </form>
+</div>
+
+<style type="text/css">
+    form{margin: 0px; padding: 0px;}
+    textarea#description{width: 735px; height: 300px; overflow: scroll;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            if('<?php echo $this->result['success']; ?>'){
+                window.parent.execute_refresh('<?php echo $this->result['message']; ?>');
+            }
+        }
+    }    
+</script>

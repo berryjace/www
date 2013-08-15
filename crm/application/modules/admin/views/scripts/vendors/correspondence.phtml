@@ -1,0 +1,311 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'correspondence', 'id' => $this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>       
+        </div>
+    </div>          
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<?php echo $this->partial('vendors/correspondence-form-partial.phtml', array('form' => $this->form, 'vendor' => $this->vendor)); ?>
+
+<div class="spacer"></div>
+
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable sTable2" id="correspondence-data-table">
+    <thead>
+        <tr>
+            <th class="head1" width="160">Date</th>
+            <th class="head0" width="20%">Subject</th>
+            <th class="head1">Note</th>
+            <th class="head0" width="125">Action</th>
+        </tr>            
+    </thead>
+</table>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var active_pagination='';
+    var is_fb_open=false;
+    
+    $(window).bind('load',function(){            
+    /** Small Plugin to get the pagination info of DataTable **/
+        $.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
+        {
+            return {
+                "iStart":         oSettings._iDisplayStart,
+                "iEnd":           oSettings.fnDisplayEnd(),
+                "iLength":        oSettings._iDisplayLength,
+                "iTotal":         oSettings.fnRecordsTotal(),
+                "iFilteredTotal": oSettings.fnRecordsDisplay(),
+                "iPage":          Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
+                "iTotalPages":    Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
+            };
+        }
+        
+        init_oTable_initialize();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();        
+        init_popup_links();
+    });    
+    
+    function init_oTable_initialize(){
+        oTable=$('#correspondence-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 10,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-correspondence/id/<?php echo $this->vendor->id; ?>',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Correspondence:"                
+            },
+            "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[
+                { "bSortable": true, "aTargets": [ 0 ] },
+                { "bSortable":true, "aTargets": [ 1 ] },
+                { "bSortable": false, "aTargets": [ 2 ] },
+                { "bSortable": false, "aTargets": [ 3 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            },
+            fnDrawCallback:function(){
+                init_vendor_link();
+            }            
+        } ); 
+    }
+       
+    function init_vendor_link(){
+        $(document).on("click", "a.vendor_notes_link", function(e){  
+            //if($(".grid_cap").text().indexOf('Royalty Reports')==0){            
+                $('.sTable2 tr.selected').removeClass('selected');                
+                $(this).parents('tr').addClass('selected');                                                                  
+                show_report_popup($(this).attr('rel'));                
+            //}            
+        });
+                
+        /*
+         $("a.vendor_notes_link").each(function(){ 
+            $(this).qtip(
+            {
+                content: {
+                    text: 'Loading..',      
+                    title: {
+                        text: 'Note Details', // Give the tooltip a title using each elements text
+                        button: false
+                    },
+                    ajax: {
+                        url: site_url+'/admin/vendors/ajax-get-correspondence-details/note-id/'+$(this).attr('rel')
+                    }
+                },
+                position: {
+                    my: 'center', // ...at the center of the viewport
+                    at: 'center',
+                    target: $(window),
+                    viewport: $(window),
+                    effect: false
+                    
+                },
+                show: {
+                    event: 'click', 
+                    solo: true, 
+                    modal: true 
+                },
+                hide: 'unfocus',
+                style: {
+                    width:'800px',
+                    classes : 'ui-tooltip-shadow ui-tooltip-light ui-tooltip-rounded'
+                }
+            })
+            .click(function(event) { event.preventDefault(); });
+        });
+         */
+    }
+    
+    function show_report_popup(id){
+        /**
+         * obj.v=vendor
+         * obj.m=section . e.g correspondence
+         * obj.c=section id. e.g. correspondence id
+         */
+        $.fancybox({
+            'width'                 : 600,
+            'height'                : 400,
+            'href'                  : site_url+"/admin/vendors/correspondence-details/id/"+id,
+            'transitionIn'         : 'none',
+            'transitionOut'        : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF',
+            'titlePosition'        : 'inside',
+            'onStart'               :  function(){
+                is_fb_open=true;  
+            },
+            'onClosed'               :  function(){
+                is_fb_open=false;  
+            },
+            'titleFormat'       : function(title, currentArray, currentIndex, currentOpts) {
+                return '<button type="Button" id="pop_prev" class="button button_blue">Prev</button>&nbsp; <button id="pop_next" type="Button" class="button button_blue">Next</button>&nbsp; ';
+            }
+        }); 
+    }
+    
+    function init_popup_links(){
+	$(document).on("click", "button#pop_prev", function(e)
+	{             
+		row_index=$('.sTable2 tr').index($('.sTable2 tr.selected'));
+            	if(row_index==1)
+		{
+                	if(oTable.fnPagingInfo().iPage>0)
+			{
+                    		oTable.fnPageChange('previous');
+                    		active_pagination='prev';
+                	}
+            	}
+		setTimeout(function(){reload_popup_dec()},500);
+        });
+
+        $(document).on("click", "button#pop_next", function(e){             
+            	row_index=$('.sTable2 tr').index($('.sTable2 tr.selected'));
+            	if(row_index==$('.sTable2 tbody tr').size())
+		{
+                	if(oTable.fnPagingInfo().iPage+1<oTable.fnPagingInfo().iTotalPages)
+			{
+                		oTable.fnPageChange('next');
+                    		active_pagination='next';
+                	}
+            	}
+		setTimeout(function(){reload_popup_inc()},500);
+        })
+    }
+    function reload_popup_inc(){
+		if(row_index<0 || row_index > 9)
+                	row_index = 0;
+		$('.sTable2 tr.selected').removeClass('selected');
+                $('.sTable2 tr').eq(row_index+1).addClass('selected');
+                $('.sTable2 tbody tr.selected').find('a.vendor_notes_link').click();
+}
+    function reload_popup_dec(){
+                if(row_index==1 || row_index > 9)
+                        row_index = 11;
+		//alert("dec" +row_index);
+                $('.sTable2 tr.selected').removeClass('selected');
+                $('.sTable2 tr').eq(row_index-1).addClass('selected');
+                $('.sTable2 tbody tr.selected').find('a.vendor_notes_link').click();
+}
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+    
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+    
+    $(function(){
+        $(document).on('click', 'a.delete_note', function(){
+            if(confirm('Are you sure to delete this note ?')){
+                $note_id=$(this).attr('rel').split("-")[1];
+                $.ajax({
+                    url:site_url+'/admin/vendors/ajax-delete-correspondence/',
+                    dataType:'json',
+                    data : 'note_id='+$note_id+'&vid='+<?php echo $this->vendor->id; ?>,
+                    type:'post',
+                    success:function(e){
+                        $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                        }
+                    }
+                });
+            }
+            return false;
+        });
+    })
+
+    $(function(){
+        $(document).on('click', 'a.vendor_edit_link', function(){
+            $note_id=$(this).attr('rel');
+            $url = site_url+"/admin/vendors/edit-correspondence/id/"+$note_id;  
+            console.log($url);
+            $.fancybox({
+                'width'                 : 490,
+                'height'                : 440,
+                'href'                  :  $url,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        });    
+    });
+    
+    function execute_refresh(msg){
+        $.fancybox.close();   
+        $.jGrowl(msg);
+        oTable.fnDraw();
+        return false;
+    }
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .ui-tooltip-content{
+        font-size:110%;
+        line-height: 150%
+    }
+    .ui-tooltip, .qtip{
+        max-width: 500px; 
+    }
+    
+    .sTable2 tbody tr.selected td{
+        background-color: #FFFFCC;
+    }
+</style> 

@@ -1,0 +1,132 @@
+<div>
+<?php 
+	$MAX_PER_PAGE = 42;
+	$page=0;
+	if(sizeof($this->lineitems)) :
+ 	$currency = new Zend_Currency('en_US');
+        $i = $total_due = $total_paid =0;$count=0;$set=array();
+        foreach ($this->lineitems as $item){
+        	$i++; 
+		$total_due += $item->amount_due; 
+		$total_paid += $item->amount_paid; 
+		if($this->invoice->invoice_type=="Annual")
+		{
+			$set[$i]=array('Client_id'=>$item->client_id->organization_name,'Status'=>$this->status_array[$item->license_status],'Due'=>$currency->toCurrency($item->amount_due));
+		}
+		elseif(true){
+			$set[$i]=array('Client_id'=>$item->client_id->organization_name,
+					'Check#'=>$item->check_number,
+					'Status'=>$item->payment_status,
+					'Due'=>$currency->toCurrency($item->amount_due-$item->amount_paid),
+					'Paid'=>$currency->toCurrency($item->amount_paid));
+		}
+	} 
+
+	for($count=1;$count<$i;$count++) {
+		if($count+($MAX_PER_PAGE-1) >= $page*$MAX_PER_PAGE*2)
+		{
+			if($page !=0)
+			{
+	//			echo "</tbody></table><div align=\"center\">*Please remember to deduct your advances paid per organization from future royalty reports.</div>";
+				$count=$count+$MAX_PER_PAGE;
+			}
+                        $page++;
+			//include 'invoice-pdf-template-header.phtml';
+			if($this->invoice->invoice_type=="Annual")
+                	{				
+	?>
+			<table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top;10px">
+        		<tbody>
+	<?php
+			}	
+			elseif(true)
+			{
+	?>
+			<table cellpadding="0" cellspacing="0" border="1" width="100%" style="padding-top;10px">
+                                <thead>
+                                <tr role="row" height="16px">
+                                        <th width="20%" align="left"><b>Organization</b></th>
+                                        <th width="15%" align="center"><b>Date</b></th>
+                                        <th width="15%" align="right"><b>Amount. Due</b></th>
+                                        <th width="20%" align="right"><b>Amount. Paid</b></th>
+                                        <th width="15%" align="center"><b>Check #</b></th>
+                                        <th width="11%" align="center"><b>Status</b></th>
+                                </tr>
+                                </thead>
+                        <tbody>
+	<?php
+			}
+			
+		}
+		if($this->invoice->invoice_type=="Annual")
+                {
+	?>
+		<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                    <td width="20%">
+			<?php echo $set[$count]['Client_id']; ?>
+		    </td>
+                    <td width="15%">
+			<?php echo $set[$count]['Status']; ?>
+		    </td>
+                    <td width="11%" align="right">
+			<?php echo $set[$count]['Due']; ?>
+		    </td>
+		    <td  width="8%"></td>
+		    <td width="20%">
+			<?php 
+				if(isset($set[$count+$MAX_PER_PAGE])){
+				echo $set[$count+$MAX_PER_PAGE]['Client_id']; 
+			?>
+		    </td>
+                    <td width="15%">
+			<?php echo $set[$count+$MAX_PER_PAGE]['Status']; ?>
+		    </td>
+                    <td width="11%" align="right">
+			<?php echo $set[$count+$MAX_PER_PAGE]['Due'];} ?>
+		    </td>
+                </tr>
+	<?php 	}
+		elseif(true){
+		?>
+                <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                    <td width="20%">
+                        <?php echo $set[$count]['Client_id']; ?>
+                    </td>
+                    <td width="15%">
+                    </td>
+                    <td width="15%" align="right">
+                        <?php echo $set[$count]['Due']; ?>&nbsp;&nbsp;
+                    </td>
+                    <td width="20%" align="right">
+                        <?php
+                                echo $set[$count]['Paid'];
+                        ?>&nbsp;&nbsp;
+                    </td>
+                    <td width="15%" align="center">
+                        <?php echo $set[$count]['Check#']; ?>
+                    </td>
+                    <td width="11%" align="center">
+			<?php echo $set[$count]['Status']; ?>
+                    </td>
+                </tr>
+        <?php
+		} 
+}
+	?>
+                <tr>
+                    <td width="20%">&nbsp;</td>
+                    <td width="15%" class="total_txt">Total Due:&nbsp;&nbsp;</td>
+                    <td width="15%" class="total_amt"><?php echo $currency->toCurrency($total_due-$total_paid); ?>&nbsp;&nbsp;</td>
+                    <td width="20%">&nbsp;</td>
+                    <td width="15%">&nbsp;</td>
+                </tr>
+        </tbody>
+    </table>
+    <div align="center">*Please remember to deduct your advances paid per organization from future royalty reports.</div>
+<?php endif; ?>
+</div>
+
+<style type="text/css">
+    .total_txt{font-weight: bold; text-align: right;}
+    .total_amt{font-weight: bold; text-align: right;}
+</style>

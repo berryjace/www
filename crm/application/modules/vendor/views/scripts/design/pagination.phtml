@@ -1,0 +1,61 @@
+<?php if ($this->pageCount > 1): ?>
+    <div class="pagination_total">Showing <?php echo $this->firstItemNumber; ?> - <?php echo $this->lastItemNumber; ?> of <?php echo $this->totalItemCount; ?> Records </div>
+    <ul id="pagination-digg">
+    <!--    <li class="previous">Pages: <?php echo $this->pageCount ?></li>-->
+        <!-- Previous page link -->
+        <?php if (isset($this->previous)): ?>
+            <li class="previous">
+                <a href="<?php echo $this->url(array('page' => $this->first)); ?>">
+                    First
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (isset($this->previous)): ?>
+            <li class="previous"><a href="<?php echo $this->url(array('page' => $this->previous)); ?>">
+                    &laquo; Prev
+                </a></li>
+        <?php endif; ?>
+
+
+        <!-- Numbered page links -->
+        <?php foreach ($this->pagesInRange as $page): ?>
+            <?php if ($page != $this->current): ?>
+                <li>
+                    <a href="<?php echo $this->url(array('page' => $page)); ?>">
+                        <?php echo $page; ?>
+                    </a>
+                </li>
+            <?php else: ?>
+                <li class="active"><?php echo $page; ?></li>
+            <?php endif; ?>
+        <?php endforeach; ?>
+
+        <!-- Next page link -->
+        <?php if (isset($this->next)): ?>
+            <li class="next">
+                <a href="<?php echo $this->url(array('page' => $this->next)); ?>">
+                    Next &raquo;
+                </a>
+            </li>
+        <?php endif; ?>
+        <?php if (isset($this->next)): ?>
+            <li class="previous">
+                <a href="<?php echo $this->url(array('page' => $this->last)); ?>">
+                    Last
+                </a>
+            </li>
+        <?php endif; ?>
+    </ul>
+<?php endif; ?>
+<style type="text/css">
+.pagination_total{ margin:10px 0 2px 0; color:#666666; font-size:11px;}
+#pagination-digg{ padding:0; margin:0; padding-bottom:40px; padding-top:5px}
+#pagination-digg li{ float:left; list-style-type:none; height:24px; border:1px solid #85CDF3; -moz-border-radius:2px; -webkit-border-radius:2px; display:block; margin-right:10px; text-align:center; cursor:pointer; color:#0a99e4;}
+#pagination-digg li a{padding:0px 8px; height:24px; display: block}
+#pagination-digg li a:hover{color:#ffffff;}
+#pagination-digg li.active,#pagination-digg li.previous-off,#pagination-digg li.next-off{ padding:0 8px;}
+#pagination-digg li.active, #pagination-digg li:hover{ background:url(../images/DPI_bg_nav.jpg) repeat-x left bottom; border:1px solid #0a89cb; border-radius:2px; color:#ffffff;display: block; }
+#pagination-digg li.previous-off { margin-left:0px;display: block}
+#pagination-digg li.next {display: block}
+</style>

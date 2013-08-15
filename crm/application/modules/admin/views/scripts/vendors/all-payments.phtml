@@ -1,0 +1,140 @@
+<?php echo $this->partial('vendors/payment_menus.phtml'); ?>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="payments-data-table">
+    <thead>
+        <tr>
+            <th class="head1">Company Name</th>
+            <th class="head1">Ref #</th>
+            <th class="head0" width="20%">Date</th>
+            <th class="head1">Quarter</th>
+            <th class="head0">Year</th>
+            <th class="head1">CK Amount</th>
+            <th class="head0">Total Paid</th>
+            <th class="head1">Remaining</th>
+            <th class="head0" width="80">Action</th>
+        </tr>
+    </thead>
+</table>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+</style>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#payments-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 20,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-all-payments/',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Payments by CK #:"
+            },
+            "aoColumns" : [
+                { sClass: "align-left"},
+                { sClass: "align-left"},
+                { sClass: "align-center" },
+                { sClass: "align-center" },
+                { sClass: "align-center" },
+                { sClass: "align-right" },
+                { sClass: "align-right" },
+                { sClass: "align-right" },
+                { sClass: "align-center" }
+            ],
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 2,3,4,5,6,7 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            },
+            fnDrawCallback:function(){
+                init_vendor_link();
+            }
+        } );
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();
+    });
+
+    function init_vendor_link(){
+        $(document).on('click','a.vendor_payment_link',function(){
+            $id=$(this).attr('rel');
+            $.fancybox({
+                'width'                 : 1000,
+                'height'                : 500,
+                'href'                  :  site_url+"/admin/vendors/show-vendor-payment-line-items/id/"+$id,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        })
+    }
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .ui-tooltip-content{
+        font-size:110%;
+        line-height: 150%
+    }
+    .ui-tooltip, .qtip{
+        max-width: 500px;
+    }
+    .align-right{
+        text-align: right!important;
+    }
+
+    .align-center{
+        text-align: center!important;
+    }
+    tr.odd td{
+        background-color: #ECECEF;
+    }
+    #payments-data-table tbody td{
+        border-right:1px solid #FFF;
+    }
+</style>

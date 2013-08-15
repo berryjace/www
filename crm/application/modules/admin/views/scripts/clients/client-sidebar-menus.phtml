@@ -1,0 +1,20 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/qtip/jquery.qtip.min.js"));
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery.hotkeys.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/js/qtip/jquery.qtip.min.css"));
+$this->headLink()->appendStylesheet($this->baseUrl('assets/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css'));
+$request_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+?>
+<?php if(in_array($request_action, array("search"))): /* searches across multiple client files */ ?>
+<h3>Search By Category</h3>
+<ul class="leftmenu">
+    <li<?php echo $this->selected == 'setup' ? ' class="current"' : ''; ?>><a rel="setup" href="<?php echo $this->baseUrl("admin/clients/setup/id/{$this->id}"); ?>" class="file">Setup</a></li>
+    <li<?php echo $this->selected == 'correspondence' ? ' class="current"' : ''; ?>><a rel="correspondence" href="<?php echo $this->baseUrl("admin/clients/correspondence/id/{$this->id}"); ?>" class="file">Correspondence</a></li>    
+</ul>
+<?php endif; ?>
+
+<div class="hidden">
+    <div id="vendor_quick_searcher">
+        <input type="text" size="25" style="padding:7px" id="vendor_quick_search_text"/>
+    </div>
+</div>

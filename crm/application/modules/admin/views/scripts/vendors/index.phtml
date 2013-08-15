@@ -1,0 +1,373 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<form id="downloader" method="post">
+    <input type="hidden" name="current_search_params" id="current_search_params" value="" />
+    <input type="hidden" name="fields_to_export" id="fields_to_export" value="" />
+    <input type="hidden" name="labels" id="labels" value="" />
+</form>
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Vendors</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" style="display: none;">
+                <!--<option value="all"> All</option>-->
+                <?php
+                //print_r($this->status_array);
+                foreach ($this->status_array as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="spacer"></div>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable sTable2" id="licenses-data-table">
+    <thead>
+        <tr>
+            <th class="head0">Vendor Name</th>
+            <th class="head1">Created On</th>
+            <th class="head0" width="20%">Status</th>
+        </tr>
+    </thead>
+</table>
+<div class="hidden">
+    <span class="aphabetical_filters">
+        <?php
+        foreach (range('A', 'Z') as $char) {
+            echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+        }
+        ?>
+    </span>
+</div>
+<script type="text/javascript">
+
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });
+
+
+    /** Datatable code **/
+    var popup_dim={
+        'correspondence'   :{ search : {h:440,w:550}, result : {h:400,w:460}},
+        'contact'           :{ search : {h:750,w:840}, result :{h:740,w:940}},
+        'operations'        :{ search : {h:740,w:840}, result :{h:750,w:840}},
+        'clients'           :{ search : {h:385,w:630}, result : {h:550,w:970}},
+        'product-samples'  :{ search : {h:385,w:430}, result : {h:385,w:850}},
+        'lisc-agreements'  :{ search : {h:700,w:650}, result :{h:400,w:1150}},
+        'actions'           :{ search : {h:430,w:600}, result : {h:400,w:450}},
+        'payments'          :{ search : {h:340,w:850}, result :{h:845,w:970}},
+        'notes'              :{ search : {h:360,w:580}, result :{h:330,w:450}},
+        'docs'               :{ search : {h:320,w:575}, result :{h:300,w:500}},
+        'invoices'          :{ search : {h:450,w:860}, result :{h:450,w:900}},
+        'designs'           :{ search : {h:400,w:500}, result :{h:400,w:500}},
+        'web-profile'      :{ search : {h:740,w:850}, result :{h:800,w:900}}
+    };
+    var oTable;
+    var active_section='contact';
+    var active_pagination='';
+    var is_fb_open=false;
+    var status = 'all';
+    $(window).bind('load',function(){
+        $("#vendor_status").change(function(){
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'Current,Cancelled,Potential,One-Time,Non-Producing,Suspected,Illegal,Out%20of%20business,Lost,Pending,Registered';
+            }
+            oTable.fnDestroy();
+            init_oTable_initialize(status);
+        });
+
+        /** Small Plugin to get the pagination info of DataTable **/
+        $.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
+        {
+            return {
+                "iStart":         oSettings._iDisplayStart,
+                "iEnd":           oSettings.fnDisplayEnd(),
+                "iLength":        oSettings._iDisplayLength,
+                "iTotal":         oSettings.fnRecordsTotal(),
+                "iFilteredTotal": oSettings.fnRecordsDisplay(),
+                "iPage":          Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
+                "iTotalPages":    Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
+            };
+        }
+
+        init_oTable_initialize('Current,Cancelled,Potential,One-Time,Non-Producing,Suspected,Illegal,Out%20of%20business,Lost,Pending,Registered');
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();
+        init_left_menu_links();
+        init_popup_links();
+        init_export();
+
+    });
+
+    function init_popup_links(){
+        $(document).on("click", "button#pop_prev", function(e){
+            /**
+             * Check if this is the first item on the grid
+             * [if yes] Check if this is the first page of the grid
+             * [ If no ] Paginate to the previous page and fire the fnDraw hook to select the last item
+             */
+            row_index=$('.sTable2 tr').index($('.sTable2 tr.selected'));
+            if(row_index==1){
+                if(oTable.fnPagingInfo().iPage>0){
+                    oTable.fnPageChange('previous');
+                    active_pagination='prev';
+                }
+            }
+            else{
+                $('.sTable2 tr.selected').removeClass('selected');
+                $('.sTable2 tr').eq(row_index-1).addClass('selected');
+                setTimeout(function(){ $('.sTable2 tbody tr.selected').find('a.vendor_link').click() }, 50);
+            }
+        });
+        $(document).on("click", "button#pop_next", function(e){
+            row_index=$('.sTable2 tr').index($('.sTable2 tr.selected'));
+            if(row_index==$('.sTable2 tbody tr').size()){
+                if(oTable.fnPagingInfo().iPage+1<oTable.fnPagingInfo().iTotalPages){
+                    oTable.fnPageChange('next');
+                    active_pagination='next';
+                }
+            }
+            else{
+                $('.sTable2 tr.selected').removeClass('selected');
+                $('.sTable2 tr').eq(row_index+1).addClass('selected');
+                setTimeout(function(){ $('.sTable2 tbody tr.selected').find('a.vendor_link').click() }, 50);
+            }
+        })
+    }
+
+    function init_oTable_initialize(status){
+        oTable=$('#licenses-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "bFilter": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-vendors-list/status/'+status,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Vendors:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }
+        } );
+    }
+
+    function init_vendor_link(){
+        $(document).on("click", "a.vendor_link", function(e){
+            if($(".grid_cap").text().indexOf('Search')==0){
+                $('.sTable2 tr.selected').removeClass('selected');
+                $(this).parents('tr').addClass('selected');
+                v_obj={};
+                param_array=$(this).attr('rel').split(",");
+                $.each(param_array,function(i,v){
+                    v_obj[v.split(":")[0]]=v.split(":")[1];
+                });
+                show_result_popup(v_obj);
+                console.log(v_obj);
+            }
+            else{
+                window.location.href=site_url+"/admin/vendors/contact/id/"+$(this).attr('rel');
+            }
+        });
+    }
+
+    function init_export(){
+        $(document).on("click", "button.exporter", function(e){
+            show_export_popup();
+        });
+    }
+
+    function show_export_popup(){
+
+        $.fancybox({
+            'width'                 : 450,
+            'height'                : 420,
+            'href'                  : site_url+"/admin/vendors/export-results/data-type/"+active_section +"/?"+$("#current_search_params").val()  ,
+            'transitionIn'         : 'none',
+            'transitionOut'        : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'ajax'                  :{
+                dataType : 'json',
+                data: 'var1=2'
+            },
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF',
+            'titlePosition'        : 'inside'
+        });
+    }
+
+    function export_result(fields){
+        $.fancybox.close();
+        $("#fields_to_export").val(fields);
+        window.setTimeout(function(){
+            $("#downloader").attr('action',site_url+"/admin/vendors/export-results-excel/")[0].submit();
+        },50);
+    }
+
+    function show_result_popup(obj){
+        /**
+         * obj.v=vendor
+         * obj.m=section . e.g correspondence
+         * obj.c=section id. e.g. correspondence id
+         */
+        $.fancybox({
+            'width'                 : popup_dim[obj.m].result.w,
+            'height'                : popup_dim[obj.m].result.h,
+            'href'                  : site_url+"/admin/vendors/show-result-details/id/"+obj.v+"/res-type/"+obj.m+"/cid/"+obj.c,
+            'transitionIn'         : 'none',
+            'transitionOut'        : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF',
+            'titlePosition'        : 'inside',
+            'onStart'               :  function(){
+                is_fb_open=true;
+            },
+            'onClosed'               :  function(){
+                is_fb_open=false;
+            },
+            'titleFormat'       : function(title, currentArray, currentIndex, currentOpts) {
+                return '<button type="Button" id="pop_prev" class="button button_blue">Prev</button>&nbsp; <button id="pop_next" type="Button" class="button button_blue">Next</button>&nbsp; ';
+            }
+        });
+    }
+
+    function init_left_menu_links(){
+        $.each([-1,-2],function(i,v){
+            //$('ul.leftmenu li').eq(v).hide();
+        });
+
+        $(document).on("click", "ul.leftmenu li a", function(){
+            $obj=$(this);
+            $.fancybox({
+                'width'                 : popup_dim[$obj.attr('rel')].search.w,
+                'height'                : popup_dim[$obj.attr('rel')].search.h,
+                'href'                  : site_url+"/admin/vendors/search-by-cat/type/"+$obj.attr('rel'),
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'overlayColor'          : '#FFF',
+                'type'                  : 'iframe',
+                'speedIn'               : 100,
+                'speedOut'              : 100
+            });
+            return false;
+        });
+    }
+
+    function fb_resize(w,h){
+        $('#fancybox-content').css({ height: h+"px"});
+        $('#fancybox-content').css({ width: w+"px"});
+        $.fancybox.resize();
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+    function executeSearch(searchString, grid_caption, url_section){
+        grid_caption=grid_caption || "Vendors";
+        active_section= url_section || 'view';
+        $.fancybox.close();
+        $("#current_search_params").val(searchString);
+        new_data_table('admin/vendors/search-result/?'+searchString,'Search Vendors',url_section);
+        $('.grid_cap').text(grid_caption);
+    }
+
+    function new_data_table(new_url,caption,url_section){
+        oTable=$('#licenses-data-table').dataTable( {
+            "bProcessing": true,
+            "bDestroy": true,
+            "bFilter": false,
+            "bServerSide": true,
+            "iDisplayLength": 25,
+            "aLengthMenu": [[10, 25, 50],[10, 25, 50]],
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/'+new_url,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": caption || ''
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "fnInitComplete": function (oSettings, json) {
+                $("#status_filter").hide();
+                $('.sTable2').removeAttr('style');
+                if(url_section.toLowerCase() in {'correspondence':'', 'operations':'','clients':'', 'lisc-agreements':'','web-profile':'','contact':''}){
+                    $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length').append('<button type="button" style="float:right" class="button exporter button_green">Export</button>');
+                } else {
+                    $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length');
+                }
+
+            },
+            "fnDrawCallback": function() {
+                if(active_pagination=="prev"){
+                    $('.sTable2 tbody tr').eq(oTable.fnGetNodes().length -1 ).addClass('selected');
+                }
+                if(active_pagination=="next"){
+                    $('.sTable2 tbody tr').eq(0).addClass('selected');
+                }
+                setTimeout(function(){ $('.sTable2 tbody tr.selected').find('a.vendor_link').click() }, 50);
+            }
+        } );
+    }
+
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .sTable2 tbody tr.selected td{
+        background-color: #FFFFCC;
+    }
+    .fancybox-title-inside{
+        text-align: left;
+    }
+    .leftalign{float: left;}
+    .rightalign{float: right;}
+</style>

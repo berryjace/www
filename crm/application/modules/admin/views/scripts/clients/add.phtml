@@ -1,0 +1,131 @@
+<link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/tabs-no-images.css" />
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-ui/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquerytools/jquery.tools.min.js"></script>
+
+<div class="one">
+    <!-- tabs -->
+    <ul class="css-tabs">
+        <li><a id="t1" href="#">Setup</a></li>
+        <li><a id="t2" href="#">Legal</a></li>
+        <li><a id="t3" href="#">Operations</a></li>
+        <li><a id="t4" href="#">Royalty</a></li>
+        <li><a id="t5" href="#">Notes</a></li>
+        <li><a id="t6" href="#">Lic. Template</a></li>
+    </ul>
+
+    <!-- panes -->
+    <div class="css-panes">
+        <div>
+            <form action="" method="POST"  id="<?php echo $this->form->getName(); ?>">
+                <div class="left_container" >
+                    <div class="container_left">
+                        <?php echo $this->form->name; ?>
+                        <?php echo $this->form->greek_letters; ?>
+                        <?php echo $this->form->description; ?>
+                        <?php echo $this->form->address1; ?>
+                        <?php echo $this->form->address2; ?>
+                        <?php echo $this->form->city; ?>
+                        <?php echo $this->form->state; ?>
+                        <?php echo $this->form->contact_person; ?>
+                        <?php echo $this->form->email; ?>
+                        <?php echo $this->form->web_address; ?>
+                        <?php echo $this->form->phone; ?>
+                        <?php echo $this->form->fax; ?>
+                        <?php echo $this->form->zip; ?>
+                    </div>
+                    <div class="container_right">
+                        <?php echo $this->form->username; ?>
+                        <?php echo $this->form->password; ?>
+                        <?php echo $this->form->renewal_fee; ?>
+                        <?php echo $this->form->late_fee; ?>
+                        <?php echo $this->form->organisation_type; ?>
+                        <?php echo $this->form->founding_year; ?>
+                        <?php echo $this->form->number_of_alumni; ?>
+                        <?php echo $this->form->number_of_undergrads; ?>
+                        <?php echo $this->form->number_of_alumni_chapters; ?>
+                        <?php echo $this->form->total_ug_chapters; ?>
+                        <?php echo $this->form->grant_on_license; ?>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="border">
+                        <button type="submit" id="submitAddClient" class="button button_black detail_button">&nbsp;Save&nbsp;</button>
+                    </div>
+                    <div class="clear"></div>
+                </div>                
+                <div class="clear"></div>
+            </form>
+        </div>
+        <div><!-- Legal --></div>
+        <div><!-- Operations --></div>
+        <div><!-- Royalty --></div>
+        <div><!-- Notes --></div>
+        <div><!-- Lic. Template --></div>
+    </div>
+</div>
+
+<style type="text/css">
+    .errors{
+        list-style: none;
+        color:red;
+    }
+    .grid_12{
+        margin-left: 0%;
+        margin-right: 0%;
+    }
+    .grid_9{
+        margin-left: 0%;
+        margin-right: 0%;
+    }
+    .grid_4{
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-top:3px;
+    }
+    .grid_3{
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-top:3px;
+    }
+    .grid_2{
+        margin-left: 0%;
+        margin-right: 0%;
+        margin-top:3px;
+    }
+
+    div.jGrowl div.jGrowl-notification
+   {
+       color:#000000;
+       background-color:#A79269;
+   }
+    .ui-autocomplete-loading
+       {
+            background: white url('<?php echo $this->baseUrl("assets"); ?>/images/loading.gif') right center no-repeat;
+      }
+</style>
+<script type="text/javascript">
+    $(document).ready(function() {      
+        // :first selector is optional if you have only one tabs on the page
+        $(".css-tabs:first").tabs(".css-panes:first > div",function(event,index){
+            //alert(index);
+            if(index!=0)
+                return false;               
+            });
+
+        /*var api = $("ul.css-tabs").data("tabs");
+        api.onClick(function(index) {
+            alert("tab " + index);
+        });*/       
+
+        var cur_year = "<?php echo date('Y') ?>";
+        var cur_month = "<?php echo date('m') - 1 ?>";
+        var cur_day = "<?php echo date('d') ?>";
+        $("#founding_year").datetimepicker({
+            minDate: new Date(cur_year, cur_month, cur_day, 8, 30),
+            maxDate: new Date(2030, 11, 31, 17, 30), showHour:false,showMinute:false,showSecond:false,timeText:"",timeFormat: '',currentText:"Today"
+        });
+
+        if(('<?php echo $this->success?>') !=""){
+            $.jGrowl('<?php echo $this->success?>');
+        }    
+    });
+</script>

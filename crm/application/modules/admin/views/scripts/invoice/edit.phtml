@@ -1,0 +1,271 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'invoices', 'id' => $this->invoice->vendor_id->id));
+$this->placeholder('main_side_bar')->captureEnd();
+$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+?>
+
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->invoice->vendor_id->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->invoice->vendor_id->user_status)); ?></h4>       
+        </div>
+    </div>    
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<form name="invoice_edit_form" id="invoice_edit_form" action="" method="post">
+    <div class="leftalign">
+        <a href="<?php echo $this->baseUrl('admin/vendors/invoice-create-vendor/id/'.$this->invoice->vendor_id->id); ?>" id="create_invoice" rel="<?php echo $this->invoice->vendor_id->id.'/inv_id/'.$this->invoice->id; ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/plus.png" class="mgright5" alt="" /> <span>Create An Invoice</span></a> &nbsp;        
+    </div>    
+    <div class="rightalign">        
+        <?php echo $this->formButton('cancel', 'Cancel', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp; 
+        <?php echo $this->formButton('save', 'Save', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp; 
+        <?php echo $this->formButton('save_n_send', 'Save & Send', array('type' => 'button', 'class' => 'button button_black')); ?>        
+    </div>
+    <div class="rightalign" style="margin:7px; display: none; float: right;" id="submit_wait">        
+        <img style="margin-top:5px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" alt="Please wait..." />        
+    </div>
+    <div class="spacer clear"></div>
+    
+    <div class="left_div">
+        <?php echo $this->form->vendor_name; ?><div class="clear"></div>
+        <?php echo $this->form->inv_type; ?><div class="clear"></div>
+        <?php echo $this->form->inv_term; ?><div class="clear"></div>        
+        <?php echo $this->form->address_line_1; ?><div class="clear"></div>
+        <?php echo $this->form->address_line_2; ?><div class="clear"></div>
+        <div class="one_third"><?php echo $this->form->city; ?></div>
+        <div class="one_third"><?php echo $this->form->state; ?></div>
+        <div class="leftalign"><?php echo $this->form->zip; ?></div><div class="clear"></div>        
+    </div>
+    <div class="right_div">
+        <?php echo $this->form->inv_num; ?><div class="clear"></div>
+        <?php echo $this->form->inv_date; ?><div class="clear"></div>
+        <?php echo $this->form->email; ?><div class="clear"></div>        
+        <?php echo $this->form->phone_1; ?><div class="clear"></div>
+        <?php echo $this->form->phone_2; ?><div class="clear"></div>
+        <?php echo $this->form->fax; ?><div class="clear"></div>        
+    </div>
+    <div class="clear"></div>    
+    
+    <h3>Invoice Line Items</h3>
+    <hr size="1" noshade />
+<!--    <div class="spacer"></div>-->
+    
+    <div class="one">
+        <?php if (sizeof($this->lineitems)): ?>
+        <?php $alt = true; ?>
+        <table cellpadding="0" cellspacing="2" border="0" class="" width="100%">
+            <thead>
+                <tr>                    
+                    <th class="txt_align" width="40%">Description</th>
+                    <th class="txt_align" width="26%">Organization</th>
+                    <th class="txt_align" width="15%">Total Due</th>
+                    <th class="txt_align" width="2%">&nbsp;</th>
+                    <th class="txt_align" width="15%">&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $i = $total_due = 0; $total_row = count($this->lineitems); ?>
+                <?php foreach ($this->lineitems as $item): ?>  
+                <?php $i++; ?>
+                <?php //$total_due += $item->amount_due; ?>
+                    <tr class="invoice_row">                        
+                        <td width="40%"><?php echo $this->formText("description[]", $item->description, array('id' => 'description', 'class' => 'text')); ?></td>
+                        <td width="26%"><?php echo $this->formSelect("clients", $item->client_id->id, array('class' => 'filters'), $this->clients); ?></td>                                        
+                        <td width="15%"><?php echo $this->formText("amount_due[]", $item->amount_due, array('id' => 'amount_due', 'class' => 'text')); ?></td>                    
+                        <td width="2%"><?php echo $this->formHidden("lineitem_id[]", $item->id, array('id' => 'lineitem', 'class' => 'text', 'size' => 5)); //echo $i; ?></td>
+                        <td width="15%">
+                        <?php if($i === $total_row): ?>
+                            <a href="javascript:;" class="iconlink add"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
+                        <?php else: ?>   
+                            <a href="javascript:;" class="iconlink add hidden"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
+                        <?php endif;?>  
+                        <a href="javascript:;" class="iconlink rem"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+                        </td>
+                    </tr>                            
+                <?php endforeach; ?>                    
+<!--                                   
+                    <tr class="invoice_row">                        
+                        <td width="40%">&nbsp;</td>  
+                        <td width="25%" class="total_txt">Total</td>
+                        <td width="15%" class="total_amt"><?php //echo $this->BUtils()->getCurrency($total_due); ?></td>   
+                        <td width="2%">&nbsp;</td>
+                        <td width="18%">&nbsp;</td>
+                    </tr>
+-->
+            </tbody>
+        </table>
+    <?php endif; ?>
+    </div>    
+    <div class="spacer clear"></div>
+    
+    <div class="rightalign">        
+        <?php echo $this->formButton('cancel_bottom', 'Cancel', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp; 
+        <?php echo $this->formButton('save_bottom', 'Save', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp; 
+        <?php echo $this->formButton('save_n_send_bottom', 'Save & Send', array('type' => 'button', 'class' => 'button button_black')); ?>        
+    </div>
+    <div class="rightalign" style="margin:7px; display: none; float: right;" id="submit_wait_bottom">        
+        <img style="margin-top:5px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" alt="Please wait..." />        
+    </div>
+    <div class="spacer clear"></div>
+</form>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification{
+        color:#000000;
+        background-color:#A79269;
+    }
+    #city,#state,#zip{width:112px;}
+    .invoice_row{height: 25px;}    
+    #amount_due{width: 150px;}
+    .filters{width: 250px;}
+    .add_lineitem_row{display: none;}
+    .txt_align{text-align: left;}
+    .total_txt{font-weight: bold; text-align: right;}
+    .total_amt{font-weight: bold;}
+</style>
+
+<script type="text/javascript">        
+    $(window).bind('load', function(){        
+        invoice_edit_functions.initialize_edit();
+        
+        $(document).on('click', 'a.add', invoice_edit_functions.add_lineitem)
+        $(document).on('click', 'a.rem', invoice_edit_functions.remove_lineitem)
+        $(document).on('click', 'button#cancel', invoice_edit_functions.cancel_edit);
+        $(document).on('click', 'button#cancel_bottom', invoice_edit_functions.cancel_edit);
+        $(document).on('click', 'button#save', invoice_edit_functions.save_changes);
+        $(document).on('click', 'button#save_bottom', invoice_edit_functions.save_changes);
+        $(document).on('click', 'button#save_n_send', invoice_edit_functions.save_changes);
+        $(document).on('click', 'button#save_n_send_bottom', invoice_edit_functions.save_changes);
+    });
+            
+    invoice_edit_functions = {
+        initialize_edit : function() {
+            $("#inv_date").datepicker();        
+             $('select.filters').each(function(){
+                $('select.filters').attr('name', 'clients[]');           
+            })
+        },
+        add_lineitem : function(e){   
+            $new_row=$(this).parents("tr.invoice_row").clone();
+            $("table").append($new_row);            
+            $new_row.find('input').val('');            
+            $new_row.find('a.add').hide();
+            $new_row.find('a.rem').removeClass('hidden');
+//            $('#lineitem').last().val('');
+        },
+        remove_lineitem : function(){ 
+
+            var rowCount = $(this).parents('table').find('tr').length;
+
+  			console.log("row count: " + rowCount);
+            
+            if (rowCount > 2){
+                var table = $(this).parents('table');
+            	$(this).parents('tr.invoice_row').remove(); 
+
+            	table.find('tr.invoice_row').last().find('a.add').removeClass('hidden');
+            	table.find('tr.invoice_row').last().find('a.add').show();
+            	
+            } else {
+                $(this).parents('tr.invoice_row').find('#clients').val('');
+                $(this).parents('tr.invoice_row').find('#description').val('');
+                $(this).parents('tr.invoice_row').find('#amount_due').val('');
+
+                $(this).parents('tr.invoice_row').find('a.add').removeClass('hidden');
+                $(this).parenst('tr.invoice_row').find('a.add').show();
+            }
+        },
+        cancel_edit : function(){
+//            console.log('cancel');
+//            history.back();
+            window.location.href = site_url+"/admin/vendors/show-invoice/inv_id/<?php echo $this->invoice->id; ?>";
+        },
+        save_changes : function(){                        
+            if(($(this).attr('id') == 'save')  || ($(this).attr('id') == 'save_bottom')){            
+                $.ajax({
+                    url: site_url+'/admin/invoice/ajax-Save-Invoice/id/'+$('#create_invoice').attr('rel'),
+                    type: 'POST',
+                    dataType: 'json',
+                    data : $('#invoice_edit_form').serialize()+'&save_type=save',        
+                    beforeSend : function(){ $('#submit_wait').show(); $('#submit_wait_bottom').show(); },                
+                    complete: function() { $('#submit_wait').hide(); $('#submit_wait_bottom').hide(); },
+                    success:function(response){                   
+//                        console.log(response);
+                        if(response.success){
+                            $.jGrowl(response.message);
+                             setTimeout(function() {
+                                 window.location.reload();                                
+                            }, 1500); 
+                        }
+                    }
+                });
+            }
+            else if(($(this).attr('id') == 'save_n_send')  || ($(this).attr('id') == 'save_n_send_bottom')){
+                save_type = 'save_n_send';
+                $.ajax({
+                    url: site_url+'/admin/invoice/ajax-Save-Invoice/id/'+$('#create_invoice').attr('rel'),
+                    type: 'POST',
+                    dataType: 'json',
+                    data : $('#invoice_edit_form').serialize()+'&save_type=save_n_send',        
+                    beforeSend : function(){ $('#submit_wait').show(); $('#submit_wait_bottom').show(); },                
+                    complete: function() { $('#submit_wait').hide(); $('#submit_wait_bottom').hide(); },
+                    success:function(response){                   
+//                        console.log(response);
+                        if(response.success){
+                            $.jGrowl(response.message);                     
+                            setTimeout(function() {
+                                $url = site_url+'/admin/invoice/email/id/'+response.vendor+'/inv_id/'+response.inv_id;
+                                loadPopupView($url, 700, 620);
+                            }, 1500);  
+                        }
+                    }
+                });
+            }                           
+            return false;
+        }
+    }
+    
+    function loadPopupView(url, w, h){
+        $.fancybox({
+            'width'                 : w,
+            'height'                : h,
+            'href'                  : url,    
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'               
+        });        
+        return false;
+    }
+    
+    function close_popup(){
+        $.fancybox.close();
+        setTimeout(function() { 
+            window.location.reload();
+        }, 1500);   
+    }
+
+    function execute_refresh(message){
+        $.fancybox.close();
+        $.jGrowl(message);        
+        setTimeout(function() { 
+            window.location.reload();
+        }, 1500);     
+    }
+    
+</script>

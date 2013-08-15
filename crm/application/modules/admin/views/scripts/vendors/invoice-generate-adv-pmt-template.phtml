@@ -1,0 +1,32 @@
+<?php
+if (!function_exists('getCurrency')) {
+
+    function getCurrency($amount=NULL) {
+        $currency = new Zend_Currency('en_US');
+        return $currency->toCurrency($amount);
+    }
+
+}
+?>
+<table width="100%">
+    <tr width="100%">
+        <td><b>Sl. No.</b></td>        
+        <td><b>Greek Org.</b></td>
+        <td><b>Amount</b></td>
+    </tr>
+
+    <?php
+    foreach ($this->licensed_clients as $key => $client) {
+        ?>
+        <tr width="100%">
+            <td><?php echo $key + 1; ?></td>            
+            <td><?php echo $client->client_id->organization_name; ?></td>
+            <td><?php echo getCurrency(40); ?></td>
+        </tr>        
+<?php } ?>
+    <tr width="100%">
+        <td>&nbsp;</td>        
+        <td><b>Total</b></td>
+        <td><b><?php echo getCurrency(40 * (count($this->licensed_clients))); ?></b></td>
+    </tr>   
+</table>

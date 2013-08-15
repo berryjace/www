@@ -1,0 +1,110 @@
+<h2>Partial payment line items </h2>
+<hr size="1" noshade />
+
+<div class="one">
+    <form name="partial_payment_lineitem" id="partial_payment_lineitem_id" action="<?php echo $this->baseUrl('/admin/invoice/mark-As-Partial-Paid'); ?>" method="POST">
+        Partial payment amount:&nbsp;&nbsp; <input type="text" name="payment_amount" class="text payment_amount" id="payment_amount" disabled="disabled" value="<?php echo $this->form_data['payment_amount']; ?>" />
+        <input type="hidden" name="payment_type" value="<?php echo $this->form_data['payment_type']; ?>" />
+        <input type="hidden" name="payment_ref" value="<?php echo $this->form_data['payment_ref']; ?>" />
+        <input type="hidden" name="payment_date" value="<?php echo $this->form_data['payment_date']; ?>" />
+        <input type="hidden" name="invoice" id="invoice" value="<?php echo $this->invoice->id; ?>" />
+        <input type="hidden" name="vendor" id="vendor" value="<?php echo $this->invoice->vendor_id->id; ?>" />
+        <div class="spacer clear"></div>
+        <p>This amount must be proportionately distributed amongst all Greek organizations. Please enter the payment amount you want to record against each Greek Organization.</p>
+        <div class="spacer clear"></div>
+
+        <div class="one">
+        <?php if (sizeof($this->lineitems)): ?>
+        <?php $currency = new Zend_Currency('en_US'); $alt=true; ?>
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+            <thead>
+                <tr role="row">
+                    <th>Item#&nbsp;</th>
+                    <th>Greek Orgs.</th>
+                    <th>Amount Due</th>
+                    <th>Amount Paid</th>
+                    <th>$ Allocation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $i = 1; $total_due = $total_paid = 0; ?>
+                <?php foreach ($this->lineitems as $item): ?>
+                <?php $total_remaining = $item->invoice_id->amount_due - $item->invoice_id->amount_paid;
+                      $allocate_per = ($item->amount_due - $item->amount_paid)/$total_remaining;
+                      $allocate_amount = round($this->form_data['payment_amount'] * $allocate_per, 0);
+                ?>
+                    <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                        <td><?php echo $this->formHidden("lineitem_id[]", $item->id, array('id' => '', 'class' => 'text inv_inputs', 'size' => 30)); echo $i; ?></td>
+                        <td><?php echo $item->client_id->organization_name; ?></td>
+                        <td><?php echo $this->formText("amount_due[]", $item->amount_due, array('id' => '', 'class' => 'text inv_inputs','disabled'=>'disabled')); ?></td>
+                        <td><?php echo $this->formText("amount_paid[]", $item->amount_paid, array('id' => '', 'class' => 'text inv_inputs','disabled'=>'disabled')); ?></td>
+                        <td><?php echo $this->formText("amount_allocate[]", $allocate_amount, array('id' => '', 'class' => 'text amount_allocate')); ?></td>
+                    </tr>
+                <?php $i++; ?>
+                <?php $total_due += $item->amount_due; $total_paid += $item->amount_paid; ?>
+                <?php endforeach; ?>
+                    <tr class="">
+                        <td>&nbsp;</td>
+                        <td class="total_txt">Total</td>
+                        <td class="total_amt"><?php echo $currency->toCurrency($total_due); ?></td>
+                        <td class="total_amt"><?php echo $currency->toCurrency($total_paid); ?></td>
+                        <td id="total_allocated">&nbsp;</td>
+                    </tr>
+            </tbody>
+        </table>
+        <?php endif; ?>
+        </div>
+        <div class="spacer clear"></div>
+
+        <div class="floatleft">
+            <button name="cancel" id="cancel" type="button" class="button button_black">Cancel</button>&nbsp;
+            <button name="record_payment" id="record_payment" type="button" class="button button_black">Record Payment</button>&nbsp;
+        </div>
+        <div class="floatleft" id="wait" style="display: none;">
+            <img src="<?php echo $this->baseUrl('assets/images/loading.gif'); ?>" style="margin: 10px 10px;" />
+        </div>
+    </form>
+</div>
+
+
+<style type="text/css">
+    form{padding: 0px; margin: 0px;}
+    input.amount_allocate, input.inv_inputs, input.payment_amount{width: 60px; height: 16px;}
+    .total_txt{text-align: right; font-weight: bold;}
+    .total_amt{font-weight: bold;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        $(document).on('click', 'button#cancel', event_functions.close_popup_form)
+        $(document).on('click', 'button#record_payment', event_functions.record_payment);
+    });
+
+    event_functions = {
+        _initialize : function(){
+
+        },
+        record_payment : function(){
+            $.ajax({
+                url: site_url+'/admin/invoice/mark-As-Partial-Paid/id/'+$("input#vendor").val()+'/inv_id/'+$("input#invoice").val(),
+                type: "POST",
+                dataType: 'json',
+                data:$('#partial_payment_lineitem_id').serialize(),
+                beforeSend: function() {
+                    $('#wait').show();
+                },
+                complete: function() {
+                    $('#wait').hide();
+                },
+                success: function(response) {
+//                    console.log(response);
+                    window.parent.execute_refresh(response.message); //partial_payment();
+                }
+            });
+        },
+        close_popup_form : function(){
+            window.parent.close_popup();
+        }
+    }
+</script>

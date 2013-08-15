@@ -1,0 +1,128 @@
+<?php echo $this->partial('vendors/invoice_menus.phtml'); ?>
+<div class="spacer"></div>
+<div class="one_half">
+    <?php
+    $current_year = Date("Y");
+    $years = range($current_year + 1, $current_year - 5);
+    $year_dropdown_vals = array();
+    foreach ($years as $year) {
+        $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 2);
+    }
+    echo $this->formLabel("fiscal_year", "Fiscal Year ");
+    echo $this->formSelect("fiscal_year", "", array('class' => 'filters'), $year_dropdown_vals);
+    echo str_repeat("&nbsp;", 2);
+    ?>
+
+<div class="spacer"></div>
+    <?php foreach (BL_AMC::$quarters as $num => $quarter): ?>
+    <?php if($num === 1):
+        ?>
+        <h3>Q<?php echo $num; ?> &nbsp; ( <?php
+    $date1 = DateTime::createFromFormat('Y z', "{$current_year} {$quarter['start']}");
+    echo $date1->format("F d");
+    echo " - ";
+    $date2 = DateTime::createFromFormat('Y z', "{$current_year} {$quarter['end']}");
+    echo $date2->format("F d");
+        ?> )
+        </h3><hr size="1" noshade />
+        Date to generate annual fee invoices:&nbsp; 
+        <?php
+        $cuttoff_date = DateTime::createFromFormat('Y z', "{$current_year} {$quarter['start']}");        
+        echo "<b>".$cuttoff_date->format("F d")."</b>";                
+        ?>
+        <div class="spacer"></div>
+        <div class="">
+            Annual fee invoices generated on:&nbsp;<b>N/A</b>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+            <?php //echo $this->baseUrl("/admin/vendors/invoice-generate-adv-pmt/quarter/").$num; ?>
+            <a href="javascript:;" class="iconlink2" id="generate" rel="<?php echo $num; ?>"><span>Generate Now</span></a>
+        </div>
+        <div class="spacer"></div>                
+        <?php endif; break; ?>
+    <?php endforeach; ?>
+
+</div>
+
+<div id="dialog-preview-notified" class="notified-class" title="" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+
+<div id="dialog-progress-bar" class="notified-class" title="" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+
+<div id="dialog-success-bar" class="notified-class" title="" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+
+<script type="text/javascript">
+    $(document).on('click', '#generate', function(){        
+        var html ='You are about to generate annual fee invoices for all vendors. Are you sure you want to continue?';
+        var quarter = $(this).attr('rel');
+	//var year = $("option:selected").attr('value'); // jace 630 get year from drop down
+		var year = $('#fiscal_year').val();
+        $( "#dialog-preview-notified" ).html(html)
+        $( "#dialog-preview-notified" ).dialog({
+            resizable: false,
+            height:'auto',
+            width: 640,
+            modal: true,
+            title: "Confirmation",
+            buttons: {
+                "Continue": function() {
+                    $(this).dialog("close");      
+//                    generate_adv_invoice();
+                    $.ajax({
+                        url: site_url+"/admin/vendors/invoice-generate-adv-pmt/quarter/"+quarter+"/fiscal_year/"+year,
+                        type: "POST",                        
+                        beforeSend: function() {                             
+                            var html = '<div style="width: 220px; margin:0 auto;"><img src="'+site_url+'/assets/images/ajax-loader.gif" /></div>';
+                            html += '<div style="width: 312px; margin: 0 auto;">Generating annual fee invoices...</div>'; 
+                        
+                            $( "#dialog-progress-bar" ).html(html);
+                            $( "#dialog-progress-bar" ).dialog({
+                                resizable: false,
+                                height:'auto',
+                                width: 640,
+                                modal: true,
+                                title: "Processing"
+                            }); 
+                        },
+                        complete: function() { 
+                            $("#dialog-progress-bar").dialog("close");      
+                        },
+                        success: function(msg) {                            
+//                          alert(msg);                                
+                            var html = 'All annual fee invoices have been generated.';
+                            $( "#dialog-success-bar" ).html(html);
+                            $( "#dialog-success-bar" ).dialog({
+                                resizable: false,
+                                height:'auto',
+                                width: 640,
+                                modal: true,
+                                title: "View invoices",
+                                buttons: {
+                                    "View annual fee invoices": function() {
+                                        $(this).dialog("close");
+                                        window.location.href = site_url+"/admin/vendors/invoice";
+                                    },
+                                    "Cancel": function(){
+                                        $(this).dialog("close");
+                                    }
+                                }
+                            }); 
+                        }
+                    });
+                },
+                "Cancel": function() {                    
+                    $(this).dialog("close");
+                }
+            }
+        });     
+        return false;
+    });
+        
+    function generate_adv_invoice(){
+        
+    }
+
+</script>

@@ -1,0 +1,153 @@
+<?php
+$type = isset($this->type) ? $this->type : 'vendor';
+?>
+<?php echo $this->doctype() ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <?php echo $this->headTitle(); ?>
+        <?php echo $this->headLink(); ?>
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <!-- <link rel="stylesheet" type="text/css" media="screen" href="/css/960_12_10_10.css" /> -->
+        <?php echo $this->headLink(); ?>
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/960_12_fluid.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/reset.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/text.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/style.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/styles.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css" />
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>
+        <?php echo $this->headScript(); ?>        
+    </head>
+
+    <body>
+        <!-- header -->
+        <div class="wrapper">
+            <div class="topbg">
+                <div class="container_12" id="content_wrap">
+                    <div class="grid_12 alpha omega" style="padding-bottom:30px; padding-top:10px" id="tophead">
+                        <div class="grid_5 alpha omega">
+                            <a href="#"> <img src="<?php echo $this->baseUrl("assets/images/logo_large.png") ?>" alt="logo" title="logo" />
+                            </a>
+                        </div>
+                        <div class="grid_4 omega" style="float:right; text-align:right">
+                            <?php //include_partial('global/user') ?>
+                            <?php
+                            if (Zend_Auth::getInstance()->hasIdentity()) {
+                                $auth_usr = Zend_Auth::getInstance()->getIdentity();
+                                ?>
+                                Hi, <?php echo $auth_usr->account_type ? $auth_usr->organization_name : (isset($auth_usr->first_name) ? $auth_usr->first_name : "Guest") ?>
+                            <?php } ?>
+                            <?php if (!Zend_Auth::getInstance()->hasIdentity()) {
+                                ?>
+
+                            <?php } else { ?>
+                                &nbsp;&nbsp;|&nbsp;&nbsp;
+                                <a href="<?php echo $this->baseUrl("login/logout"); ?>">Logout</a>
+                            <?php } ?>
+                        </div>
+
+                        <div class="grid_3">
+                            <span class="sitetitle">
+
+<!--                           Greek Licensing <?php //echo ucfirst($sf_user->getGroups()->getFirst()->getName())      ?> Portal-->
+
+                                <?php
+                                if (isset($auth_usr->account_type)) {
+                                    echo "Greek Licensing " . $auth_usr->account_type . " Portal";
+                                } else {
+                                    echo "Greek Licensing Portal";
+                                }
+                                ?>
+
+                            </span>
+                        </div>
+
+
+                    </div>
+                    <div class="clear">&nbsp;</div>
+
+                    <?php if ($this->custom_err_mssg != '') { ?>
+                        <div class="clear"></div>
+                        <div class="notification error">
+                            <div class="messages">
+                                <?php echo $this->custom_err_mssg; ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+
+                    <style type="text/css">
+                        body{ background:#fff}
+                        #tophead{ display:none}
+                        #content_wrap{ width:100%; padding:0; margin:0}
+                        #login_wrap{ width:1171px; margin:0 auto}
+                        .h1{    color: #222222;
+                                font-size: 26px;
+                                font-weight: bold;
+                                line-height: 26px;
+                                margin-bottom: 10px;
+                                text-shadow: 0 0 2px #AAAAAA;
+                        }
+                    </style>
+                    <div id="menu-main2">
+                        <ul>
+                            <li><a href="<?php echo $this->baseUrl(); ?>/../" class="home">Home</a></li>
+                            <li><a href="<?php echo $this->baseUrl(); ?>/../our-clients" class="ourclients">About Us</a></li>
+                            <li><a href="<?php echo $this->baseUrl(); ?>/../about-us" class="about">About Us</a></li>
+                            <li><a href="<?php echo $this->baseUrl(); ?>/../find-licensed-products" class="find">Find Licensed Products</a></li>
+                            <li><a href="<?php echo $this->baseUrl() . '/signup/index/type/vendor'; ?>" class="become">Become a Licensed Vendor  </a></li>
+                            <li class="<?php echo $type ?>"><a href="<?php echo $this->baseUrl(); ?>/login/index/type/vendor" class="vendor">Vendor  Login</a></li>
+                            <li class="<?php echo $type ?>"><a href="<?php echo $this->baseUrl(); ?>/login/index/type/client" class="client">Client Login</a></li>
+                            <li><a href="<?php echo $this->baseUrl(); ?>/../contact" class="contact">Contact Us</a></li>
+                        </ul>
+                    </div>
+
+                    <?php echo $this->layout()->content ?>
+
+
+
+                    <!--                            </div>-->
+                    <!-- content end -->
+
+
+
+                    <!-- side bar -->
+
+                    <!-- This component slot depends on view.yml configuration; look for which
+                    module and component its passing as a parameter -->
+                    <?php //include_component_slot('calendar')  ?>
+
+                    <!-- side bar ends -->
+                    <!-- body end -->
+                </div>
+
+
+            </div>
+
+            <div class="clear">&nbsp;</div>
+
+            <!-- footer -->
+            <div class="footer_wrapper">
+                <div class="container_12">
+
+                    <div class="grid_12 footer">
+
+                        Greek Licensing Portal
+
+                    </div>
+
+                </div>
+            </div>
+            <!-- footer end -->
+        </div>
+
+        <script language="javascript">
+            function positionFooter() { var mFoo = $(".footer_wrapper"); 
+                if ((($(document.body).height() + mFoo.height()) < $(window).height() && mFoo.css("position") == "fixed") || ($(document.body).height() < $(window).height() && mFoo.css("position") != "fixed")) { mFoo.css({ position: "fixed", bottom: "0px" }); } 
+                else { mFoo.css({ position: "static" }); } } $(document).ready(function () { positionFooter(); $(window).scroll(positionFooter); $(window).resize(positionFooter); $(window).load(positionFooter); });
+        </script>
+
+    </body>
+</html>
+
+

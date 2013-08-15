@@ -1,0 +1,183 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('layout/sidebar-calendar.phtml');
+//echo $this->partial('index/sidebar-menus.phtml',array('selected'=>'artworks'));
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('artworks/sub-menu-bar.phtml', array('selected'=>'index'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+
+<div class="one">
+    <div class="one_third"><h2>Manage Official Artwork</h2></div>
+    <div class="link_button">
+        <a href="<?php echo $this->baseUrl("client/artworks/add-artwork")?>" class="addNewButton" style="margin-left:15px">+Add Artwork</a>        
+    </div>
+</div>
+<div class="spacer clear"></div>
+
+<div class="message">&nbsp;</div>
+<div id="view-content">
+    <?php if(sizeof($this->artworks)) {?>
+        <?php foreach($this->artworks as $artwork) {?>
+    <div class="design-view">
+        <?php 
+		$extension_format = explode('.', $artwork->file_url); 
+		$thumb_image_path = $this->baseUrl("assets/files/artworks/thumbs/".base64_encode('_thumb')) . $artwork->file_url;
+                $image_path = $this->baseUrl("assets/files/artworks/large/") . $artwork->file_url;
+
+		if ('jpg' == $extension_format[1] || 'png' == $extension_format[1]){
+                }
+                else{
+                $image_path = "/crm/notfound";
+                }
+
+
+		echo '<a rel="'.$image_path.'" class="main_link"'; 
+		echo ' href="javascript:;">'; 
+		echo $artwork->title.' '.$extension_format[1].'</a>'; 
+	
+	// save button and title input after clicking on edit
+		echo '<input type="text" name="title[]" value="'.$artwork->title.'" class="art_title" />';
+		echo '<a href="javascript:;" class="save_art" rel="'.$artwork->id.'"><img src="'; 
+		echo $this->baseUrl("assets/images/save.png"); 
+		echo '"  /></a>'
+	?>
+
+        <div class="spacer"></div>
+
+        <?php 
+	//Thumbnail image and link for image
+
+		if ('' != $artwork->file_url) { 
+		echo '<a href="javascript:;" rel="'.$image_path.'" class="view_art">'; 
+		  echo '<img src="'.$this->baseUrl("assets/files/artworks/thumbs/".base64_encode('_thumb')) . $artwork->file_url; 
+		  echo '" class="list_pic" ';
+		  echo 'onerror="this.src=\''.$this->baseUrl("assets/images/".strtolower($extension_format[1])."_75.png"); 
+	?>
+	'" />
+        </a>
+        <?php 
+		} else { 
+	?>
+        <img src="
+	<?php 
+		echo $this->baseUrl("assets/images/no_image.jpg"); 
+	?>
+	"  />
+        <?php 
+		} 
+	?>
+        <br />
+        <a href="javascript:;" class="download_art" rel="<?php echo $artwork->file_url; ?>">download</a>
+        <a href="javascript:;" class="edit_art"><img src="<?php echo $this->baseUrl("assets/images/pencil.png"); ?>"  /></a> 
+        <a href="javascript:;" class="del_art" rel="<?php echo $artwork->id; ?>"><img src="<?php echo $this->baseUrl("assets/images/delete.png"); ?>"  /></a>        
+    </div>
+        <?php } ?>
+    <div class="spacer"></div>
+    <div align="left">
+        <?php echo $this->paginationControl($this->artworks, 'Sliding', '/artworks/pagination.phtml'); ?>
+    </div>
+    <?php }?>
+</div>
+<style type="text/css">
+    .design-view {width:180px;float: left;padding: 2px;position: relative;text-align: center;border: 1px solid #CCC;margin:4px;}
+    .design-view .del-pic {
+        color: #FFFFFF;
+        display: block;
+        font: 11px arial,helvetica;
+        left: 0;
+        padding: 1px 5px;
+        position: absolute;
+        top: 0;
+    }
+    .design-view a.main_link {line-height: 27px;}
+    .art_title, .save_art {display:none;}
+    .save_art {vertical-align: text-bottom;}
+    .link_button {float:right;}
+    .errors {color:red}
+    .success {color:green}
+</style>
+<script type="text/javascript">
+
+    $(window).load(function(){
+
+        $(document).on('click', '.design-view a.edit_art', function(){
+            $('a.main_link').show();
+            $('input.art_title, .save_art').hide();
+            $(this).parents('.design-view').find('a.main_link').hide().end().find('.save_art').show();
+            $(this).parents('.design-view').find('input.art_title').show();
+        });
+        $(document).on('click', '.design-view a.save_art', function(){
+            $(".message").html("&nbsp;").addClass('loading');
+            var $this = $(this);
+            //$(this).parents('#vendors-data-table tr').remove();
+            $.ajax({
+                url:'<?php echo $this->baseUrl('client/artworks/ajax-save-artwork/'); ?>',
+                dataType:'json',
+                type:'post',
+                data:'id='+ $(this).attr('rel')+'&title='+$(this).parents('.design-view').find('input.art_title').val(),
+                success: function(msg) {
+                    if(msg.success == true) {
+                        $this.parents('.design-view').find('a.main_link').html(msg.title).show().end().find('.save_art').hide();
+                        $this.parents('.design-view').find('input.art_title').hide();
+                        $('.message').removeClass('errors').removeClass('loading').addClass('success').html(msg.message);
+                    } else {
+                        $('.message').removeClass('success').removeClass('loading').addClass('errors').html(msg.message);
+                    }
+                }
+            });
+        });
+        $(document).on('click', '.design-view a.del_art', function(){
+	    if(confirm('Are you sure to delete this?')) {
+                        $(".message").html("&nbsp;").addClass('loading');
+                        var $this = $(this);
+                        $.ajax({
+                            url:'<?php echo $this->baseUrl('client/artworks/ajax-del-artwork/'); ?>',
+                            dataType:'json',
+                            type:'post',
+                            data:'id='+ $(this).attr('rel'),
+                            success: function(msg) {
+                                if(msg.success == true) {
+                                    $this.parents('.design-view').remove();
+                                    $('.message').removeClass('errors').removeClass('loading') //.addClass('success').html(msg.message);
+                                    $.jGrowl(msg.message);
+                                } else {
+                                    $('.message').removeClass('success').removeClass('loading'); //.addClass('errors').html(msg.message);
+                                    $.jGrowl(msg.message);
+                                }
+                            }
+                        });
+                    }
+        });        
+        
+        $(document).on("click", ".design-view a.download_art", function(){      
+            window.location.href = site_url+"/client/artworks/download/file/"+$(this).attr('rel');
+            return false;
+        });
+        
+        $(document).on("click", ".view_art", function(){
+	    var link = $(this).attr('rel');
+            loadDetailsView(link);
+            return false;
+        });
+        
+        $(document).on("click", ".main_link", function(){
+	    //alert("123");
+            var link = $(this).attr('rel'); 
+            loadDetailsView(link);
+            return false;
+        });
+    });
+        
+    function loadDetailsView(thisItem){
+        //alert(thisItem);
+        $.fancybox({
+	    'overlayShow'       : true,
+            'href'            : thisItem,
+            'transitionIn'      : 'elastic',
+            'transitionOut'     : 'elastic'
+        });
+    }
+</script>

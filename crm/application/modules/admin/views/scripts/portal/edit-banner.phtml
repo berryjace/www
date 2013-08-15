@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="/crm/assets/jq/css/pepper-grinder/jquery-ui-1.8.18.custom.css"/>
+
+<?php
+$client_ids = array();
+foreach ($this->banner->clients as $c) {
+    $client_ids[] = $c->id;
+}
+?>
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">
+    <div class="one_third min-width-380">
+<?php echo $this->form->name; ?>
+        <?php echo $this->form->link; ?>                 
+        <br />
+        <?php echo $this->form->startDate; echo $this->form->endDate;?>
+        <br />
+        <?php echo $this->formButton("submit", "Save", array('type' => 'submit', 'class' => 'button button_brown')); ?>
+    </div>
+    <div class="one_third">
+        <a class="fancybox" href="<?php echo $this->baseUrl("assets/files/banners/{$this->banner->image}"); ?>"><img height="60" src="<?php echo $this->baseUrl("assets/files/banners/thumbs/_thumb{$this->banner->image}"); ?>" /></a>
+<?php echo $this->form->image; ?>
+        <div class="one_half"><?php echo $this->form->location; ?></div>
+        <?php echo $this->form->status; ?>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <ul id="banner-client_list">    
+
+<?php foreach ($this->clients as $client): ?>
+            <li>
+                <label><input<?php echo in_array($client->id, $client_ids) ? ' checked="checked" ' : ''; ?> name="clients[]" type="checkbox" value="<?php echo $client->id; ?>" /> <?php echo $client->organization_name; ?></label>
+            </li>
+<?php endforeach; ?>
+    </ul>
+    <div class="clearfix"></div>
+</form>
+
+
+<style type="text/css">
+    #banner-client_list{
+        list-style-type:none;
+    }
+    #banner-client_list li{
+        float:left;
+        margin:0 15px 5px 0;
+        width:230px;
+    }
+    .min-width-380{
+        min-width: 380px;
+    }
+</style>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#startDate').datepicker({dateFormat: 'mm/dd/yy'});
+	$('#endDate').datepicker({dateFormat: 'mm/dd/yy'});
+});
+
+    $(function(){
+        $('#addBanner_form').validate({
+            errorClass : 'error',
+            rules:{
+                name : {'required' : true},
+                link : {'required' : true, url : true},
+                "clients[]": { 
+                    required: true, 
+                    minlength: 1 
+                } 
+            },
+            messages:{
+                name : {'required' : "Please enter banner name"},
+                link : {'required' : "Please enter link", url : "Please Enter a valid Url. e.g http://www.example.com"},
+                "clients[]": { 
+                    required: "Please select a client", 
+                    minlength: "You must select at least one client" 
+                }
+            },
+            submitHandler:function(form){
+                form.submit();
+            }
+        })
+    });
+    $(document).on('click','a.fancybox',function(){
+        $src=$(this).find("img").attr("src").replace("thumbs/_thumb","");
+        $.fancybox({
+            'href'                  : $src,
+            'transitionIn'         : 'none',
+            'transitionOut'        : 'none',
+            'autoScale'        : true,
+            'autoDimensions'    :   true,
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'image',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF',
+            'titlePosition'        : 'inside'
+        });      
+        return false;
+    });
+</script>

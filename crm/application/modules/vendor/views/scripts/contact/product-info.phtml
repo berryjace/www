@@ -1,0 +1,368 @@
+<?php
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('contact/sub-menu-bar.phtml', array('selected' => 'product-info'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+
+<div class="notification msginfo">
+    <!--    <a class="close"></a>-->
+    The following information will be used when generating a new License Agreement with an organization.
+</div>
+
+<form id="form3" method="post" action="" enctype="multipart/form-data">
+    <div class="form_default">
+        <p>
+            <label>Products Manufactured :</label>
+            <?php
+            $errorsMessages = $this->form->getMessages();
+            //print_r($errorsMessages);
+            if (isset($errorsMessages['product_category']['isEmpty']))
+                echo $errorsMessages['product_category']['isEmpty'];
+            ?>
+            <?php echo $this->form->product_category; ?>
+            <?php
+            if (isset($errorsMessages['product']['isEmpty']))
+                echo $errorsMessages['product']['isEmpty'];
+            ?>
+            <?php echo $this->form->product; ?>
+            <button type="button" id="select_button" class="button button_brown">Add</button>
+        </p>
+
+        <p id="otherProductDiv" style="display: none">
+            <label>Enter Other Product :</label>
+            <input type="text" size="20" id="other_product" class="other_product_txt txtinput" value="" />
+            <img src="<?php echo $this->baseUrl("assets") ?>/images/loaders/loader3.gif" class="leftmargin" id="product_add_loader" />
+            <img src="<?php echo $this->baseUrl("assets") ?>/images/delete_cross.gif" class="leftmargin hand_cursor" id="hide_other_product" />
+            <span class="leftmargin">&nbsp;&nbsp;&nbsp;After inputing item, click 'Add' to add item to list. (Hitting enter will submit the entire form)</span>
+        </p>
+
+        <p>
+            <label>&nbsp;</label>
+            <?php
+            if (isset($errorsMessages['products']['isEmpty']))
+                echo '<span style="color:red;">' . $errorsMessages['products']['isEmpty'] . '</span>';
+            ?>
+            <span id="product_val_set" class="one txtinput selected_products">
+                <?php
+                $total_products = '';
+                if (sizeof($this->products)) {
+
+                    foreach ($this->products as $product) {
+
+                        $total_products .= $product['id'] . ',';
+                        ?>
+        <!--                        <span id="set<?php echo $product['id']; ?>" class="d_class" style="width:auto"><a href="#<?php echo $product['id']; ?>" class="cross" style="text-decoration:none;" rel="<?php echo $product['id']; ?>"><?php echo $product['product_name']; ?><img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> </a></span>-->
+                        <a href="#<?php echo $product['id']; ?>" class="cross" style="text-decoration:none;" rel="<?php echo $product['id']; ?>"><?php echo $product['product_name']; ?><img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> </a>
+                        <?php
+                    }
+                    $total_products = substr($total_products, 0, -1);
+                }
+                ?>
+            </span>
+            <?php echo $this->form->products; ?>
+        </p>
+
+        <p>
+            <label>Name of Supplier(s) :</label>
+            <?php
+            if (isset($errorsMessages['supplier_name']['isEmpty']))
+                echo '<span style="color:red;">' . $errorsMessages['supplier_name']['isEmpty'] . '</span><br/>';
+            ?>
+            <?php echo $this->form->supplier_name; ?>
+            Required if you are not the manufacturer
+        </p>
+
+        <p id="target_audience_p">
+            <label>Proposed Target Audience :</label>
+            <?php
+            if (isset($errorsMessages['audience']['isEmpty']))
+                echo '<span style="color:red;">' . $errorsMessages['audience']['isEmpty'] . '</span><br/>';
+            ?>
+        <fieldset>
+            <?php
+            echo $this->form->audience;
+            ?>
+        </fieldset>
+        </p>
+
+        <p>
+            <label>&nbsp;</label>
+            <?php echo $this->form->other_desc; ?>
+            Describe If Other
+        </p>
+
+        <p>
+            <label>&nbsp;</label>
+            <button type="submit" id="btnSubmit" class="button button_black detail_button">Submit</button>
+        </p>
+    </div>
+    
+</form>
+
+<style type="text/css">   
+    div.jGrowl div.jGrowl-notification
+    {
+        float: right;
+        color:#000000;
+        background-color:#A79269;
+    }
+</style>
+
+<script type="text/javascript">      
+    //jQuery.noConflict();
+    jQuery(document).ready( function($) {
+
+        $(document).on('click', '#upload_sample', function(){
+            if($("#uploaded_pics").find("img").size()<5){
+
+                upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+                $.fancybox({
+                    'width'                 : 650,
+                    'height'                : 350,
+                    'title'                 : '<h4>Upload Product Sample. (Max '+upload_left+')</h4>',
+                    'titlePosition'         : 'inside',
+                    'autoDimensions'        : false,
+                    'href'                  : site_url+"/vendor/contact/upload-files/max/"+upload_left,
+                    'transitionIn'          : 'elastic',
+                    'transitionOut'         : 'none',
+                    'type'                  : 'iframe'
+                });
+            }else{
+                alert("You have reached the maximum number of files to be uploaded")
+            }
+            return false;
+        })
+
+        $('.cross').live('click',function(){
+            var ans = confirm("Are you sure to delete?");
+            if(ans){                
+                $(this).remove();
+                update_hidden_products();                
+            }
+        });
+
+        $('#btnSubmit').click(function(){
+            $('#form3').find('.title').remove();
+            $('#banners-data-table .title').clone(true).attr('type','hidden').appendTo("#form3");            
+            $('#form3').submit();
+        });
+
+    });
+
+    function update_hidden_products(){
+        var product_val ='';
+        var ctn = '';
+        $('.cross').each(function(el){
+            var pid = $(this).attr('rel');
+            var pname = $(this).text();
+            product_val+=pid+',';
+            ctn += '<a rel="'+pid+'" style="text-decoration:none;" class="cross" href="#'+pid+'">'+pname+'<img align="absmiddle" src="'+site_url+'/assets/images/delete.png"></a>';
+        });
+        product_val = product_val.substring(0, product_val.length - 1);
+        $('#products').val(product_val);
+        $('#product_val_set').html(ctn);
+    }
+
+    function add_products_display(pid,pname){
+        var ctn = '<a rel="'+pid+'" style="text-decoration:none;" class="cross" href="#'+pid+'">'+pname+'<img align="absmiddle" src="'+site_url+'/assets/images/delete.png"></a>';
+        $('#product_val_set').append(ctn);
+        update_hidden_products();
+    }
+
+    function add_picture_to_form(pic){
+        if($("#uploaded_pics").find("img").size()<5){
+            var row_class='';
+            if($('#events-data-table > tbody > tr').length%2==0){
+                row_class='even';
+            }else{
+                row_class='odd';
+            }
+
+            var now = new Date();
+            var update_date = '<?php echo date("m/d/yy"); ?>';
+
+            $("#form3").append('<input type="hidden" name="pics[]" value="'+pic+'" />');
+            var image_path = site_url+'/assets/files/samples/products/thumbs/'+pic;
+            //var large_image = site_url+'/assets/files/samples/products/'+pic;
+                       
+            var append_contect = '<tr class="'+row_class+'"><td>'+update_date+'</td>'
+                +'<td><input type="text" name="title[]" class="title" value=""/></td>'
+                +'<td><img height="50" src="'+image_path+'"/></td>'
+                +'<td>&nbsp;</td>';
+
+            $("#banners-data-table tbody").append(append_contect);
+        }else{
+            alert("Maximum 5 pictures can be added");
+        }
+    }
+
+    //add products
+    jQuery(document).ready( function($) {
+        
+        $("#products").val('<?php echo $total_products; ?>');        
+
+        $("#select_button").click(function(){
+            var product = $("#product");
+            $("#product_error").html("&nbsp;");
+            if($("#product option:selected").text() != 'Select product' && (!$('#product').is(':disabled'))){
+                var p_id = $("#product option:selected").val();
+                var p_name = $("#product option:selected").text();                                
+                if(check_existence(p_id)==p_id){                                        
+                    $.jGrowl('You alreday Added '+p_name+'. Try a new one.');
+                }
+                else{                    
+                    add_products_display(p_id,p_name);
+                }                
+            }
+            else if(($("#product option:selected").text() == 'Select product') && (!$('#product').is(':disabled'))){
+                //alert('3');
+                $.jGrowl("Please add product from product list.");
+            }
+            else{                
+                if($("#other_product").val() != ''){
+                    var relId="";
+                    var otherid = ($('#product_category').val());
+                    $.ajax({
+                        type: 'POST',
+                        beforeSend: function() { $('#product_add_loader').show(); },
+                        complete: function() { $('#product_add_loader').hide(); },
+                        url:  '<?php echo $this->url(array('controller' => 'license', 'action' => 'other-check')); ?>?otherid='+otherid+'&productName='+$('#other_product').val(),
+                        cache: false,
+                        success: function(html)
+                        {
+                            var p_id = html;                            
+                            add_products_display(p_id,$('#other_product').val());                            
+                        }
+                    });
+                }
+                else{                    
+                    $.jGrowl("Please enter product name.");
+                }
+            }
+        });
+        
+        //Change product list using selected product category
+        $("#product_category").change(function(){            
+
+            if($("#product_category option:selected").text() == 'Other'){
+                $("#product").attr('disabled', 'disabled');
+                $("#otherProductDiv").show();
+                $("#product_add_loader").hide();
+            }
+            else{
+                $("#product").removeAttr('disabled');
+                $("#otherProductDiv").hide();
+
+                $.ajax({
+                    dataType: 'html',
+                    url: '<?php echo $this->url(array('controller' => 'license', 'action' => 'product')); ?>?cat='+$("#product_category").val(),
+                    success: function( response ) {
+                        $("#product").html(response);
+                    }
+                });
+            }
+        });
+
+        $("#hide_other_product").click(function(){
+            console.log("Hide other product");
+            $("#product_category").val('');
+            $("#product").removeAttr("disabled");
+            $("#otherProductDiv").hide();
+        });
+
+    });
+
+    function check_existence(pid){        
+        return $('.cross[rel="'+pid+'"]').attr('rel');
+    }
+</script>
+
+<!-- below code for file upload -->
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#banners-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 5,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/vendor/contact/ajax-get-sample-product/use_for/product_info/id/'+<?php echo $this->vendor_id; ?>+'/redirect_url/product-info',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 2,3 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+
+            }
+        } );
+
+        $('.default').parent().addClass('aa').css({'width':'60%','text-align':'left'});
+        $('#banners-data-table_length label').html('<h2>Upload Product Sample Images</h2>');
+        init_action_links();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+    });
+
+    function init_action_links(){
+
+        $(document).on('click','a.fancy',function(){
+            $src=$(this).find("img").attr("src").replace("thumbs/","");
+            $.fancybox({
+                'href'                  : $src,
+                'transitionIn'          : 'none',
+                'transitionOut'         : 'none',
+                'autoScale'             : true,
+                'autoDimensions'        :   true,
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'image',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'         : 'inside'
+            });
+            return false;
+        });
+
+        $(document).on('click','a.view_clients',function(){
+            banner_id=$(this).attr('rel');
+            $.fancybox({
+                'href'                  : site_url+'/admin/portal/ajax-get-banner-clients/id/'+banner_id,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'autoScale'        : true,
+                'autoDimensions'    :   true,
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        });
+
+        $(document).on('click','a.delete',function(){
+            if(confirm("Are you sure to delete this banner ?")){
+                return true;
+            }
+            return false;
+        })
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+
+    /** Datatable code **/
+</script>

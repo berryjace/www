@@ -1,0 +1,16 @@
+## License Status Description.
+---
+0: Unlicensed
+1: Awaiting Vendor Signature
+2: Awaiting Client Signature
+3: Pending Affinity Review
+4: Licensed
+5: One-Time
+6: Declined By Vendor
+7: Declined By Client
+8: Declined By Affinity
+9: Awaiting Paper Signature
+10: Cancelled
+11: Non-Producing
+12: Illegal
+13: Potential

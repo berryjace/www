@@ -1,0 +1,65 @@
+<?php
+//$this->headScript()->appendFile($this->baseUrl("assets/js/plugins/jquery-ui-1.8.16.custom.min.js"));
+//$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+?>
+
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Search By Action</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" >
+                <?php
+                foreach ($this->user_status as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<hr size="1"/>
+
+<form action="" method="POST" enctype="multipart/form-data" id="search-actions-form">
+    <input type="hidden" name="search_type" value="actions" />
+    <div class="spacer"></div>
+    <label>Vendor Name<br />
+        <input type="text" class="text" id="vendor_name" name="vendor_name" />
+    </label>    
+    <div class="spacer"></div>
+    <label>Greek Org<br />
+        <input type="text" class="text" id="greek_org" name="greek_org" />
+    </label>    
+    <div class="spacer"></div>
+    <label>Action Needed<br />
+        <input type="text" class="text" id="action_needed" name="action_needed" />
+    </label>    
+    <div class="spacer"></div>
+    <label>Resolution<br />
+        <input type="text" class="text" id="resolution" name="resolution" />
+    </label>    
+    <div class="clear"></div>
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black detail_button">Search</button>
+</form>
+<script type="text/javascript">
+    var status = 'all';
+    $(function(){
+        $("#search-actions-form").on('submit',function(){
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'all';
+            }
+            window.parent.executeSearch($(this).serialize()+'&vendor_status='+status,'Search Vendors by Action','actions');
+            return false; 
+        });
+    })
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });
+</script>

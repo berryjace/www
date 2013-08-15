@@ -1,0 +1,103 @@
+<h3>Online Payment</h3>
+<hr size="1" noshade />
+<!--<div class="spacer clear"></div>-->
+
+<div class="one">
+    <form name="online_payment" action="" method="POST">
+        <div class="leftalign">
+            <?php echo $this->form->payment_amount; ?>
+        </div>
+        <div class="leftalign" id="amount_div">
+            <div class="leftalign" id="owed_div"><b><?php echo $this->BUtils()->getCurrency($this->amount_due); ?></b><?php //echo $this->form->amount_owed;  ?></div>
+            <div class="clear"></div>
+            <div class="leftalign" id="other_div"><?php echo $this->form->amount_other; ?></div>
+        </div>
+        <div class="spacer clear"></div>
+        
+        <div class="clear"></div>
+
+        <div class="left_div">
+            <?php echo $this->form->account_number; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->account_number_re; ?>            
+        </div>        
+        <div class="right_div">
+            <?php echo $this->form->routing_number; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->routing_number_re; ?>
+        </div>
+        <div class="spacer clear"></div>
+        
+        <?php echo $this->form->memo; ?>
+        
+        <div class="leftalign">
+            <button name="cancel" id="cancel" type="button" class="button button_black">Cancel</button>&nbsp;
+            <button name="pay_now" id="pay_now" type="submit" class="button button_black">Pay Now</button>&nbsp;
+        </div>
+        <div class="leftalign" id="pre_loader"><img src="<?php echo $this->baseUrl("assets/images/loading.gif"); ?>" alt="Please wait..." /></div>
+    </form>
+</div>
+
+<style type="text/css">
+    form{padding: 0px; margin: 0px;}
+    #amount_div{height: auto;}
+    #owed_div{margin: 22px 0px 1px 0px;}
+    #amount_owed,#amount_other{display: block; width: 80px; height: 16px;}
+    #account_number,#account_number_re,#routing_number,#routing_number_re{width:200px;}
+    #pre_loader{float: left; margin: 20px 0px 0px 10px; display: none;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){  
+        online_payment_functions._initialize();        
+        online_payment_functions.bank_information();
+        $('input#amount_other').addClass('desable').prop('disabled', true);
+        
+        $(document).on('click', 'input:radio[@name=payment_amount]', online_payment_functions.payment_amount);
+        $(document).on('click', 'input:checkbox[@name=bankinfo]', online_payment_functions.bank_information);
+        $(document).on('click', 'button#cancel', online_payment_functions.close_popup_form)
+    });
+    
+    online_payment_functions={
+        _initialize : function(){
+            $('#bank_info_msg').hide();
+            
+            if('<?php echo $this->result['success']; ?>'){
+                window.parent.execute_refresh('<?php echo $this->result['message']; ?>');
+            }  
+        }, 
+        payment_amount : function(e){            
+            var checkedvalue = $(this).val();
+            if(checkedvalue == "other"){
+                $('input#amount_other').removeClass('desable').prop('disabled', false);
+            }
+            else{
+                $('input#amount_other').addClass('desable').prop('disabled', true);
+            }
+        },
+        bank_information : function(){
+            if($('#bankinfo-saved').is(':checked')){
+                if(($('#acc_no_hidden').val() == "") || ($('#route_no_hidden').val() == "")){                   
+                    $('#bank_info_msg').show();
+                }                
+                $('input#account_number').val($('input#acc_no_hidden').val());
+                $('input#account_number_re').val($('input#acc_no_hidden').val());
+                $('input#routing_number').val($('input#route_no_hidden').val());
+                $('input#routing_number_re').val($('input#route_no_hidden').val());
+            }
+            else{
+                $('input#account_number').val('');
+                $('input#account_number_re').val('');
+                $('input#routing_number').val('');
+                $('input#routing_number_re').val('');
+            }
+        },
+        close_popup_form : function(){
+            window.parent.close_popup();
+        }        
+    }
+            
+</script>
+
+
+

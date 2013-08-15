@@ -1,0 +1,112 @@
+<?php
+//$this->headScript()->appendFile($this->baseUrl("assets/js/plugins/jquery-ui-1.8.16.custom.min.js"));
+//$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+?>
+<!--<h2>Search By Invoices</h2>-->
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Search By Invoices</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" >
+                <?php
+                foreach ($this->user_status as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<hr size="1"/>
+<form action="" method="POST" enctype="multipart/form-data" id="search-invoices-form">
+    <input type="hidden" name="search_type" value="invoices" />
+    <div class="spacer" ></div>    
+    <div class="form_container_left">
+        <?php echo $this->form->vendor_name; ?>
+        <div class="one_half">
+            <?php echo $this->form->date_from; ?> 
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->date_to; ?> 
+        </div>
+        <div class="one_half">
+            <label>Invoice Type<br />
+                <select name="invoice_type">
+                    <option value="">Select</option>
+                    <option value="annual">Annual</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="misc">Misc.</option>
+                    <option value="late">Late Fees</option>
+                    <option value="quarterly">Quarterly Report</option>
+                    <option value="refund">Refunds</option>
+                </select>
+            </label>
+        </div>
+        <div class="one_third">
+            <label>Invoice Term<br />
+                <select name="invoice_term">
+                    <option value="">Select</option>
+                    <option value="7">Net 7 Days</option>
+                    <option value="15">Net 15 Days</option>
+                    <option value="30">Net 30 Days</option>
+                    <option value="60">Net 60 Days</option>
+                    <option value="due">Due Now</option>                    
+                </select>
+            </label>
+        </div>
+        <div class="clear" ></div>
+        <div class="spacer" ></div>
+        <?php echo $this->form->address; ?>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>        
+        </div>
+        <div class="spacer"></div>
+        <button type="submit" class="button button_black detail_button">Search</button>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->invoice_number; ?>
+        <?php echo $this->form->invoice_date; ?>
+        <?php echo $this->form->email; ?>
+        <?php echo $this->form->phone_1; ?>
+        <?php echo $this->form->phone_2; ?>
+        <?php echo $this->form->fax; ?>
+    </div>
+</form>
+<script type="text/javascript">
+    var status = 'all';    
+    $(function(){
+        $("#vendor_name")[0].focus();
+        $(".date").datepicker({
+            dateFormat:"mm/dd/yy"
+        });
+        $("#search-invoices-form").on('submit',function(){
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'all';
+            }            
+            window.parent.executeSearch($(this).serialize()+'&vendor_status='+status,'Search Vendors By Invoices','invoices');
+            return false; 
+        });
+    })
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });    
+</script>
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #first_name{
+        width:250px;
+    }
+</style>

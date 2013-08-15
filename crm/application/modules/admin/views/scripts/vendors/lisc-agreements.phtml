@@ -1,0 +1,180 @@
+<?php
+
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('selected'=>'lisc-agreements','id'=>$this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2><br/>
+	<button class="button exporter button_green" id="licenseAdder" rel="<?php echo $this->vendor_id ?>">Add New</button><br/>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign"><h3>Vendor Status: &nbsp;</h3></div>
+        <div class="leftalign"><h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4></div>
+    </div>
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable sTable2" id="licenses-data-table">
+    <thead>
+        <tr>
+            <th class="head0" width="7%">Lic #</th>
+            <th class="head1" width="7%">Sharing</th>
+            <th class="head0" width="12%">Organization</th>
+            <th class="head1" width="23%">Royalty</th>
+            <th class="head0" width="24%">Grant of License</th>
+            <th class="head1" width="13%">Agreement Date</th>
+            <th class="head0" width="14%">Status</th>
+        </tr>
+    </thead>
+</table>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#licenses-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 10,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-license-agreements/id/<?php echo $this->vendor->id; ?>',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] }, { "bSortable": true, "aTargets": [ 1 ] }, { "bSortable": true, "aTargets": [ 2 ] },{ "bSortable": true, "aTargets": [ 3 ] },{ "bSortable": true, "aTargets": [ 4 ] },{ "bSortable": true, "aTargets": [ 5 ] },{ "bSortable": true, "aTargets": [ 6 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }
+        } );
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();
+        init_license_link();
+
+	$('.editor').live('click', function(e){
+	    e.preventDefault();
+	    var a = $(this);
+	    var td = a.parents('td:first');
+	    var spanText = td.find('.statusText');
+	    var statusSelect = td.find('.statusSelect');
+
+	    if(statusSelect.length <1) {
+		var rel = td.parent().find('.lic_link').attr('rel');
+		var statusSelect = $('body').find('#selectMain')
+		    .clone(false).removeAttr('id').addClass('statusSelect').attr('rel', rel).show();
+		var linkSave = '<a href="javascript:void(0);" class="saver small">Save</a>';
+		td.append(statusSelect);
+		td.append(linkSave);
+	    }
+	    var opt = statusSelect.find('option:contains('+spanText.text()+')');
+	    opt.attr('selected', 'selected');
+
+	    toggleLinks('edit', a);
+	});
+
+	function toggleLinks(scenario, a)
+	{
+	    var td = a.parents('td:first');
+	    var b = td.find('a:not(:visible)');
+	    var spanText = td.find('.statusText');
+	    var statusSelect = td.find('.statusSelect');
+
+	    if(scenario == 'edit') {
+		a.hide();spanText.hide();
+		b.show();statusSelect.show();
+
+	    } else {
+		a.hide();statusSelect.hide();
+		b.show();spanText.show();
+	    }
+	}
+
+	$('.saver').live('click', function(e){
+	    e.preventDefault();
+	    var a = $(this);
+	    var td = a.parents('td:first');
+	    var spanText = td.find('.statusText');
+	    var statusSelect = td.find('.statusSelect');
+	    var lic_id = statusSelect.attr('rel');
+	    var status_id = statusSelect.val();
+	    var status = statusSelect.find('option:selected').text();
+	    $.post(site_url+'/admin/vendors/ajax-save-license-status',{'lic_id': lic_id, 'status_id': status_id }, function(data){
+		if(data['code']=='success') {
+		    spanText.text(status);
+		}
+		toggleLinks('save', a);
+	    }, 'json')
+
+
+	})
+
+
+
+	$.getJSON(site_url+'/admin/vendors/ajax-get-license-statuses', function(data) {
+	    var items = [];
+
+	    $.each(data, function(key,val) {
+	      items.push('<option value="' + key + '">' + val + '</option>');
+	    });
+
+	    $('<select rel="" id="selectMain"/>').append(items.join('')).hide().appendTo('body')
+	  });
+
+	  $('#licenseAdder').on('click', function(){
+		window.location.href=site_url+"/admin/vendors/add-license/id/"+$(this).attr('rel');
+	  });
+
+    });
+
+    function init_vendor_link(){
+        $(document).on("click", "a.vendor_link", function(){
+            window.location.href=site_url+"/admin/vendors/overview/id/"+$(this).attr('rel');
+        });
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+
+    function init_license_link(){
+        $(document).on("click", "a.lic_link", function(){
+            window.location.href=site_url+"/admin/vendors/license-review/id/"+$(this).attr('rel');
+        });
+    }
+    /** Datatable code **/
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+</style>

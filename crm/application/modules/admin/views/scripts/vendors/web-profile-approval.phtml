@@ -1,0 +1,204 @@
+<style type="text/css">
+    #decline_ctn{
+        display: block;
+}
+</style>
+<div id="view-content">
+    <div  class="one_fourth">
+        <div id="wait1">
+            Loading...
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div class="">
+        <ul class="submenu" id="page_select" style="border:0 none; padding: 0px;">
+            <li class="linksLi" id="all"><a rel="all" href="javascript:;">All</a></li>
+            <li id="pending" class="current linksLi"><a rel ="-1" href="javascript:;">Pending</a></li>
+            <li class="linksLi" id="approved"><a rel ="1" href="javascript:;">Approved</a></li>
+            <li class="linksLi" id="declined"><a rel="0" href="javascript:;">Declined</a></li>
+        </ul>
+        <div class="spacer"></div>
+
+
+        <div>
+            <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="banners-data-table">
+                <thead>
+                    <tr>
+                        <th class="head1" width="35%">Company Name</th>
+                        <th class="head0" width="10%">Status</th>
+                        <th class="head1" width="10%">Update Date</th>
+                        <th class="head0" width="10%">Action</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var page='-1';
+    $(window).bind('load',function(){
+        $("#wait1").hide();
+        $("#page_select").find("a").click(function(){
+            page = ($(this).attr('rel'));
+            $(".linksLi").each(function(){$(this).removeClass("current")});
+            var li = $(this).parent();
+	    li.addClass('current');
+
+            oTable.fnDestroy();
+            init_oTable_initialize(page);
+          });
+        init_oTable_initialize(page);
+        init_server_search_fix();   // Will search only hitting enter not keypress
+
+    });
+
+    function init_oTable_initialize(page){
+        oTable=$('#banners-data-table').dataTable({
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 10,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-web-profile/targetPage/'+page,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 3 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+
+            },
+            "fnDrawCallback":function(){
+                //$("#details").fancybox();
+                init_vendor_link();
+            }
+        });
+    }
+
+    function init_vendor_link(){
+        $(document).on('click','a.details',function(){
+            $id=$(this).attr('rel');
+            $.fancybox({
+                'width'                 : 860,
+                'height'                : 700,
+                'href'                  :  site_url+"/admin/vendors/ajax-get-vendor-web-profile/profile_id/"+$id,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        })
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+
+    /** Datatable code **/
+</script>
+
+<script type="text/javascript">
+    function update_status(profile_id,status,reason){
+        //alert(reason);
+        //$.fancybox.close();
+        //if (undefined != reason)
+
+        $.ajax({
+            cache: false,
+            url:'<?php echo $this->baseUrl("admin/vendors/ajax-update-profile-status/profile_id/");?>'+profile_id+'/status/'+status,
+            type: "POST",
+            dataType: 'text',
+            data:'profile_id='+profile_id+(undefined != reason)?'&reason='+reason:'',
+            beforeSend: function() { $('#submit_wait').show(); },
+            complete: function() { $('#submit_wait').hide();},
+            success: function(msg) {
+                if(status){
+                    $.jGrowl("Web Profile Activated.");
+                }
+                else{
+                    $.jGrowl("Web Profile Declined.");
+                }
+                oTable.fnDestroy();
+                init_oTable_initialize(page);
+                $.fancybox.close();
+            }
+        });
+    }
+
+
+
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+
+    #events-data-table { border-collapse: collapse; }
+    #events-data-table tr td { padding: 8px 10px; border-right: 1px solid #fff; border-bottom: 1px solid #ddd; vertical-align: top;}
+    #events-data-table thead th { padding: 8px 10px; color: #ccc; text-shadow: 1px 1px #444; font-size: 12px; text-transform: uppercase; border-right: 1px solid #fff; }
+    #events-data-table thead th { font-weight: normal; text-align: left; }
+    #events-data-table tr td:last-child { border-right: 0; }
+    #events-data-table tr:last-child td { border-bottom: 0;}
+    #events-data-table tr:hover { background: #cacaca; }
+    #events-data-table tr.selected { background: #fffccc; }
+
+
+    #events-data-table .odd { background-color: #eaeaea; }
+    #events-data-table .even { background-color: #ddd; }
+
+    div.jGrowl{
+        z-index: 900000;
+    }
+    div.jGrowl.top-right {
+	right: 				0px;
+	top: 				100px;
+    }
+    div.jGrowl div.jGrowl-notification{
+           color:#000000;
+           background:#A79269 ;
+    }
+
+
+
+</style>
+
+
+
+
+

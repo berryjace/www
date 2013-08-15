@@ -1,0 +1,263 @@
+<script type="text/javascript">
+
+    //jQuery.noConflict();
+    jQuery(document).ready( function($) {
+        var $form = $('#form3');
+
+        $form.submit( function() {
+            //alert('Hi'+$form.attr( 'action' ));
+            $.ajax({
+                type: 'POST',
+                beforeSend: function() { $('#wait').show(); },
+                complete: function() { $('#wait').hide(); },
+                url: $form.attr( 'action' ),
+                data: $form.serialize(),
+                success: function( response ) {
+                    appendContentWrapper(response);
+                }
+            });
+
+            return false;
+        });
+    });
+
+    function previousToPart2(uid){
+        //uid=$(this).attr("id");
+        jQuery.ajax({
+            dataType: 'html',
+            beforeSend: function() { $('#wait1').show(); },
+            complete: function() { $('#wait1').hide(); },
+            success: function(data){
+                appendContentWrapper(data)
+            },
+            type: 'GET',
+            url: '<?php echo $this->url(array('controller' => 'license', 'action' => 'apply2')); ?>?prev=yes&uid='+uid
+        });
+    }
+
+    //add products
+
+    jQuery(document).ready( function($) {
+
+        if('<?php echo $this->products;?>'){
+            p_txt = '<?php echo $this->products;?>';
+        }
+        $("#product_val_set").empty().html(p_txt);
+        if(p_txt.length > 0 ){
+            productsArr = $("#products").val().split(',');
+        }
+        products = "";
+
+        $("#select_button").click(function(){
+            var product = $("#product");
+            $("#product_error").html("&nbsp;");
+            if($("#product option:selected").text() != 'Select product' && (!$('#product').is(':disabled'))){
+                var p_id = $("#product option:selected").val();
+                var p_name = $("#product option:selected").text();
+                //p_txt += $("#product option:selected").text();
+                p_txt = p_txt+'<span id="set'+p_id+'" class="d_class" style="width:auto"><a href="javascript:;" class="cross" style="text-decoration:none;" rel="'+p_id+'">'+p_name+'<img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> </a></span>';
+                //alert(p_txt);
+                $("#product_val_set").html(p_txt);
+                addProduct(p_id);
+                $("#products").val("");
+                $("#products").val(productsList());
+                products = "";
+            }
+            else if(($("#product option:selected").text() == 'Select product') && (!$('#product').is(':disabled'))){
+                $.jGrowl("Please add product from product list.");
+            }
+            else{
+                //alert("Invalid product");
+
+                if($("#other_product").val() != ''){
+                    var relId="";
+                    var otherid = ($('#product_category').val());
+                    $.ajax({
+                        type: 'POST',
+                        beforeSend: function() { $('#product_add_loader').show(); },
+                        complete: function() { $('#product_add_loader').hide(); },
+                        url:  '<?php echo $this->url(array('controller' => 'license', 'action' => 'other-check')); ?>?otherid='+otherid+'&productName='+$('#other_product').val(),
+                        cache: false,
+                        success: function(html)
+                        {
+                            relId=html
+                            //alert(html)
+                            p_txt = p_txt+'<span id="set'+relId+'" class="d_class" style="width:auto"><a href="javascript:;" class="cross" style="text-decoration:none;" rel="'+relId+'">'+$('#other_product').val()+'<img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> </a></span>';
+                            $('#product_val_set').html(p_txt);
+                            $("#other_product").val('');
+                            addProduct(relId);
+                            $("#products").val("");
+                            $("#products").val(productsList());
+                            products = "";
+                            //$('#licenseForm3_product_name').val(txt)   // hidden input filed for access product
+                        }
+                    });
+                }
+                else{
+                    $.jGrowl("Please enter product name.");
+                }
+            }
+        });
+
+        $(document).on("click", ".cross", function(){
+            var id = $(this).attr("rel");
+            var set = "#set"+id;
+            //alert(set);
+            $(set).remove();
+            //alert($('#product_val_set').html());
+            p_txt = $('#product_val_set').html();
+            removeProduct(id);
+            //alert(products);
+            $("#products").val("");
+            $("#products").val(productsList());
+            products = "";
+        });
+
+        //Change product list using selected product category
+        $("#product_category").change(function(){
+            //alert("hi "+$("#product_category option:selected").text());
+
+            if($("#product_category option:selected").text() == 'Other'){
+                $("#product").attr('disabled', 'disabled');
+                $("#otherProductDiv").show();
+                $("#product_add_loader").hide();
+            }
+            else{
+                $("#product").removeAttr('disabled');
+                $("#otherProductDiv").hide();
+
+                $.ajax({
+                    dataType: 'html',
+                    url: '<?php echo $this->url(array('controller' => 'license', 'action' => 'product')); ?>?cat='+$("#product_category").val(),
+                    success: function( response ) {
+                        $("#product").html(response);
+                    }
+                });
+            }
+        });
+
+        $("#hide_other_product").click(function(){
+            console.log("Hide other product");
+            $("#product_category").val('');
+            $("#product").removeAttr("disabled");
+            $("#otherProductDiv").hide();
+        });
+
+    });
+
+
+    function addProduct(product){
+        productsArr.push(product);
+    }
+
+    function removeProduct(product){
+        for(var i=0; i<productsArr.length; i++){
+            if(productsArr[i] == product){
+                productsArr.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    function productsList(){
+        for(var i=0; i<productsArr.length; i++){
+            products += productsArr[i];
+            if(i<productsArr.length-1){
+                products +=",";
+            }
+        }
+
+        return products;
+    }
+
+</script>
+<?php
+$errorsMessages = $this->form->getMessages();
+//print_r($errorsMessages);
+?>
+<div id="view-content">
+    <h4>Licensing Application  </h4>
+    <div class="one"><img src="<?php echo $this->baseUrl('assets') ?>/images/application_steps_3.png" alt="Step3" title="Step3" /></div>
+    <div class="spacer clear"></div>
+
+
+    <form id="form3" action="<?php echo $this->url(array('controller' => 'license', 'action' => 'apply4')); ?>" method="post" >
+        <div class="form_default">
+            <fieldset>
+                <legend>3. Proposed Use of Licensed Properties</legend>
+                <p>
+                    <label>Products Manufactured :</label>
+                    <?php
+                    //$errorsMessages = $this->form->getMessages();
+                    //print_r($errorsMessages);
+                    if (isset($errorsMessages['product_category']['isEmpty']))
+                        echo $errorsMessages['product_category']['isEmpty'];
+                    ?>
+                    <?php echo $this->form->product_category; ?>
+                    <?php
+                    if (isset($errorsMessages['product']['isEmpty']))
+                        echo $errorsMessages['product']['isEmpty'];
+                    ?>
+                    <?php echo $this->form->product; ?>
+                    <button type="button" id="select_button" class="button button_brown">Add</button>
+                </p>
+
+                <p id="otherProductDiv" style="display: none">
+                    <label>Enter Other Product :</label>
+                    <input type="text" size="20" id="other_product" class="other_product_txt txtinput" value="" />
+                    <img src="<?php echo $this->baseUrl("assets") ?>/images/loaders/loader3.gif" class="leftmargin" id="product_add_loader" />
+                    <img src="<?php echo $this->baseUrl("assets") ?>/images/delete_cross.gif" class="leftmargin hand_cursor" id="hide_other_product" />
+                </p>
+
+                <p>
+                    <label>&nbsp;</label>
+                 <?php
+                    if (isset($errorsMessages['products']['isEmpty']))
+                        echo '<span style="color:red;">'.$errorsMessages['products']['isEmpty'].'</span>';
+                ?>
+                <span id="product_val_set" class="one txtinput selected_products"></span>
+                <?php echo $this->form->products; ?>
+                </p>
+
+                <p>
+                    <label>Name of Supplier(s) :</label>
+                    <?php
+                    if (isset($errorsMessages['supplier_name']['isEmpty']))
+                        echo '<span style="color:red;">' . $errorsMessages['supplier_name']['isEmpty'] . '</span><br/>';
+                    ?>
+                    <?php echo $this->form->supplier_name; ?>
+                    Required if you are not the manufacturer
+                </p>
+
+                <p id="target_audience_p">
+                    <label>Proposed Target Audience :</label>
+                    <?php
+                    if (isset($errorsMessages['audience']['isEmpty']))
+                        echo '<span style="color:red;">' . $errorsMessages['audience']['isEmpty'] . '</span><br/>';
+                    ?>
+                <fieldset>
+                    <?php
+                    //echo $this->form->audience;
+
+                    foreach ($this->form->audience->options as $key => $options) {?>
+                            <input id="audience-<?php echo $key; ?>" type="checkbox" value="<?php echo $key; ?>" name="audience[]" <?php echo in_array($key, $this->audience_ids) ? "checked" : ""?>><?php echo " " . $options . "&nbsp;&nbsp;"; ?><br />
+                        <?php }?>
+                </fieldset>
+                </p>
+
+        <p>
+            <label>&nbsp;</label>
+                <?php echo $this->form->other_desc; ?>
+                Describe If Other
+        </p>
+
+        <p>
+            <label>&nbsp;</label>
+                <?php $session = new Zend_Session_Namespace('default'); ?>
+                <button type="button" class="button button_black detail_button" onclick="previousToPart2('<?php echo $session->client_id;  ?>')">Previous</button>
+                <button type="submit" class="button button_black detail_button">Next</button>
+        </p>
+     </fieldset>
+     </div>
+    </form>
+</div>

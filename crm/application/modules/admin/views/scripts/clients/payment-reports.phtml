@@ -1,0 +1,314 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('reports/reports-sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_fourth"><h2 class="grid_cap">Royalty Reports</h2></div>
+
+    <div class="one_fifth" class="rightalign"  >        
+        <div class="leftalign">
+            <h3>Fiscal Year:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="year_status" id="year_status" onchange="fiscalYear(this.value)">
+                <option value="" selected="selected">Select</option>
+                <?php 
+                foreach ($this->fiscalYear as $value) { ?>
+                    <option value="<?php echo $value->payment_year; ?>" <?php if ($this->year) { echo ($this->year==$value->payment_year)?"selected=selected":""; } ?>> <?php echo $value->payment_year; ?></option>
+               <?php }
+                ?>
+            </select>
+        </div>
+    </div>
+    
+   
+</div>
+<div class="spacer"></div>
+
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable sTable2" id="reports-data-table">
+    <thead>
+        <tr>
+            <th class="head0" width="30%">Company Name</th>
+            <th class="head1">Q1</th>
+            <th class="head0">Q2</th>
+            <th class="head1">Q3</th>
+            <th class="head0">Q4</th>
+        </tr>            
+    </thead>
+    
+    <?php
+    if ($this->clients) {
+        foreach ($this->clients as $client) {
+            ?>
+            <tr>
+                <td><?php echo ($client)? $client->organization_name:''; ?></td>
+                <td><?php if($this->currentQuarter >1) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 1)); ?>"> View Report </a><?php } ?></td>
+                <td><?php if($this->currentQuarter >2) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 2)); ?>"> View Report </a><?php } ?></td>
+                <td><?php if($this->currentQuarter >3) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 3)); ?>"> View Report </a><?php } ?></td>
+                <td><?php if($this->currentQuarter >4) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 4)); ?>"> View Report </a><?php } ?></td>
+            </tr>
+        <?php
+        }
+    }
+    ?>
+</table>
+
+<script type="text/javascript">
+    function fiscalYear(year){
+        //$.fancybox.close();
+        //console.log(rid);
+        window.location.href=site_url+"/admin/clients/payment-reports/year/"+year;
+    }
+    //    var popup_dim={        
+    //        'report'           :{ search : {h:750,w:840}, result :{h:740,w:940} }
+    //    };
+    var oTable;
+    //    var active_section='contact';
+    var active_pagination='';
+    var is_fb_open=false;
+    var reportStatus = 'pending', yearStatus = '', quarterStatus = '';
+    $(window).bind('load',function(){        
+        $("#report_status").change(statusChangeAction);
+        $("#year_status").change(statusChangeAction);
+        $("#quarter_status").change(statusChangeAction);
+        
+        /** Small Plugin to get the pagination info of DataTable **/
+        $.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
+        {
+            return {
+                "iStart":         oSettings._iDisplayStart,
+                "iEnd":           oSettings.fnDisplayEnd(),
+                "iLength":        oSettings._iDisplayLength,
+                "iTotal":         oSettings.fnRecordsTotal(),
+                "iFilteredTotal": oSettings.fnRecordsDisplay(),
+                "iPage":          Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
+                "iTotalPages":    Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
+            };
+        }
+
+        init_oTable_initialize(yearStatus,quarterStatus,reportStatus);
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_report_link();
+        init_popup_links();        
+    }); 
+    
+    function statusChangeAction(){
+        reportStatus = $("#report_status").val();
+        quarterStatus = $("#quarter_status").val();
+        yearStatus = $("#year_status").val();
+        if(reportStatus == 'null' || reportStatus == null){
+            report_status = 'pending';
+        }
+        if(yearStatus == 'null' || yearStatus == null){
+            yearStatus = '';
+        }
+        if(quarterStatus == 'null' || quarterStatus == null){
+            quarterStatus = '';
+        }
+        oTable.fnDestroy();
+        init_oTable_initialize(yearStatus,quarterStatus,reportStatus);
+    }
+    
+    function init_popup_links(){
+        $(document).on("click", "button#pop_prev", function(e){             
+            /**
+             * Check if this is the first item on the grid 
+             * [if yes] Check if this is the first page of the grid 
+             * [ If no ] Paginate to the previous page and fire the fnDraw hook to select the last item
+             */
+            row_index=$('.sTable2 tr').index($('.sTable2 tr.selected'));
+            if(row_index==1){
+                if(oTable.fnPagingInfo().iPage>0){
+                    oTable.fnPageChange('previous');
+                    active_pagination='prev';
+                }
+            }
+            else{
+                $('.sTable2 tr.selected').removeClass('selected');
+                $('.sTable2 tr').eq(row_index-1).addClass('selected');
+                setTimeout(function(){ $('.sTable2 tbody tr.selected').find('a.report_link').click() }, 50);
+            }
+        });
+        $(document).on("click", "button#pop_next", function(e){             
+            row_index=$('.sTable2 tr').index($('.sTable2 tr.selected'));
+            if(row_index==$('.sTable2 tbody tr').size()){
+                if(oTable.fnPagingInfo().iPage+1<oTable.fnPagingInfo().iTotalPages){
+                    oTable.fnPageChange('next');
+                    active_pagination='next';
+                }
+            }
+            else{
+                $('.sTable2 tr.selected').removeClass('selected');
+                $('.sTable2 tr').eq(row_index+1).addClass('selected');
+                setTimeout(function(){ $('.sTable2 tbody tr.selected').find('a.report_link').click() }, 50);
+            }
+        })
+    }
+
+    function init_oTable_initialize(yearStatus,quarterStatus,reportStatus){
+        oTable=$('#reports-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "bFilter": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/reports/ajax-get-reports-list/year/'+yearStatus+'/quarter/'+quarterStatus+'/report/'+reportStatus,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Vendors:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "fnInitComplete": function (oSettings, json) {                
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)');
+            }
+        } ); 
+    }
+
+    function init_report_link(){
+        $(document).on("click", "a.report_link", function(e){  
+            if($(".grid_cap").text().indexOf('Royalty Reports')==0){            
+                $('.sTable2 tr.selected').removeClass('selected');
+                $(this).parents('tr').addClass('selected');
+                v_obj={};
+                param_array=$(this).attr('rel').split(",");
+                $.each(param_array,function(i,v){
+                    v_obj[v.split(":")[0]]=v.split(":")[1];
+                });
+                //console.log(v_obj);
+                show_report_popup(v_obj);                
+            }            
+        });       
+    }
+    
+    function show_report_popup(obj){
+        /**
+         * obj.v=vendor
+         * obj.m=section . e.g correspondence
+         * obj.c=section id. e.g. correspondence id
+         */
+        $.fancybox({
+            'width'                 : 600,
+            'height'                : 400,
+            'href'                  : site_url+"/admin/reports/report-details/year/"+obj.y+"/vid/"+obj.v+"/rid/"+obj.r+"/status/"+obj.s,    
+            'transitionIn'         : 'none',
+            'transitionOut'        : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF',
+            'titlePosition'        : 'inside',
+            'onStart'               :  function(){
+                is_fb_open=true;  
+            },
+            'onClosed'               :  function(){
+                is_fb_open=false;  
+            },
+            'titleFormat'       : function(title, currentArray, currentIndex, currentOpts) {
+                return '<button type="Button" id="pop_prev" class="button button_blue">Prev</button>&nbsp; <button id="pop_next" type="Button" class="button button_blue">Next</button>&nbsp; ';
+            }
+        }); 
+    }
+    
+    //    function fb_resize(w,h){
+    //        $('#fancybox-content').css({ height: h+"px"});
+    //        $('#fancybox-content').css({ width: w+"px"});
+    //        $.fancybox.resize();
+    //    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                oTable.fnDraw();                
+                return;
+            }
+        });
+    }
+        
+    function execute_parent(rid){
+        //$.fancybox.close();
+        //console.log(rid);
+        window.location.href=site_url+"/admin/reports/summary/id/"+rid;
+    }
+        
+    /** Datatable code **/
+    //    function executeSearch(searchString, grid_caption, url_section){
+    //        grid_caption=grid_caption || "Vendors";
+    //        active_section= url_section || 'view';
+    //        $.fancybox.close();    
+    //        $("#current_search_params").val(searchString);
+    //        new_data_table('admin/vendors/search-result/?'+searchString,'Search Vendors',url_section);
+    //        $('.grid_cap').text(grid_caption);
+    //    }
+    //    
+    //    function new_data_table(new_url,caption,url_section){
+    //        oTable=$('#reports-data-table').dataTable( {
+    //            "bProcessing": true,
+    //            "bDestroy": true,
+    //            "bFilter": false,
+    //            "bServerSide": true,
+    //            "iDisplayLength": 25,         
+    //            "aLengthMenu": [[10, 25, 50],[10, 25, 50]],
+    //            "sPaginationType": "full_numbers",
+    //            "sAjaxSource": site_url+'/'+new_url,
+    //            "sServerMethod": "POST",
+    //            "oLanguage": {
+    //                "sSearch": caption || ''
+    //            },
+    //            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+    //            "fnInitComplete": function (oSettings, json) {
+    //                $('.sTable2').removeAttr('style');
+    //                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length');
+    //            },            
+    //            "fnDrawCallback": function() {
+    //                if(active_pagination=="prev"){
+    //                    $('.sTable2 tbody tr').eq(oTable.fnGetNodes().length -1 ).addClass('selected');
+    //                }
+    //                if(active_pagination=="next"){
+    //                    $('.sTable2 tbody tr').eq(0).addClass('selected');
+    //                }
+    //                setTimeout(function(){ $('.sTable2 tbody tr.selected').find('a.vendor_link').click() }, 50);
+    //            }
+    //        } );
+    //    }
+</script>
+
+<style type="text/css">
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .sTable2 tbody tr.selected td{
+        background-color: #FFFFCC;
+    }
+    .fancybox-title-inside{
+        text-align: left;
+    }
+    .leftalign{float: left;}
+    .rightalign{float: right;}
+    .Pending {
+        color: #FF6600;       
+    }
+    .Approved {
+        color: #078000;       
+    }
+    .Rejected {
+        color: #FF0000;       
+    }
+    .Past {
+        color: #FF0000;       
+    }
+
+</style>  

@@ -1,0 +1,197 @@
+<?php
+//$this->placeholder('main_side_bar')->captureStart();
+//echo $this->partial('layout/sidebar-calendar.phtml');
+//$this->placeholder('main_side_bar')->captureEnd();
+?>
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/Aristo/Aristo.css" rel="stylesheet" type="text/css" media="all">
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/plugins/jquery.jgrowl.css" rel="Stylesheet" type="text/css" />
+
+<div class="one">
+    <div style="float: left"><b>License Status:&nbsp;&nbsp;</b></div>
+    <div style="float: left">
+        <select name="l_status" id="l_status">
+            <option value="all" selected>All</option>
+            <option value="licensed">Licensed</option>
+            <option value="unlicensed">Unlicensed</option>
+            <option value="one_time">One-Time</option>
+            <option value="pending">Pending License Approval</option>
+            <option value="declined">Declined</option>
+        </select>
+    </div>
+    <div style="float:right"><a href="<?php echo $this->baseUrl("vendor/license/addendums"); ?>" class="addNewButton">Addendums</a></div>
+</div>
+<div class="spacer"></div>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="licenses-data-table">
+    <thead>
+        <tr>
+            <th width="35%" class="head0">Organization</th>
+            <th width="15%" class="head1">Symbol</th>
+            <th width="15%" class="head0">Date Applied</th>
+            <th width="25%"class="head1">Status</th>
+            <th width="10%"class="head0">Action</th>
+        </tr>
+    </thead>
+</table>
+<div class="hidden">
+    <span class="aphabetical_filters">
+        <?php
+        foreach (range('A', 'Z') as $char) {
+            echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+        }
+        ?>
+    </span>
+</div>
+<div id="statusDialog"></div>
+<?php //$user = Zend_Auth::getInstance()->getIdentity();
+?>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var l_status = 'all';
+    $(window).bind('load',function(){
+        $("#l_status").change(function(){
+            l_status = $("#l_status").val();
+            oTable.fnDestroy();
+            init_oTable_initialize(l_status);
+        });
+        init_oTable_initialize(l_status);
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();       
+    });
+
+    function init_oTable_initialize(l_status){
+        oTable=$('#licenses-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 100,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/vendor/license/ajax-get-clients-list/l_status/'+l_status,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Organizations:"
+            },
+            "aaSorting": [[3,'asc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] },{ "bSortable": true, "aTargets": [ 1 ] },{ "bSortable": true, "aTargets": [ 2 ] },{ "bSortable": true, "aTargets": [ 3 ] },{ "bSortable": false, "aTargets": [ 4 ] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }
+        } );
+    }
+
+    function init_vendor_link(){
+        $(document).on("click", "a.org_view", function(){
+            window.location.href = site_url+"/vendor/artwork/index/id/"+$(this).attr('rel');
+        });       
+        
+        $(document).on("click", "a.sign_link", function(){            
+            window.location.href = site_url+"/vendor/license/signature/l_id/"+$(this).attr('rel');            
+        });
+        
+        $(document).on('click', 'a.apply_link', function(){                        
+            var url = site_url+"/vendor/license/apply1/uid/"+$(this).attr('rel');
+            applyLicense(url);
+        });
+        
+        $(document).on('click', 'a.view_link', function(){            
+           window.location.href = site_url+"/vendor/license/signature/l_id/"+$(this).attr('rel');    
+        });
+        
+        $(document).on('click', 'a.reapply_link', function(){
+           var url = site_url+"/vendor/license/apply1/uid/"+$(this).attr('rel')+"/ap_type/reapply"; 
+           applyLicense(url);
+        });
+        
+        $(document).on('click', 'a.view_link_fancybox', function(){    
+            href = site_url+"/vendor/license/pending-amc-review/l_id/"+$(this).attr('rel')
+           loadLAComments(href,160,660)
+           return false
+        });
+        
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+//                oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>
+<script type="text/javascript">
+    var p_txt = '';
+    var productsArr = new Array();
+    var products="";
+
+    function applyLicense(ajax_url){
+        jQuery.ajax({
+            dataType: 'html',
+            beforeSend: function() { $('#wait').show(); },
+            complete: function() { $('#wait').hide(); },
+            success: function(data){appendContentWrapper(data)},
+            type: 'GET',
+            url: ajax_url
+        });
+    }
+
+    function appendContentWrapper(data){
+        if (data.responseText!=''){
+            jQuery("div.content_wrapper").empty().html(data);
+        }
+    }
+    
+    function loadLAComments(thisItem,height,width){
+        $.fancybox({
+            'href'                  : thisItem,
+            'height'                : height,
+            'width'                 : width,
+            'autoScale'             : true,
+            'autoDimensions'        : true,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'type'                  : 'iframe',
+            'transitionIn'     : 'none',
+            'transitionOut'     : 'none',
+            'speedIn'      : 100,
+            'speedOut'      : 100,
+            'overlayShow'     : true,
+            'overlayColor'     : "#FFF",
+            'onClosed'              : function() {
+                // window.location = $obj.attr('param');
+            }
+        });
+    }
+</script>
+<style type="text/css">
+    .aphabetical_filters{ margin:0 0 0 10px;}
+    a.letter_filter{}
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .link_button a {padding: 3px 6px;border: 1px outset #FFE7A1;background-color: #AF9269;color:#fff;}
+    .link_button a.current {background-color: #654b24;}   
+    .apply_link .sign_link .view_link .reapply_link{cursor:pointer; color:#2B6FB6;}
+    div.jGrowl div.jGrowl-notification
+   {
+       color:#000000;
+       background-color:#A79269;
+   }
+</style>

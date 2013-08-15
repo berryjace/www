@@ -1,0 +1,329 @@
+<?php
+$this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/Aristo.css"));
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery/jquery.populate.pack.js"));
+?>
+<?php echo $this->partial('vendors/invoice_menus.phtml'); ?>
+<br /><br />
+<form action="" id="invoice_create_form" method="post">
+    <div class="form_container_left">
+        &nbsp;
+        <div class="" style="margin:10px; display: none; float: right;" id="submit_wait">
+            <img style="margin-top:5px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" />
+        </div>
+    </div>    
+    <div class="right_div">        
+        <?php echo $this->formButton('cancel', 'Cancel', array('type' => 'button', 'class' => 'button button_red')); ?> &nbsp; 
+        <?php echo $this->formButton('save', 'Save', array('type' => 'button', 'class' => 'button button_brown')); ?> &nbsp; 
+        <?php echo $this->formButton('save_n_send', 'Save & Send', array('type' => 'button', 'class' => 'button button_brown')); ?>        
+    </div>
+    <div class="clear"></div><br />
+    
+    <div class="left_div">
+        <div class="one"><?php echo $this->form->vendor_name; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->inv_type; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->inv_term; ?></div><div class="clear"></div>
+        <br />
+        <div class="one"><?php echo $this->form->address_line_1; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->address_line_2; ?></div><div class="clear"></div>
+        <div class="one_third"><?php echo $this->form->city; ?></div>
+        <div class="one_third"><?php echo $this->form->state; ?></div>
+        <div class="one"><?php echo $this->form->zip; ?></div><div class="clear"></div>
+    </div>
+    <div class="right_div">
+        <div class="one"><?php echo $this->form->inv_num; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->inv_date; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->email; ?></div><div class="clear"></div>
+        <br />
+        <div class="one"><?php echo $this->form->phone_1; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->phone_2; ?></div><div class="clear"></div>
+        <div class="one"><?php echo $this->form->fax; ?></div><div class="clear"></div>
+        <input type="hidden" name="vid" id="vid" value="" />
+        <input type="hidden" name="save_only" id="save_only" value="" />
+        <input type="hidden" name="invoice_save" id="invoice_save" value="" />
+        <input type="hidden" name="from_name" id="from_name" value="" />
+        <input type="hidden" name="from_email" id="from_email" value="" />
+        <input type="hidden" name="to_name" id="to_name" value="" />
+        <input type="hidden" name="to_email" id="to_email" value="" />
+        <input type="hidden" name="cc_email" id="cc_email" value="" />
+        <input type="hidden" name="subject" id="subject" value="" />
+        <input type="hidden" name="email_body" id="email_body" />
+    </div>
+    <div class="clear"></div>
+
+    <!-- add line items div start after this line-->
+    <div class="one" id="add_line_items"></div>
+    <!-- add line items div ends after this line-->       
+</form>
+<!-- start sending invoice with email -->
+<div id="mail-send" style="display:none">
+    <div style="width:630px; height:auto">
+        <div style="width: 315px; height: auto; float: left;">
+            <div style="">
+                <b>From Name:</b><br/>
+                <input type="text" name="f_name" id="f_name" style="width:250px;" value="" />
+            </div>    
+            <div style="">
+                <b>From Email:</b><br/>
+                <input type="text" name="f_email" id="f_email" style="width:250px;" value="" />
+            </div>
+        </div>
+        <div style="width: 315px; height: auto; float: left;">
+            <div style="">
+                <b>Contact Name:</b><br/>
+                <input type="text" name="t_name" id="t_name" style="width:285px;" value="" />
+            </div>
+            <div style="">
+                <b>Contact Email:</b><br/>
+                <input type="text" name="t_email" id="t_email" style="width:285px;" value="" />
+            </div>
+        </div>                                        
+        <div style="">
+            <b>CC:</b><br/>
+            <input type="text" name="cc" id="cc" style="width:600px;" value="" />
+        </div>
+        <div style="">
+            <b>Subject:</b><br/>
+            <input type="text" name="mail_subject" id="mail_subject" style="width:600px;" value="" />
+        </div>                        
+        <div style="width:610px; height:auto;padding: 10px;">           
+            <b>Body:</b> <br />
+            <textarea name="email_body_text" id="email_body_text"></textarea>
+        </div>
+    </div>
+</div>
+<!-- end sending invoice with email -->
+<style type="text/css">    
+    .ui-menu-item{}
+    .ui-corner-all{
+        -moz-border-radius:0;
+        -webkit-border-radius:0;
+        border-radius:0;
+        font-size: 12px;
+    }
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    } 
+    #city,#state,#zip{width:112px;}
+    #add_line_items{display: none;}
+    .add_icon{margin: 3px 5px; cursor: pointer;}
+    .description{width: 95%;}
+</style>
+
+<script type="text/javascript">    
+    var greek_org = new Array();
+    var line_items_header = '<div class="one">'+
+            '<div class="one_sixth"><b>Item No.</b></div>'+
+            '<div class="one_fourth"><b>Description</b></div>'+
+            '<div class="one_fourth"><b>Greek Org.</b></div>'+
+            '<div class="one_sixth"><b>Total</b></div>'+            
+            '<div class="floatleft">'+
+                '<img src="<?php echo $this->baseUrl('assets/images/plus.png'); ?>" class="add_icon" id="add_greek_org" title="Add" />'+
+                ''+
+            '</div>'+
+        '</div>'+
+        '<div class="clear"></div>';
+    var line_items = "";
+    var count = 0;
+    
+    $(function(){
+        create_invoice.init_vendor_lookup();
+        $("#inv_date").datepicker();
+    })
+    create_invoice=({
+        init_vendor_lookup : function(){
+            $("#vendor_name").bind("keydown", this.autoCompleteKeyDown).autocomplete({
+                source: site_url+"/admin/vendors/ajax-search-vendor",
+                minLength: 2,
+                autoFocus: true,
+                select: function( event, ui ) { 
+//                    console.log(ui);
+//                    console.log(ui.item.vid);
+                    generate_invoice(ui.item.vid);
+                }
+            });        
+        },
+        autoCompleteKeyDown : function (e){
+            if (e.keyCode === 27) {             
+                $('a#quick_search').focus();
+                $('a#quick_search').qtip('api').hide();
+            }
+        }
+    });      
+        
+    function generate_invoice(id){   
+        $('#add_line_items').html("");
+        console.log('trying');
+        jQuery.ajax({
+            url: site_url+"/admin/vendors/ajax-get-invoice-number/vendor_id/"+id,
+            type: "POST",
+            dataType: 'json',
+            beforeSend: function() { $('#submit_wait').show(); },
+            complete: function() { $('#submit_wait').hide(); },
+            success: function(result) {    
+				console.log('success');
+                
+                $("#vid").val(id);
+                $("#inv_num").val(result.inv_num);
+                $("#inv_date").val(result.inv_date);
+                $("#email").val(result.email);
+                $("#address_line_1").val(result.address_line_1);
+                $("#address_line_2").val(result.address_line_2);
+                $("#city").val(result.city);
+                $("#state").val(result.state);
+                $("#zip").val(result.zip);
+                $("#phone_1").val(result.phone_1);
+                $("#phone_2").val(result.phone_2);
+                $("#fax").val(result.fax);
+                
+                count = 1;
+                line_items = '<div class="field">'+
+                    '<div class="one_sixth"><input type-="text" class="item_class" name="item_no[]" value="" /></div>'+
+                    '<div class="one_fourth"><input type="text" name="description[]" class="description" value="" /></div>'+
+                    '<div class="one_fourth">'+
+                    '<select name="greek_org[]" id="greek_org">';
+
+//                greek_org = result.clients;     
+                for(var c in result.clients){                    
+                    line_items +='<option value="'+c+'">'+ result.clients[c]+'</option>';
+                }
+                line_items += '</select>'+
+                    '</div>'+
+                    '<div class="one_sixth"><input type="text" name="total[]" /></div>'+
+                    '<img src="<?php echo $this->baseUrl('assets/images/minus.png'); ?>" class="add_icon" id="remove_greek_org" title="Remove" />'+
+                    '<div class="spacer clear"></div>';                
+                $('#add_line_items').append(line_items_header + line_items);
+                $('#add_line_items').show();
+               // $('#remove_greek_org').hide();
+                $('.item_class').last().val(count);
+            }
+        });  
+    }
+           
+    $(document).on('click', '#add_greek_org', function(){        
+        $('#add_line_items').append(line_items);       
+    });
+    
+    $(document).on('click', '#remove_greek_org', function(){
+        $(this).parents('.field').remove();
+    })
+    
+    $(document).on('click', '#cancel', function(){  
+        window.location.href = site_url+"/admin/vendors/invoice";               
+    });    
+    
+    $(document).on('click', '#save', function(){
+        $('#save_only').val('Save');      
+        $.ajax({
+            url: site_url+"/admin/vendors/invoice-create",
+            type: "POST",
+            dataType: 'json',
+            data:$('#invoice_create_form').serialize(),
+            beforeSend: function() { $('#submit_wait').show(); },
+            complete: function() { $('#submit_wait').hide();},
+            success: function(result) {    
+//                console.log(result);
+                $.jGrowl(result.message);
+                document.location = site_url+"/admin/vendors/invoice"; 
+            }          
+        });                
+    });
+    
+    $(document).on('click', '#save_n_send', function(){          
+        $('#invoice_save').val('Save');        
+        $.ajax({
+            url: site_url+"/admin/vendors/invoice-create",
+            type: "POST",
+            dataType: 'json',
+            data:$('#invoice_create_form').serialize(),
+            beforeSend: function() { $('#submit_wait').show(); },
+            complete: function() { $('#submit_wait').hide();},
+            success: function(msg) {    
+                $('#to_email').val(msg.to);
+                $('#to_name').val(msg.to_name);
+                $('#from_email').val(msg.from);
+                $('#from_name').val(msg.from_name);
+                $('#subject').val(msg.subject);
+                $('#email_body').val(msg.body);                
+                
+                $('#t_email').val(msg.to);
+                $('#t_name').val(msg.to_name);
+                $('#f_email').val(msg.from);
+                $('#f_name').val(msg.from_name);
+                $('#mail_subject').val(msg.subject);
+                $('#email_body_text').val(msg.body);                
+                
+                $( "#mail-send" ).dialog({
+                    open: function() {
+                        tinyMCE.init({
+                            mode : "exact",
+                            elements: "email_body_text",
+                            theme : "advanced",
+                            height: "300",
+                            theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+                            theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+                            theme_advanced_buttons3 : "",
+                            theme_advanced_toolbar_location : "top",
+                            theme_advanced_toolbar_align : "left",
+                            theme_advanced_statusbar_location : "bottom",
+                            theme_advanced_path : false,
+                            theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+                            font_size_style_values : "13px, 14px,16px,18px,20px",
+                            content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+                            force_br_newlines : true,
+                            force_p_newlines : false,
+                            forced_root_block : "",
+                            theme_advanced_resizing : true,
+                            skin : "o2k7",
+                            skin_variant : "silver",
+                            theme_advanced_toolbar_location : "top",
+                            theme_advanced_toolbar_align : "left"
+                        });
+                        $('textarea.FormElement').each(function(index) {
+                            tinyMCE.execCommand('mceAddControl', false, $(this).attr('id'));                                                     
+                        });
+                    },
+                    resizable: false,
+                    height:'auto',
+                    width: 665,
+                    modal: true,
+                    title: "Email Notification",
+                    buttons: {
+                        "Send to Vendor": function() {                              
+                            mail_text = tinyMCE.getInstanceById('email_body_text').getBody().innerHTML;                            
+                            $('#invoice_save').val('Send');                            
+                            $('#to_email').val($('#t_email').val());
+                            $('#to_name').val($('#t_name').val());
+                            $('#from_email').val($('#f_email').val());
+                            $('#from_name').val($('#f_name').val());
+                            $('#cc_email').val($('#cc').val());
+                            $('#subject').val($('#mail_subject').val());
+                            $('#email_body').val($('#email_body_text').val());                
+                            $('#email_body').val(mail_text)
+                            $( this ).dialog( "close" );
+                            
+                            $.ajax({
+                                url: site_url+"/admin/vendors/invoice-create",
+                                type: "POST",
+                                dataType: 'json',
+                                data: $('#invoice_create_form').serialize(),
+                                beforeSend: function() { $('#submit_wait').show(); },
+                                complete: function() { $('#submit_wait').hide();},
+                                success: function(msg) {
+//                                    console.log(msg.success);
+                                    $.jGrowl(msg.message);
+                                    document.location = site_url+"/admin/vendors/invoice"; 
+                                }
+                            });
+                        },
+                        "Cancel": function() {                    
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                });                 
+            }
+        });                    
+    });
+    
+</script>

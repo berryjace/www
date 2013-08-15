@@ -1,0 +1,67 @@
+<h3><?php echo $this->title; ?></h3>
+<hr size="1" noshade />
+
+<form name="email_send_form" id="email_send_form" method="POST" action="">
+    <div class="one">
+        <b>Subject</b><br />
+        <input type="text" name="subject" id="subject" class="text" value="<?php echo $this->subject; ?>" />
+    </div>
+    <div class="spacer clear"></div>
+
+    <div class="one">
+        <b>Email Body</b><br />
+        <textarea name="email_body" id="email_body"><?php echo $this->email_body; ?></textarea>
+    </div>
+    <div class="spacer clear"></div>
+
+    <div class="one">
+        <div class="leftalign">
+            <button name="cancel" id="cancel" type="button" class="button button_black">Cancel</button>&nbsp;
+            <button name="send_to_vendor" id="send_to_vendor" type="submit" class="button button_black">Send to Vendor</button>&nbsp;&nbsp;
+        </div>
+        <div class="leftalign" id="wait" style="display: none; margin-top: 20px;"><img src="<?php echo $this->baseUrl("assets/images/loading.gif"); ?>" /></div>
+    </div>
+</form>
+
+<script type="text/javascript">
+    tinyMCE.init({
+        mode : "textareas",
+        elements : "email_body",
+        theme : "advanced",
+        height: "300",
+        theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+        theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+        theme_advanced_buttons3 : "",
+        theme_advanced_toolbar_location : "top",
+        theme_advanced_toolbar_align : "left",
+        theme_advanced_statusbar_location : "bottom",
+        theme_advanced_path : false,
+        theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+        font_size_style_values : "13px, 14px,16px,18px,20px",
+        content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+        force_br_newlines : true,
+        force_p_newlines : false,
+        forced_root_block : "",
+        theme_advanced_resizing : true,
+        skin : "o2k7",
+        skin_variant : "silver"
+    });
+       
+    $(document).on('click', 'button#cancel', function(){
+        window.parent.close_popup();
+    });
+    
+    $(document).on('click', 'button#send_to_vendor', function(){
+        $('#wait').show();
+    });
+    
+    if('<?php echo $this->success; ?>' != ''){
+        //window.parent.execute_refresh('<?php echo $this->success; ?>');
+        window.parent.location.href = site_url+'/admin/vendors/show-invoice/inv_id/<?php echo $this->invoice_id?>';
+    }
+</script>
+
+
+
+
+

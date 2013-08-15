@@ -1,0 +1,29 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml',array('selected'=>'license'));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<h2>Addendums</h2>
+<hr size="1" />
+<div class="spacer"></div>
+<?php if(sizeof($this->addendums)) {?>
+    <?php foreach($this->addendums as $addendum) {?>
+    <div class="addendum">
+        <?php echo $addendum->create_date->format('F, d Y | h:i A e') ?>
+        <p><a href="<?php echo $this->baseUrl("vendor/license/view-addendum/id/").$addendum->id; ?>" class="view_more"><?php echo $addendum->reason; ?></a></p>
+        <div class="spacer"></div>
+        <?php echo substr(strip_tags($addendum->content), 0, 250).'... [<a href="'.$this->baseUrl("vendor/license/view-addendum/id/").$addendum->id.'" class="view_more">more</a>]'?>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <?php }?>
+    <div align="left">
+        <?php echo $this->paginationControl($this->addendums, 'Sliding', '/layout/pagination.phtml'); ?>
+    </div>
+<?php }?>
+<style type="text/css">
+    .link_button a {padding: 3px 6px;border: 1px outset #FFE7A1;background-color: #AF9269;color:#fff}
+    .link_button a.current {background-color: #654b24;}
+    .addendum {padding: 5px;width:800px;}
+    .addendum p {font-weight:bold;}
+</style>

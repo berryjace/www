@@ -1,0 +1,128 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('layout/sidebar-calendar.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('index/sub-menu-bar.phtml', array('selected' => 'web-profile'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+
+<div class="notification msginfo">
+    <a class="close"></a>
+    The following information is seen by the public on the GreekLicensing.com website. If you would like to change any of the information, please <a href="http://www.greeklicensing.com/contact" target="_blank">contact</a> Affinity Marketing.
+</div>
+
+<form action="<?php echo $this->baseUrl();?>/client/index/web-profile" method="POST" enctype="" id="<?php echo $this->form->getName(); ?>">
+    <div class="form_container_left">
+        <?php echo $this->form->organization_name; ?>
+        <?php echo $this->form->address_line1; ?>
+        <?php echo $this->form->address_line2; ?>
+        <div class="clear"></div>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>
+        </div>
+        <div class="clear"></div>
+         <?php echo $this->form->email; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->greek_name; ?>
+        <?php echo $this->form->phone1; ?>
+        <?php echo $this->form->phone2; ?>
+        <?php echo $this->form->fax; ?>
+        <?php echo $this->form->webpage; ?>
+    </div>
+    <div class="clear"></div>    
+<!--    <div class="form_container_left">
+        <?php //echo $this->form->organization_symbol; ?>
+        The optimal size of the symbol should be ZZZpx X ZZZpx.
+    </div>
+    <div class="clear"></div>-->    
+    
+    <hr size="1" noshade />
+    <div class="spacer"></div>
+    <div class="form_container_left">        
+        <?php echo $this->form->greek_org_type; ?>
+        <?php echo $this->form->greek_founding_year; ?>
+        <?php echo $this->form->greek_number_of_undergrads; ?>
+        <?php //echo $this->form->founding_address_line1; ?>
+        <?php //echo $this->form->founding_address_line2; ?>
+        <div class="clear"></div>
+        <div class="one_third">
+        <?php echo $this->form->headquarters_city; ?>
+            </div>
+        <div class="one_third">
+            <?php echo $this->form->headquarters_state; ?>
+        </div>
+    </div>
+    <div class="form_container_right">        
+        <?php echo $this->form->greek_number_of_colg_chapters; ?>
+        <?php echo $this->form->greek_number_of_alumni_chapters; ?>
+        <?php echo $this->form->greek_number_of_alumni; ?>
+        <?php //echo $this->form->founding_state; ?>
+        <?php //echo $this->form->zip; ?>
+    </div>    
+    <div class="spacer clear"></div>
+<!--        <button type="submit" class="button button_black detail_button">Submit</button>-->
+</form>
+
+<style type="text/css">
+    form{padding: 0px; margin: 0px;}
+    #city,#state,#zip,#sal,#founding_city,#founding_state, #headquarters_city, #headquarters_state{
+        width:110px;
+    }
+    #first_name{width:250px;}
+    #greek_org_type{width:100%; height: 30px;}
+    #organization_logo, #organization_symbol{width: 150px; height: 25px;}
+</style>
+
+<script type="text/javascript">
+    validated=false;
+    $(function(){
+
+        $('input, select').attr('disabled', 'disabled')
+            .css({
+                "color"             : "#333333",
+                "border"            : "1px solid #999999",
+                "background-color"  : "silver"
+            });
+
+        $("#webprofile_form").on('submit',function(){
+            $form=$(this);
+            if(!validated){
+                $.ajax({
+                    type: 'post',
+                    data : $("#webprofile_form").serialize(),
+                    dataType: 'json',
+                    success: function(e){
+                        $valid=$.isEmptyObject(e) ? true : false;
+                        if(!$valid){
+                            $form.find('.error').removeClass('error');
+                            $form.find('.js_gen_errors').remove();
+                            for(var i in e){
+                                $.map( e[i], function(val, k) {
+                                    $('input[name='+i+']').addClass('error')
+                                    .after('<ul class="errors js_gen_errors"><li>'+val+'</li></ul>');
+                                });
+                            }
+                            return false;
+                        }else{
+                            validated=true;
+                            $form.find('.error').removeClass('error');
+                            $form.find('.js_gen_errors').remove();
+                            $form[0].submit();
+                            return true;
+                        }
+                    }
+                });
+                return false;
+            }
+        })
+    });
+</script>

@@ -1,0 +1,51 @@
+<h2>Edit User</h2>
+<div class="clear"></div>
+<hr size="1" noshade />
+
+<div clas="one">
+    <form name="edit_user" id="edit_user" action="" method="POST">
+        <div class="form_container_left">
+            <?php echo $this->form->username; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->email; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->first_name; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->account_type; ?>
+            <div class="clear"></div>
+        </div>
+        <div class="form_container_right">
+            <?php echo $this->form->password; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->confirm_password; ?>
+            <div class="clear"></div>
+            <?php echo $this->form->last_name; ?>
+            <div class="clear"></div>
+            
+            <?php echo $this->form->status; ?>        
+            <div class="clear"></div>
+        </div>
+        <div class="spacer clear"></div>
+
+        <button class="button button_black">Submit</button>
+    </form>
+</div>
+
+<style type="text/css">
+    form{margin: 0px; padding: 0px;}
+    #username,#email,#first_name,#last_name,#password,#confirm_password{width: 300px;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            $('#username').addClass('desable').prop('disabled', true);
+            $('#email').addClass('desable').prop('disabled', true);
+        }
+    }    
+</script>

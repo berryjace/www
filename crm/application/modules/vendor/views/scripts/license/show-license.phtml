@@ -1,0 +1,124 @@
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/Aristo/Aristo.css" rel="stylesheet" type="text/css" media="all" />
+<div>
+    <div class="one">
+        <div style="float: left;"><h2>Review Licensing Contracts</h2></div>
+        <div style="float: right"><a href="javascript:;" class="addNewButton">Addendums</a></div>       
+    </div>
+    <div class="spacer clear"></div>
+
+    <div class="one">
+        <div class="l_margin">
+            You have [ <b><?php echo $this->pendingSigns; ?></b> ] Licensing Contracts to sign.
+        </div>
+    </div>
+    <div class="clear spacer"></div>
+
+    <div class="one">
+        <div class="l_margin">
+            <b>Status:</b> <?php echo $this->license_status; ?>
+        </div>
+    </div>
+    <div class="clear spacer"></div>
+
+    <div class="one">
+        <div class="l_margin">
+            <div class="div_left">
+                <div class="div_left">
+                    <img src="<?php echo $this->baseUrl('assets');?>/images/notes-icon.gif" class="" />
+                </div>
+                <div class="div_left">
+                    &nbsp;<a href="javascript:;" id="view_note">View Notes</a>
+                </div>
+            </div>
+            <div style="float: right;">
+                <div class="div_left">
+                    <img src="<?php echo $this->baseUrl('assets');?>/images/arrow_red.png" class="arrow_icon" />
+                </div>
+                <div class="div_left">
+                    &nbsp;Indicates specific revisions to the contract for review
+                </div>                
+            </div>
+        </div>
+    </div>
+    <div class="clear spacer"></div>
+
+    <div class="one">
+        <div class="one_half l_margin">
+            <b><?php echo $this->license->client_id->organization_name; ?></b>
+        </div>
+        <div style="float: right;">
+            <span onClick="javascript:PrintContent()" style="cursor: pointer;"><img src="<?php echo $this->baseUrl('assets');?>/images/printer.png" />&nbsp;&nbsp;Print Contracts</span>
+        </div>
+    </div>
+    <div class="clear spacer"></div>
+
+    <div class="one" id="l_statement">
+        <div class="one l_margin">
+            <?php echo $this->license->agreement_statement ? $this->license->agreement_statement : ''; ?>
+        </div>        
+    </div>
+    <div class="clear spacer"></div>
+
+    <div class="one">
+        <b>Appendices</b>
+    </div>
+    <div class="clear spacer"></div>
+
+    <div class="one">
+        <div class="appendices_logo"><img src="<?php echo $this->baseUrl('assets');?>/images/icon_pdf_16x16.png" /></div>
+        <div class="appendices">Ways to sell products to local branches</div>
+    </div>
+    <div class="clear spacer"></div>
+    
+    <div class="one" id="noticeData" style="display: none;">
+        <?php echo $this->license->license_specific_note ? $this->license->license_specific_note : 'Not Available!'; ?>
+    </div>
+</div>
+<div id="statusDialog"></div>
+
+<style type="text/css">
+    .div_left{float: left}
+    .arrow_icon{width: 12px; height: 16px;}
+    .l_margin{margin-left: 10px}
+    .appendices{float: left; font-size: 12px; color: #999999;}
+    .appendices_logo{float: left; width: 25px;}
+    #view_note{cursor: pointer; color: #1C70AD}
+</style>
+<script type="text/javascript">
+    function PrintContent() {
+        var DocumentContainer = document.getElementById('l_statement');
+        var WindowObject = window.open('', 'PrintWindow', 'width=750,height=650,top=50,left=50,toolbars=no,scrollbars=yes,status=no,resizable=yes');
+        WindowObject.document.writeln(DocumentContainer.innerHTML);
+        WindowObject.document.close();
+        WindowObject.focus();
+        WindowObject.print();
+        WindowObject.close();
+    }
+</script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#view_note").click(function(){
+            var data = $('#noticeData').html();
+            appendToDialog(data);
+            $( "#statusDialog" ).dialog({
+                height: 550,
+                width: 450,
+                modal: true,
+                autoOpen: false,
+                title: 'Notice',
+                buttons: {
+                    "Ok": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#statusDialog" ).dialog('open');
+        });
+    });
+
+    function appendToDialog(data){
+        if (data != ''){
+            jQuery("#statusDialog").empty().html(data);
+        }
+    }
+</script>

@@ -1,0 +1,78 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('clients/sidebar-menus.phtml', array('selected' => 'operations', 'id' => $this->client->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery-ui/jquery-ui-timepicker-addon.js"></script>
+
+<div class="one">
+    <div class="one_third">
+       <h2><?php echo $this->client->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Client Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->client->user_status)); ?></h4>       
+        </div>
+    </div>        
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<form action="" method="POST" enctype="multipart/form-data" id="client_setup_form">
+    <div class="form_container_left">
+        <?php echo $this->form->license_agreement_signee; ?>        
+        <?php echo $this->form->signee_title; ?>
+        <?php echo $this->form->org_magazine_circulation_size; ?>
+        <?php echo $this->form->frequency_of_mag; ?>
+        <?php echo $this->form->accept_advertising; ?>        
+        <?php echo $this->form->advertising_rates; ?>
+        <?php echo $this->form->advertising_deadlines; ?>        
+        <?php echo $this->form->workshop_names; ?>
+        <?php echo $this->form->org_workshop_type; ?>
+        <?php echo $this->form->client_status; ?>
+        <?php echo $this->form->commission_start_date; ?>
+        <?php // echo $this->form->commission_per; ?>
+        <?php echo $this->form->sharing; ?>
+        <div class="spacer"></div>
+        <button type="submit" class="button button_black detail_button">Save</button>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->org_workshop_dates; ?>
+        <?php echo $this->form->convention_name; ?>        
+        <?php echo $this->form->org_convention_site; ?>
+        <?php echo $this->form->org_convention_dates; ?>        
+        <?php echo $this->form->org_pms_colors_1; ?>        
+        <?php echo $this->form->org_pms_colors_2; ?>
+        <?php echo $this->form->org_pms_colors_3; ?>
+        <?php echo $this->form->org_pms_colors_4; ?>
+        <?php echo $this->form->default_note_to_all_applying_vendors; ?>                                                        
+    </div>    
+</form>
+
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+</style>
+<script type="text/javascript">
+$(document).ready(function() {
+    
+    var cur_year = "<?php echo date('Y') ?>";
+    var cur_month = "<?php echo date('m') - 1 ?>";
+    var cur_day = "<?php echo date('d') ?>";
+    $("#advertising_deadlines, #org_workshop_dates, #org_convention_dates").datetimepicker({
+        minDate: new Date(cur_year, cur_month, cur_day, 8, 30),
+        maxDate: new Date(2030, 11, 31, 17, 30), showHour:false,showMinute:false,showSecond:false,timeText:"",timeFormat: '',currentText:"Today"
+    });
+
+
+});
+</script>

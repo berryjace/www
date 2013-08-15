@@ -1,0 +1,185 @@
+<?php
+    $errorsMessages = $this->form->getMessages();
+//  print_r($errorsMessages);
+?>
+<div id="view-content">
+    <h4>Licensing Application</h4>
+    <div class="one"><img src="<?php echo $this->baseUrl('assets')?>/images/application_steps_4.png" alt= 'Step4' title="Step4" /></div>
+    <div class="spacer clear"></div>
+    <div>
+    <div class="form_default">
+    <fieldset>
+      <legend>4. Financial Statements and References</legend>   
+      <div class="spacer clear"></div>
+
+      <form id="form4" action="<?php echo $this->url(array('controller' => 'license', 'action' => 'apply5')); ?>" method="post" >
+        
+          <div class="one">
+              (All fields must be answered with the exception of the top 3, and the comments box)
+          </div>
+          <div class="spacer clear"></div>
+
+          <div class="one">
+              <label>Please check any of the following that are available for further review during the application process:</label><br />
+              <div class="spacer"> </div>
+              <?php
+                  if(isset ($errorsMessages['application_process']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['application_process']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->application_process; ?>         
+          </div>
+          <div class="spacer clear"></div>
+
+          <div class="one">
+              <label>How many full time employees do you have? </label><br />
+              <?php
+                  if (isset($errorsMessages['full_time_employee_num']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['full_time_employee_num']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->full_time_employee_num; ?>
+          </div>
+          <div class="spacer clear"></div>
+
+          <div class="one">
+              <label>How many years has your business been in operation? </label><br />
+              <?php
+                  if(isset ($errorsMessages['years_in_business']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['years_in_business']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->years_in_business; ?>
+          </div>
+          <div class="spacer clear"></div>
+
+          <div class="one">
+              <label>Has any officer or relevant person of the business been involved with a business failure in last 5 years (liquidation, voluntary administration or receivership)?</label><br />
+              <?php
+                  if(isset ($errorsMessages['business_failure_in_5_years']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['business_failure_in_5_years']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->business_failure_in_5_years; ?>
+          </div>
+          <div class="spacer clear"> </div>
+
+          <div class="one">
+              <label>Has any officer or relevant person of the business been declared bankrupt?</label><br />
+              <?php
+                  if(isset ($errorsMessages['any_person_bankrupt']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['any_person_bankrupt']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->any_person_bankrupt; ?>
+          </div>
+          <div class="spacer clear"> </div>
+
+          <div class="one">
+              <label>Has the business, related entities, officers or relevant persons been involved in a Government investigation?</label><br />
+              <?php
+                  if(isset ($errorsMessages['government_investigation']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['government_investigation']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->government_investigation; ?>
+          </div>
+          <div class="spacer clear"> </div>
+
+          <div class="one">
+              <label>Has any contract with the business been terminated for cause in the last 2 years?</label><br />
+              <?php
+                  if(isset ($errorsMessages['contract_terminated_in_last_2_years']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['contract_terminated_in_last_2_years']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->contract_terminated_in_last_2_years; ?>
+          </div>
+          <div class="spacer clear"> </div>
+
+          <div class="one">
+              <label>Is there any past, pending or finalized litigation against the officers, relevant persons or the business during the last 5 years?</label><br />
+              <?php
+                  if(isset($errorsMessages['litigation_against_the_officers']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['litigation_against_the_officers']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->litigation_against_the_officers; ?>
+          </div>
+          <div class="spacer clear"> </div>
+
+          <div class="one">
+              <label>Have there been any collections by a debt collection agency on behalf of creditors of the business, officers or relevant persons of the business?</label><br />
+              <?php
+                  if(isset ($errorsMessages['any_collections_by_debt_collection_agency']['isEmpty']))
+                      echo '<span class="errors">'.$errorsMessages['any_collections_by_debt_collection_agency']['isEmpty'].'</span><br />';
+              ?>
+              <?php echo $this->form->any_collections_by_debt_collection_agency; ?>
+          </div>
+          <div class="spacer clear"> </div>
+
+          <div class="one">
+              <label>If you answered “yes” to any of the above questions, please provide additional explanation here: </label><br />
+              <?php
+                  /*if(isset ($errorsMessages['additional_explanation']['isEmpty']))
+                      echo $errorsMessages['additional_explanation']['isEmpty'];*/
+              ?>
+              <?php echo $this->form->additional_explanation; ?>
+          </div>
+          <div class="spacer clear"> </div>
+        
+          <div class="one">            
+              <div class="one_half">
+                  <?php $session = new Zend_Session_Namespace('default'); ?>
+                  <button type="button" class="button button_blue detail_button" onclick="previousToPart3('<?php echo $session->client_id; ?>')" >Previous</button>
+                  <button type="submit" class="button button_blue detail_button">Next</button>
+              </div>
+          </div>
+          <div class="spacer clear"></div>
+      </form>
+    </fieldset>
+    </div>
+    </div>
+</div>
+
+<style type="text/css">
+.lebel {
+    color: #42251B;
+    font-weight: bold;
+    line-height: 28px;
+}
+
+.rightalign {
+    text-align: right;
+}
+.errors{
+    color: red;
+    list-style: none;
+}
+.clear{clear: both;}
+.padding5{padding: 3px;}
+</style>
+<script type="text/javascript" >
+    jQuery(document).ready( function($) {
+        var $form = $('#form4');
+
+        $form.submit( function() {
+            $.ajax({
+                type: 'POST',
+                beforeSend: function() { $('#wait1').show(); },
+                complete: function() { $('#wait1').hide(); },
+                url: $form.attr( 'action' ),
+                data: $form.serialize(),
+                success: function( response ) {
+                    appendContentWrapper(response);
+                }
+            });
+
+            return false;
+        });
+    });
+
+    function previousToPart3(uid){
+        //uid=$(this).attr("id");
+        jQuery.ajax({
+            dataType: 'html',
+            beforeSend: function() { $('#wait1').show(); },
+            complete: function() { $('#wait1').hide(); },
+            success: function(data){appendContentWrapper(data)},
+            type: 'GET',
+            url: '<?php echo $this->url(array('controller' => 'license', 'action' => 'apply3')); ?>?prev=yes&uid='+uid});
+    }
+
+</script>

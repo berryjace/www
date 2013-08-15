@@ -1,0 +1,215 @@
+<div class="one report_font">
+    <div class="leftalign"><b>
+    <?php
+    $orgnizationName = ($this->report->vendor instanceof \BL\Entity\User) ? $this->report->vendor->organization_name : 'N/A';
+    echo $orgnizationName ?></b></div>
+    <div class="rightalign">Fiscal Year: &nbsp;<b><?php echo $this->report->year; ?></b></div>
+</div>
+<br />
+<hr size ="1" noshade />
+<div class="spacer clear"></div>
+
+<?php if(!empty($this->status_msg)): ?>
+<div class="notification msginfo">
+    <a class="close"></a>
+    <?php echo $this->status_msg; ?>
+</div>
+<?php endif; ?>
+
+<div class="one report_font"><b><?php echo 'Q' . $this->report->quarter; ?></b> Quarterly Report Detail Submitted on <b><?php echo $this->report->uploaded_on->format('M d, Y'); ?></b></div>
+<div class="spacer clear"></div>
+<?php if (sizeof($this->summary_data)): ?>
+    <?php if (isset($this->detailReports)): ?>
+
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2">
+            <?php
+
+		foreach ($this->detailReports as $files):
+		foreach ($files as $file): ?>
+                <tr>
+                    <td width="250"><?php echo basename($file); ?></td>
+                    <td>
+                        <a target="_blank" href="<?php echo $this->baseUrl($file); ?>">Download</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            <?php endforeach; ?>
+        </table><br/>
+    <?php endif; ?>
+    <?php if (isset($this->summaryReports)): ?>
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2">
+            <?php
+
+		foreach ($this->summaryReports as $files):
+		foreach ($files as $file): ?>
+                <tr>
+                    <td width="250"><?php echo basename($file); ?></td>
+                    <td>
+                        <a target="_blank" href="<?php echo $this->baseUrl($file); ?>">Download</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            <?php endforeach; ?>
+        </table><br/>
+    <?php endif; ?>
+        <div class="one">
+        <?php if(empty($this->vendor_reporting_type) || $this->vendor_reporting_type == 1)  {?>
+            <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+                <thead>
+                    <tr role="row">
+                        <th align="left">Greek Org.</th>
+                        <th align="left">Gross Sales</th>
+                        <th aling="left">Royalty %</th>
+                        <th align="left">Royalty Due</th>
+                        <!-- Before Applying Advance <th align="left">Royalty Advance</th>
+                        <th align="left">Royalty Due After Applying Advance</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $alt = true; $i = 0; ?>
+                    <?php foreach ($this->summary_data['organizations'] as $org): ?>
+                        <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                            <td><?php echo $org; ?></td>
+                            <td class="money"><?php echo is_null($this->summary_data['gross_sales'][$i]) ? 'N/A' : $this->BUtils()->getCurrency($this->summary_data['gross_sales'][$i]); ?></td>
+                            <td><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' : $this->summary_data['royalty_commission'][$i] . '%'; ?></td>
+                            <td class="money"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?></td>
+                          <!-- <td><?php echo $this->BUtils()->getCurrency($this->summary_data['annual_advance'][$i]); ?></td>
+                            <td><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?></td> -->  
+                        </tr>
+                        <?php $i++; ?>
+                        <?php endforeach; ?>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <!-- <td>&nbsp;</td>
+                        <td>&nbsp;</td> -->
+                        <td class="total_row">Total</td>
+                        <td class="total_col money"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+            <?php } elseif($this->vendor_reporting_type == 2) {?>
+               <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+                <thead>
+                    <tr role="row">
+                        <th align="left">Greek Org.</th>
+                        <th align="left">Units Sold</th>
+                        <th aling="left">Royalty ($)</th>
+                        <th align="left">Royalty Due Before Applying Advance</th>
+                        <th align="left">Royalty Advance</th>
+                        <th align="left">Royalty Due After Applying Advance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $alt = true; $i = 0; ?>
+                    <?php foreach ($this->summary_data['organizations'] as $org): ?>
+                        <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                            <td><?php echo $org; ?></td>
+                            <td><?php echo is_null($this->summary_data['quantity'][$i]) ? 'N/A' : $this->summary_data['quantity'][$i]; ?></td>
+                            <td><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' :  '$'.$this->summary_data['royalty_commission'][$i] ; ?></td>
+                            <td class="money"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?></td>
+                            <td class="money"><?php echo $this->BUtils()->getCurrency($this->summary_data['annual_advance'][$i]); ?></td>
+                            <td class="money"><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?></td>
+                        </tr>
+                        <?php $i++; ?>
+                        <?php endforeach; ?>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td class="total_row">Total</td>
+                        <td class="total_col money"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+            <?php }?>
+        </div>
+    <?php endif; ?>
+    <div class="spacer clear"></div>
+
+    <!--<div class="leftalign">
+        <button name="edit_summary" id="edit_summary" class="button button_black">Edit Summary</button>
+    </div>-->
+    <div class="leftalign">
+        <?php if($this->report->status != "Rejected"): ?>
+        <button name="reject" id="reject" type="button" value="<?php echo "Rejected;".$this->report->id; ?>" class="button button_black">Reject</button>&nbsp;
+        <?php endif; ?>
+        <?php if($this->report->status != "Approved"): ?>
+        <button name="approve" id="approve" type="button" value="<?php echo "Approved;".$this->report->id; ?>" class="button button_black">Approve</button>
+        <?php endif; ?>
+    </div>
+
+
+
+<style type="text/css">
+    .status{width: 120px;}
+    .button_pos{width: 176px; float: right;}
+    .button_payment{width: 50%; float: right;}
+    #city, #state, #zip{
+        width:114px;
+    }
+    .total_row{text-align: right; font-weight: bold;}
+    .total_col{font-weight: bold;}
+    .report_font{font-size: 14px;}
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+    .money{
+    	text-align: right;
+    }
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();
+
+        $(document).on('click', 'button#approve', event_functions.approve_or_reject);
+        $(document).on('click', 'button#reject', event_functions.approve_or_reject);
+    });
+
+    event_functions = {
+        _initialize : function(){
+
+        },
+        approve_or_reject : function(e){
+//            console.log($(e.target).attr('value'));
+            var app_rej = $(e.target).attr('value').split(';');
+            $url = site_url+'/admin/reports/approve-or-reject/type/'+app_rej[0]+'/rid/'+app_rej[1];
+            console.log($url);
+            loadPopupView($url);
+        }
+    }
+
+    function loadPopupView(url){
+        $.fancybox({
+            'width'                 : 700,
+            'height'                : 500,
+            'href'                  : url,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'
+        });
+        return false;
+    }
+
+    function close_popup(){
+        $.fancybox.close();
+    }
+
+    function execute_refresh(msg){
+        $.fancybox.close();
+        $.jGrowl(msg);
+        setTimeout(function() {
+            window.location.href = site_url+"/admin/reports";
+        }, 1500);
+    }
+</script>

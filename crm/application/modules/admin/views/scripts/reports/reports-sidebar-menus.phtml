@@ -1,0 +1,8 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/qtip/jquery.qtip.min.js"));
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery.hotkeys.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/js/qtip/jquery.qtip.min.css"));
+$this->headLink()->appendStylesheet($this->baseUrl('assets/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css'));
+$request_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+?>
+<h4>Reports left sidebar menus</h4>

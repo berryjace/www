@@ -1,0 +1,52 @@
+<?php //echo $this->form; ?>
+<div class="one">
+    <form id="note_form" method="post" action="" enctype="application/x-www-form-urlencoded">
+        <?php echo $this->form->subject; ?>
+        <?php echo $this->form->note; ?>                        
+        <?php echo $this->form->Save; ?>
+    </form>
+</div>
+<script type="text/javascript">
+    $(function(){
+        $("#note_form").on('submit',function(){            
+            if($.trim($("#note").val())==""){
+                alert('Please write a note');
+                $("#note")[0].focus();
+            }else{
+                $.ajax({
+                    url:site_url+'/admin/vendors/ajax-save-correspondence/',
+                    dataType:'json',
+                    data : $('#note_form').serialize()+'&vid='+<?php echo $this->vendor->id; ?>,
+                    type:'post',
+                    success:function(e){                   
+                        <?php if ($this->is_popup == "yes"): ?>
+                            window.parent.$.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        <?php else: ?>
+                            $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        <?php endif; ?>
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                            $('#note_form')[0].reset();
+                        }
+                        $('#note').val('');
+                    }
+                });
+            }
+            return false;            
+        });
+<?php if (sizeof($this->correspondence)): 
+        if (!is_null($this->correspondence->note_time)) {
+            $note_time = ( (int) $this->correspondence->note_time->format("Y") > 0 ? $this->correspondence->note_time->format("M d, Y H:i A") : 'N/A');
+        } else {
+            $note_time = 'N/A';
+        }
+?>        
+            $('label[for=subject]').prepend('Vendor : <b><?php echo $this->vendor->organization_name; ?></b><br />Date : <?php echo $note_time; ?><hr size="1" />');
+<?php endif; ?>
+    });
+</script>
+<style type="text/css">
+    .text,.textarea{
+        width:420px;
+    }
+</style>

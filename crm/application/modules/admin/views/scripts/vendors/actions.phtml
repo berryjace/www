@@ -1,0 +1,171 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml',array('selected'=>'actions','id'=>$this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>       
+        </div>
+    </div>      
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<?php echo $this->partial('vendors/actions-form-partial.phtml',array('form'=>$this->form,'vendor'=>$this->vendor)); ?>
+
+<div class="clear"></div>
+<div class="spacer"></div>
+<div class="spacer"></div>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="actions-data-table">
+    <thead>
+        <tr>
+            <th class="head1" width="160">Date</th>
+            <th class="head0" width="25%">Greek Org.</th>
+            <th class="head1" width="25%" >Action Needed</th>
+            <th class="head0" >Resolution</th>
+            <th class="head1" width="80">Action</th>
+        </tr>            
+    </thead>
+</table>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#actions-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 10,            
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/vendors/ajax-get-actions/id/<?php echo $this->vendor->id; ?>',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search: "                
+            },
+            "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[
+                { "bSortable": true, "aTargets": [ 0 ] },
+                { "bSortable": true, "aTargets": [ 1 ] },
+                { "bSortable": true, "aTargets": [ 2 ] },
+                { "bSortable": false, "aTargets": [ 3 ] },
+                { "bSortable": false, "aTargets": [ 4 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            },
+            fnDrawCallback:function(){
+                init_vendor_link();
+            }            
+        } ); 
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_vendor_link();
+    });    
+    
+    function init_vendor_link(){
+        $("a.vendor_actions_link").each(function(){ 
+            $(this).qtip(
+            {
+                content: {
+                    text: 'Loading..',      
+                    title: {
+                        text: 'Action Details', // Give the tooltip a title using each elements text
+                        button: false
+                    },
+                    ajax: {
+                        url: site_url+'/admin/vendors/ajax-get-actions-details/actions-id/'+$(this).attr('rel')
+                    }
+                },
+                position: {
+                    my: 'center', // ...at the center of the viewport
+                    at: 'center',
+                    target: $(window),
+                    viewport: $(window),
+                    effect: false
+                    
+                },
+                show: {
+                    event: 'click', 
+                    solo: true, 
+                    modal: true 
+                },
+                hide: 'unfocus',
+                style: {
+                    width:'800px',
+                    classes : 'ui-tooltip-shadow ui-tooltip-light ui-tooltip-rounded'
+                }
+            })
+            .click(function(event) { event.preventDefault(); });
+        });
+    }
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+    
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+           oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+    
+    $(function(){
+        $(document).on('click', 'a.delete_actions', function(){
+            if(confirm('Are you sure to delete this Action ?')){
+                $actions_id=$(this).attr('rel').split("-")[1];
+                $.ajax({
+                    url:site_url+'/admin/vendors/ajax-delete-actions/',
+                    dataType:'json',
+                    data : 'actions_id='+$actions_id+'&vid='+<?php echo $this->vendor->id; ?>,
+                    type:'post',
+                    success:function(e){
+                        $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                        }
+                    }
+                });
+            }
+            return false;
+        });
+    })
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .ui-tooltip-content{
+        font-size:110%;
+        line-height: 150%
+    }
+    .ui-tooltip, .qtip{
+        max-width: 500px; 
+    }
+</style>   

@@ -1,0 +1,20 @@
+<style type="text/css">
+    #orglist li{ list-style:none; border-bottom:1px dotted #fff}
+    a.exists{
+        text-decoration: underline;
+        font-weight:bold;
+    }
+</style>
+<div id="view-content">
+    <a href="<?php echo $this->baseUrl("admin/portal/add-white-label"); ?>" class="iconlink"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" class="mgright5" alt="" /> Add a White-Label</a>
+    <br />
+    <br />
+    Organization Name:
+    <ul id="orglist">
+        <?php foreach ($this->clients as $client): ?>
+            <li>
+                <a <?php echo !empty($client['white_label_id']) ? ' class="exists" ' : ''; ?>href="<?php echo $this->baseUrl('admin/portal/add-white-label/client/'.$client['client_id']); ?>"><?php echo $client['organization_name']; ?></a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>

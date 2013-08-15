@@ -1,0 +1,190 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('clients/sidebar-menus.phtml', array('selected' => 'artwork', 'id' => $this->client->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->client->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Client Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->client->user_status)); ?></h4>       
+        </div>
+    </div>        
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<div class="one">
+    <div style="float:left">
+        <h3>Official <?php echo $this->client->organization_name; ?> Artwork</h3>
+    </div>
+    <div style="float:right">
+        <a class="addNewButton" href="<?php echo $this->baseUrl("admin/clients/add-artwork/id/") . $this->client->id ?>">+Add Artwork</a>
+    </div>
+</div>
+<div class="spacer"></div>
+<div class="message">&nbsp;</div>
+<div id="view-content">
+    <?php if (sizeof($this->artworks)) { ?>
+        <?php foreach ($this->artworks as $artwork) { ?>
+            <div class="design-view">
+                <?php
+                if ('' != $artwork->file_url) {
+                    $extension_format = explode('.', $artwork->file_url);
+                    $thumb_image_path = $this->baseUrl("assets/files/artworks/thumbs/" . base64_encode('_thumb')) . $artwork->file_url;
+                    $image_path = $this->baseUrl("assets/files/artworks/large/") . $artwork->file_url;
+                } else {
+                    $thumb_image_path = $this->baseUrl("assets/images/no_image.jpg");
+                    $image_path = $this->baseUrl("assets/images/no_image.jpg");
+                }
+                ?>
+                <a href="javascript:;" rel="
+		<?php 
+		if ('jpg' == $extension_format[1] || 'png' == $extension_format[1]){
+        	        echo $image_path;
+	        }
+        	else{
+	                $image_path = "/crm/notfound";
+                	echo $image_path;
+        	}
+		?>
+		" class="main_link" ><?php echo $artwork->title; ?></a>
+                <input type="text" name="title[]" value="<?php echo $artwork->title; ?>" class="art_title" />
+                <a href="javascript:;" class="save_art" rel="<?php echo $artwork->id; ?>"><img src="<?php echo $this->baseUrl("assets/images/save.png"); ?>"  /></a>
+                <br />        
+			<?php echo '<a href="javascript:;" rel="'
+				   .$image_path.
+				   '" class="view_art" id="view_art">';
+                        ?>
+			    <img src="<?php echo $thumb_image_path; ?>" class="list_pic" onerror="this.src='<?php echo $this->baseUrl("assets/images/".strtolower($extension_format[1])."_75.png"); ?>';" />
+			</a>
+			<br />
+			<a href="javascript:;" class="download_art" rel="<?php echo $artwork->file_url; ?>">Download</a>
+			<a href="javascript:;" class="edit_art"><img src="<?php echo $this->baseUrl("assets/images/pencil.png"); ?>"/></a>
+			<a href="javascript:;" class="del_art" rel="<?php echo $artwork->id; ?>"><img src="<?php echo $this->baseUrl("assets/images/delete.png"); ?>"  /></a>
+		    </div>
+		<?php } ?>
+		<div class="spacer"></div>
+		<div align="left">
+		    <?php echo $this->paginationControl($this->artworks, 'Sliding', '/layout/pagination.phtml'); ?>
+		</div>
+	    <?php } else { ?>
+		<div class="one">No artwork available.</div>
+	    <?php } ?>
+
+	    <hr/><div class="spacer"></div>
+	    <?php echo $this->partial('clients/artwork-partial.phtml', array('id' => $this->client->id)); ?>
+
+	</div>
+
+	<style type="text/css">
+	    .design-view {width:180px;float: left;padding: 2px;position: relative;text-align: center;border: 1px solid #CCC;margin:4px;}
+	    .design-view .del_art {
+		color: #FFFFFF;
+		display: block;
+		font: 11px arial,helvetica;
+		left: 128px;
+		padding: 1px 5px;
+		position: absolute;
+		top: 25px;
+	    }
+	    .design-view a.main_link {line-height: 27px;}
+	    .art_title, .save_art {display:none;}
+	    .save_art {vertical-align: text-bottom;}
+	    .link_button a {padding: 3px 6px;border: 1px outset #FFE7A1;background-color: #AF9269;color:#fff}
+	    .errors {color:red}
+	    .success {color:green}
+	    .message{display: none;}
+	</style>
+
+	<script type="text/javascript">
+
+	    $(window).load(function(){               
+
+		$(document).on('click', '.design-view a.del_art', function(){
+		    if(confirm('Are you sure to delete this?')) {
+			$(".message").html("&nbsp;").addClass('loading');
+			var $this = $(this);
+			$.ajax({
+			    url:'<?php echo $this->baseUrl('admin/clients/ajax-del-artwork/'); ?>',
+			    dataType:'json',
+			    type:'post',
+			    data:'id='+ $(this).attr('rel'),
+			    success: function(msg) {
+				if(msg.success == true) {
+				    $this.parents('.design-view').remove();
+				    $('.message').removeClass('errors').removeClass('loading') //.addClass('success').html(msg.message);
+				    $.jGrowl(msg.message);
+				} else {
+				    $('.message').removeClass('success').removeClass('loading'); //.addClass('errors').html(msg.message);
+				    $.jGrowl(msg.message);
+				}
+			    }
+			});
+		    }
+		});
+
+		$(document).on('click', '.design-view a.edit_art', function(){
+		    $('a.main_link').show();
+		    $('input.art_title, .save_art').hide();
+		    $(this).parents('.design-view').find('a.main_link').hide().end().find('.save_art').show();
+		    $(this).parents('.design-view').find('input.art_title').show();
+		});
+
+		$(document).on('click', '.design-view a.save_art', function(){
+		    $(".message").html("&nbsp;").addClass('loading');
+		    var $this = $(this);
+		    //$(this).parents('#vendors-data-table tr').remove();
+		    
+		    $.ajax({
+			url:'<?php echo $this->baseUrl('admin/clients/ajax-save-artwork-title/'); ?>',
+			dataType:'json',
+			type:'post',
+			data:'id='+ $(this).attr('rel')+'&title='+$(this).parents('.design-view').find('input.art_title').val()+'&user_id='+<?php echo $this->client->id; ?>,
+			success: function(msg) {
+			    if(msg.success == true) {
+				$this.parents('.design-view').find('a.main_link').html(msg.title).show().end().find('.save_art').hide();
+				$this.parents('.design-view').find('input.art_title').hide();
+				$('.message').removeClass('errors').removeClass('loading');//.addClass('success').html(msg.message);
+				$.jGrowl(msg.message);
+			    } else {
+				$.jGrowl(msg.message);
+				$('.message').removeClass('success').removeClass('loading');//.addClass('errors').html(msg.message);
+			    }
+			}
+		    });
+		});
+
+
+	    });
+	    
+	    //For download client artwork    
+	    $(document).on('click', '.design-view a.download_art', function(){
+		window.location.href = site_url+"/admin/clients/download-artwork/file/"+$(this).attr('rel');   
+	    });    
+	    
+	    //For popup artwork view
+	    $(document).on('click', '.design-view a.main_link', function(){
+		loadLargeView($(this).attr('rel'));        
+	    });
+	    
+	    $(document).on('click', '.design-view a.view_art', function(){
+        loadLargeView($(this).attr('rel'));        
+    });
+    
+    function loadLargeView(thisItem){
+        $.fancybox({
+            'overlayShow'	: true,
+            'href'            : thisItem,  
+            'transitionIn'	: 'elastic',
+            'transitionOut'	: 'elastic'
+        });
+    }
+</script>

@@ -1,0 +1,84 @@
+<h3>Check Payment</h3>
+<hr size="1" noshade />
+<!--<div class="spacer clear"></div>-->
+
+<div class="one">
+    <form name="check_payment_form" id="check_payment_form" action="" method="POST" >        
+        <div class="check_payment">
+            Make all check payable to: <b>Affinity Marketing Consultants</b><br /><br />
+
+            <b>Send your check to: </b><br /><br />
+            
+            Affinity Consultants<br />
+            3231-C Business Park Drive, # 300<br />
+            Vista, CA 92081
+        </div>
+        <div class="spacer clear"></div>    
+        <p><b>Select the date you mailed in your check and then click Submit.</b></p>    
+        <div class="leftalign check_input"><?php echo $this->form->check_date; ?></div>
+        <div class="leftalign check_input"><?php echo $this->form->check_number; ?></div>
+        <div class="leftalign check_input"><?php echo $this->form->check_amount; ?></div>
+        <div class="spacer clear"></div>    
+
+        <div class="leftalign">
+            <button name="cancel" id="cancel" type="button" class="button button_black">Cancel</button>&nbsp;
+            <button name="submit" id="submit" type="submit" class="button button_black">Submit</button>&nbsp;
+        </div>
+        <div class="leftalign" id="pre_loader"><img src="<?php echo $this->baseUrl("assets/images/loading.gif"); ?>" alt="Loading..." /></div>
+    </form>
+</div>
+
+<?php $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.css')); ?>
+<style type="text/css">
+    .check_payment{width: 94%; padding: 3%; background-color: #CCC;}
+    .display_none{display: none; margin-left: 18px;}
+    #check_date,#check_number,#check_amount{width:180px;}
+    .check_input{width: 210px;}
+    #pre_loader{float: left; margin: 20px 0px 0px 10px; display: none;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){            
+        check_payment_functions.init_payment_message();
+        check_payment_functions.init_tiny_mce();
+        $("#check_date").datepicker();
+
+        $(document).on('click', 'button#cancel', check_payment_functions.close_popup_form);        
+    });
+    
+    check_payment_functions={
+        init_payment_message : function(){
+          if('<?php echo $this->result['success']; ?>'){
+              window.parent.execute_refresh('<?php echo $this->result['message']; ?>');
+          }  
+        },        
+        init_tiny_mce : function(){
+            tinyMCE.init({
+                mode : "textareas",
+                elements : "email_body",
+                theme : "advanced",
+                height: "300",
+                theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+                theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+                theme_advanced_buttons3 : "",
+                theme_advanced_toolbar_location : "top",
+                theme_advanced_toolbar_align : "left",
+                theme_advanced_statusbar_location : "bottom",
+                theme_advanced_path : false,
+                theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+                font_size_style_values : "13px, 14px,16px,18px,20px",
+                content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+                force_br_newlines : true,
+                force_p_newlines : false,
+                forced_root_block : "",
+                theme_advanced_resizing : true,
+                skin : "o2k7",
+                skin_variant : "silver"
+            });  
+        },
+        close_popup_form : function(){
+            window.parent.close_popup();
+        }        
+    }
+            
+</script>

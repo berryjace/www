@@ -1,0 +1,22 @@
+<?php
+$this->headTitle($this->user_details->first_name . ' ' . $this->user_details->last_name. " : Change Password");
+$updated = false;
+?>
+<div id="view-content">
+    <h1>Update Setting</h1>
+<!--    <hr size="1" noshade />-->
+    <div class="spacer"></div>
+    <form action="" method="POST" enctype="multipart/form-data">
+        <div class="form_container_left">
+
+            <?php echo $this->form->old_password; ?>
+            <div class="spacer"></div>
+            <?php echo $this->form->password; ?>
+            <div class="spacer"></div>
+            <?php echo $this->form->repassword; ?>
+            <div class="spacer"></div>
+            <?php echo $this->form->Submit; ?>
+        </div>
+
+    </form>
+</div>

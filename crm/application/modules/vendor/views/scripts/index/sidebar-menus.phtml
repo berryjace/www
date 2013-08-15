@@ -1,0 +1,11 @@
+<ul class="leftmenu">
+    <li><a href="javascript:;" class="file">Contact</a></li>
+    <li><a href="javascript:;" class="file">Operations</a></li>
+    <li<?php echo $this->selected=='license' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("vendor/license/"); ?>" class="file">Lisc. Agreements</a></li>
+    <li><a href="javascript:;" class="file">Payments</a></li>
+    <li><a href="javascript:;" class="file">Notes</a></li>
+    <li><a href="javascript:;" class="file">Docs</a></li>
+    <li><a href="javascript:;" class="file">Invoices</a></li>
+    <li<?php echo $this->selected=='design' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("vendor/design/"); ?>" class="file">Designs</a></li>
+    <li<?php echo $this->selected=='product-samples' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("vendor/product-samples/"); ?>" class="file">Product Samples</a></li>
+</ul>

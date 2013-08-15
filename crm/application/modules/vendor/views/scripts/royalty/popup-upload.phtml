@@ -1,0 +1,162 @@
+<?php $max_files = Zend_Controller_Front::getInstance()->getRequest()->getParam('max', 5); ?>
+
+<?php
+$vendorIdSegment = !empty($this->vendor_id) ? '/vendor_id/'.$this->vendor_id : '';
+$submissionHashSegment = '/submission_hash/'.$this->submission_hash;
+?>
+
+<form class="form" method="post"
+	action="<?php echo $this->baseUrl('vendor/royalty/upload-report'.$vendorIdSegment.$submissionHashSegment) ?>"
+	id="upload-report-form">
+	<div id="uploader">
+		<p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or
+			HTML5 support.</p>
+	</div>
+	<div class="form_default">
+		<div class="four_fifth">
+			<?php
+			$current_year = Date("Y");
+			//$current_year = BL_AMC::getCurrentQarter() == 2 ? $current_year + 1 : $current_year;
+			
+			$current_month = Date("m");
+			
+			$current_month -=1;
+			
+			if ($current_month <=  0) $current_month = 12;
+			
+			$current_quarter=  $current_month / 4;
+			
+			$current_quarter = ($current_quarter + 2) % 4 + 1;
+			
+			$years = range($current_year + 1, $current_year - 5);
+			$year_dropdown_vals = array();
+			foreach ($years as $year) {
+                $year_dropdown_vals[($year - 1) . "-" . substr($year, 2)] = ($year - 1) . "-" . substr($year, 2);
+            }
+            echo $this->formLabel("fiscal_year", "Fiscal Year ");
+            echo $this->formSelect("fiscal_year", "", array(), $year_dropdown_vals);
+            ?>
+			<?php
+			echo $this->formLabel("quarter", "Quarter ");
+			echo $this->formHidden("upload_file_name", "");
+			echo $this->formSelect("quarter", $current_quarter, array(), array("1" => "Q1 (Sales July - September)", "2" => "Q2 (Sales October - December)", "3" => "Q3 (Sales January - March)", "4" => "Q4 (Sales April - June)"));
+			echo $this->formSubmit('Submit', 'Submit', array('class' => 'button button_brown'));
+			?>
+			<br />
+			Be sure to add *all* files for the quarter before selecting the 'Start Upload' button.
+		</div>
+	</div>
+	<div class="clear"></div>
+	</div>
+</form>
+<script type="text/javascript">
+	$(document).on('ready', function(){
+		
+		$('#fiscal_year>option[value="<?php echo ($current_month<7)? $current_year-1 . "-" . substr($current_year, 2):$current_year . "-" . substr($current_year + 1, 2)?>"]').attr("selected", true);
+		
+	});
+
+			
+    $(function() {
+	var files = [];
+	//var is_submitted = false;
+        $("#uploader").pluploadQueue({
+            runtimes : 'html5,gears,silverlight,flash,html4',
+            url : site_url+'/vendor/royalty/upload',
+            max_file_size : '20mb',
+            max_file_count: <?php echo $max_files; ?>, // user can add no more then 20 files at a time
+            chunk_size : '1mb',
+            multiple_queues : false,
+            unique_names : true,
+	    prevent_duplicates: true,
+            multiple_queues : true,
+            resize : {width : 1024, height : 768, quality : 90},
+            rename: true,
+            sortable: true,
+            filters : [
+                {title : "Image files", extensions : "pdf,xls,xlsx,doc,docx,jpg,png"}
+            ],
+            'flash_swf_url' : site_url+"/assets/js/plupload/plupload.flash.swf",
+            'silverlight_xap_url' : site_url+"/assets/js/plupload/plupload.silverlight.xap",
+            init : {
+                FileUploaded: function(up, file, info) {
+                    if(info.status==200){
+						files.push(file.target_name);
+                        $("#upload_file_name").val(files.join(','));
+                    }else{
+                        alert('Problem occurred in uploading')
+                    }
+                },
+                UploadFile : function(up,file) {
+
+                }
+            }
+        });
+
+        // Client side form validation
+        $('form').submit(function(e) {
+
+            var uploader = $('#uploader').pluploadQueue();
+            if (uploader.files.length > 0) {
+		/*
+                if(uploader.files.length > 1){
+                    alert("Can't upload more than one file for this section");
+                    return false;
+                }
+		*/
+                // When all files are uploaded submit form
+                uploader.bind('StateChanged', function() {
+		    	//if(is_submitted==false) {
+					if (uploader.files.length == (uploader.total.uploaded + uploader.total.failed)) {
+					    ajax_submit_report();
+					}
+					//is_submitted = true;
+		    	//}
+                });
+                // First check if the report for the quarter is already submitted or not and prompt the vendor about this
+                $.ajax({
+                    url : site_url+"/vendor/royalty/ajax-check-earlier-submission",
+                    data : $("#upload-report-form").serialize(),
+                    type : 'post',
+                    dataType : 'json',
+                    success : function(e){
+                        if(e.submitted_earlier=="yes"){
+                            if(confirm("Report for this quarter and year has already been submitted and pending review. \nAre you sure you want to re-submit?")){
+                                uploader.start();
+                            }
+                        }else{
+                            uploader.start();
+                        }
+                    }
+                });
+            } else {
+                alert('You must queue at least one file.');
+            }
+            return false;
+        });
+    });
+
+    function ajax_submit_report(){
+        $.ajax({
+            url : site_url+"/vendor/royalty/ajax-save-report-submission<?php echo $vendorIdSegment.$submissionHashSegment?>",
+            data : $("#upload-report-form").serialize(),
+            type : 'post',
+            dataType : 'json',
+            success : function(e){
+                if(e.code=="success"){
+		    <?php if(empty($this->vendor_id)) {?>
+                    window.parent.close_upload_dialog(e.fiscal_year, e.quarter, e.submission_hash);
+		    <?php } else {?>
+					window.parent.close_upload_dialog(e.fiscal_year, e.quarter, e.vendor_id, e.submission_hash);
+		    <?php }?>
+                }
+            }
+        });
+    }
+</script>
+<br />
+<style type="text/css">
+* {
+	font: 13px arial, helvetica;
+}
+</style>

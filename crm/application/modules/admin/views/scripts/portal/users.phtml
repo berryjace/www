@@ -1,0 +1,125 @@
+<div id="view-content">
+    <a href="<?php echo $this->baseUrl("admin/portal/add-users"); ?>" class="iconlink"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" class="mgright5" alt=""  > <span>Add a New User</span></a>
+    <div class="spacer clear"></div>
+    
+    <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="users-data-table">
+        <thead>
+            <tr>
+                <th width="15%" class="head0">User Name</th>
+                <th width="20%" class="head1">Full Name</th>
+                <th width="20%" class="head0">Email</th>
+                <th width="10%" class="head1">User Type</th>
+                <th width="10%" class="head0">Status</th>
+                <th width="15%" class="head1">Last Signed in</th>
+                <th width="10%" class="head0">Action</th>
+            </tr>
+        </thead>
+    </table>
+    <div class="hidden">
+        <span class="aphabetical_filters">
+            <?php
+            foreach (range('A', 'Z') as $char) {
+                echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+            }
+            ?>
+        </span>
+    </div>
+</div>
+
+<style type="text/css">
+    div.jGrowl div.jGrowl-notification {
+        color: #000000;
+        background-color: #A79269;
+    } 
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+</style>
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    
+    $(window).bind('load', function(){
+        event_functions._initialize();
+        
+        $(document).on('click', 'a.user_details_link', event_functions.user_details);
+
+        init_action_links();
+    });
+    
+    event_functions = {
+        _initialize : function(){
+            init_oTable_initialize();
+            init_alphabetical_filters();
+            init_server_search_fix();   // Will search only hitting enter not keypress            
+        },
+        user_details : function(e){
+            window.location.href = site_url+'/admin/portal/users-details/id/'+$(e.target).attr('rel');
+        },
+        user_delete : function(e){
+			window.location.href = site_url+'/admin/portal/delete-user/id/'+$(e.tartet).attr('rel');
+        }
+    }
+
+    function init_action_links(){
+    	$(document).on('click','a.delete',function(){
+            if(confirm("Are you sure to delete this user?")){
+                return true;
+            }
+            return false;
+        });
+	}
+
+    function init_oTable_initialize(){
+        oTable=$('#users-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/admin/portal/ajax-get-users/',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search User:"
+            },
+            "aaSorting": [[0, 'ASC']], // Initial sorting order when page loads
+            "aoColumnDefs":[
+                { "bSortable": true, "aTargets": [ 0 ] },
+                { "bSortable": false, "aTargets": [ 1 ] },
+                { "bSortable": true, "aTargets": [ 2 ] },
+                { "bSortable": true, "aTargets": [ 3 ] },
+                { "bSortable": true, "aTargets": [ 4 ] },
+                { "bSortable": true, "aTargets": [ 5 ] },
+                { "bSortable": false, "aTargets": [ 6 ] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }
+        } );
+    }    
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+//                oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    /** Datatable code **/
+</script>

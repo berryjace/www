@@ -1,0 +1,42 @@
+<h2>Addendum</h2>
+<div class="one">
+    <ul class="submenu" style="border: none;">
+        <li class=""><a href="<?php echo $this->baseUrl("admin/clients/master-templates"); ?>"><span>With Insurance</span></a></li>
+        <li class=""><a href="<?php echo $this->baseUrl("admin/clients/master-templates/noinsurance/1"); ?>"><span>Without Insurance</span></a></li>
+        <li class="current"><a href="<?php echo $this->baseUrl("admin/clients/addendums"); ?>"><span>Addendums</span></a></li>  
+        <li class=""><a href="<?php echo $this->baseUrl("admin/clients/add-addendum"); ?>"><span>Create Addendum</span></a></li>        
+    </ul>
+</div>
+<div class="addendum">
+    Created on&nbsp;
+    <?php echo $this->addendum->create_date->format('F, d Y | h:i A e'); ?>
+    <div class="spacer"></div>
+    <p><?php echo $this->addendum->reason; ?></p>
+    <div class="spacer"></div>
+    <?php echo $this->addendum->content; ?>    
+    <div class="spacer"></div>
+    
+    <b>Greek organizations for which this addendum applies.</b> 
+    <div class="spacer"></div>
+    <form action="" method="post" id="license_template">
+        <?php if(sizeof($this->clients)) {?>
+        <ul class="greek_name">
+            <?php 
+            foreach($this->clients as $client) {
+                if(in_array($client['id'], $this->addendumUsers)) {
+            ?>
+            <li><?php echo $this->form->greek_org->setCheckedValue($client['id'])->setValue($client['id'])." ".$client['greek_name']; ?></li>
+                <?php } else {?>
+            <li><?php echo $this->form->greek_org->setCheckedValue($client['id'])->setValue('')." ".$client['greek_name']; ?></li>
+                <?php }?>
+            <?php }?>
+        </ul>
+        <?php }?>
+    </form>
+</div>
+<style type="text/css">    
+    .addendum {padding: 5px;width:800px;}
+    .addendum p {font-weight:bold;}
+    #license_template .greek_name {list-style: none;width:850px;}
+    ul.greek_name li {width:70px;float:left;}
+</style>

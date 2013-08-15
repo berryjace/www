@@ -1,0 +1,95 @@
+<!--<h2>Search By Web Profile</h2>-->
+<div class="one">
+    <div class="one_third"><h2 class="grid_cap">Search By Web Profile</h2></div>
+    <div class="rightalign" id="status_filter">
+        <div class="leftalign">
+            <h3>Vendors Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <select name="vendor_status" id="vendor_status" multiple="multiple" >
+                <?php
+                foreach ($this->user_status as $key => $status) {
+                    echo '<option value="' . $status . '"> ' . $status . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<hr size="1"/>
+<form action="" method="POST" enctype="multipart/form-data" id="search-web-profile-form">
+    <input type="hidden" name="search_type" value="web-profile" />
+    <div class="spacer"></div>
+    <div class="form_container_left">
+        <?php echo $this->form->organization_name; ?>        
+    </div>
+    <div class="clear"></div>
+    <div class="form_container_left">
+        <?php echo $this->form->address1; ?>
+        <?php echo $this->form->address2; ?>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>        
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->email; ?>  
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->phone1; ?>
+        <?php echo $this->form->phone2; ?>        
+        <?php echo $this->form->fax; ?>
+        <?php echo $this->form->web_page; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <hr size="1"/>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+
+    <div class="one_fifth">
+        <INPUT TYPE=CHECKBOX VALUE="1" NAME="online"> Sell Online
+    </div>
+    <div class="one_fifth">
+        <INPUT TYPE=CHECKBOX VALUE="2" NAME="storefont"> Have a Storefont
+    </div>
+    <div class="one_third">
+        <INPUT TYPE=CHECKBOX VALUE="3" NAME="wholesale"> Sell Wholesale to Retailers
+    </div>    
+
+
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <?php echo $this->form->product_offered; ?>
+    <?php echo $this->form->company_description; ?>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black detail_button">Search</button>
+</form>
+<script type="text/javascript">
+    var status = 'all';
+    $(function(){
+        $("#search-web-profile-form").on('submit',function(){
+            status = $("#vendor_status").val();
+            if(status == 'null' || status == null){
+                status = 'all';
+            }            
+            window.parent.executeSearch($(this).serialize()+'&vendor_status='+status,'Search Vendors By Web Profile','web-profile');
+            return false; 
+        });
+    })
+    
+    $("#vendor_status").multiselect({
+        selectedText: "# of # selected"
+    });
+</script>
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+</style>

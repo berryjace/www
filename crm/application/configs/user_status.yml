@@ -1,0 +1,13 @@
+## YAML Template.
+---
+0: Current
+1: Cancelled
+2: Potential
+3: One-Time
+4: Non-Producing
+5: Suspected
+6: Illegal
+7: Out of business
+8: Lost
+9: Pending
+10: Registered

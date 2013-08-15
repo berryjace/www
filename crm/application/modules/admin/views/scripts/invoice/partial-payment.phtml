@@ -1,0 +1,100 @@
+<h3>Partial Payment</h3>
+<hr size="1" noshade />
+
+<div class="one">
+    <form name="partial_payment" action="" method="POST">
+        Invoice Total: &nbsp;<b><?php echo $this->BUtils()->getCurrency($this->total_due); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Total remaining: &nbsp;<b><?php echo $this->BUtils()->getCurrency($this->total_remaining); ?></b>
+        <div class="spacer clear"></div>
+        <?php echo $this->form->payment_type; ?>
+        <div class="clear"></div>
+        <?php echo $this->form->payment_ref; ?>
+        <div class="clear"></div>
+        <?php echo $this->form->payment_amount; ?>
+        <div class="clear"></div>
+        <?php echo $this->form->payment_date; ?>        
+        <input type="hidden" name="invoice" id="invoice" value="<?php echo $this->invoice->id;?>" />
+        <input type="hidden" name="vendor" id="vendor" value="<?php echo $this->invoice->vendor_id->id;?>" />
+		
+        <div class="spacer clear"></div>
+
+        <div class="floatleft">
+        	<button name="cancel" id="cancel" type="button" class="button button_black">Cancel</button>&nbsp;
+        	<button name="record_payment" id="record_payment" type="button" class="button button_black">Record Payment</button>&nbsp;
+        </div>
+        <div class="floatleft" id="wait" style="display: none;">
+        	<img src="<?php echo $this->baseUrl('assets/images/loading.gif'); ?>" style="margin: 10px 10px;" />
+        </div>
+    </form>
+</div>
+
+<style type="text/css">
+    form{padding: 0px; margin: 0px;}       
+    .text{width:95%; text-align: center;}
+    .select{width:100%;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){  
+        online_payment_functions.init_payment_message();
+        online_payment_functions.bank_information();
+        $('input#amount_other').addClass('desable').prop('disabled', true);
+        $(document).on('click', 'input:radio[@name=payment_amount]', online_payment_functions.payment_amount);
+        $(document).on('click', 'input:checkbox[@name=bankinfo]', online_payment_functions.bank_information);
+        $(document).on('click', 'button#cancel', online_payment_functions.close_popup_form);
+
+        $(document).on('click', 'button#record_payment', online_payment_functions.record_payment);
+    });
+    
+    online_payment_functions={
+        init_payment_message : function(){
+            if('<?php echo $this->result['success']; ?>'){
+                window.parent.execute_refresh('<?php echo $this->result['message']; ?>');
+            }  
+        }, 
+        record_payment : function(){
+            $.ajax({
+                url: site_url + '/admin/invoice/ajax-set-review-data/id/'+$("input#vendor").val()+'/inv_id/'+$("input#invoice").val(),
+                type: "POST",
+                data: $('#partial_payment').serialize(),
+                dataType: 'json',
+                success: function(response){
+                    console.log("yada yada");
+
+                    window.parent.location.href = site_url + '/admin/invoice/invoice-payment-review/id/' + $("input#vendor").val() + '/inv_id/' + $("input#invoice").val()+'/mark-as/partial';
+                },
+                error: function(response){
+                    console.log("error");
+                }
+            });
+        },
+        payment_amount : function(e){            
+            var checkedvalue = $(this).val();
+            if(checkedvalue == "other"){
+                $('input#amount_other').removeClass('desable').prop('disabled', false);
+            }
+            else{
+                $('input#amount_other').addClass('desable').prop('disabled', true);
+            }
+        },
+        bank_information : function(){
+            if($('#bankinfo-saved').is(':checked')){
+                //                console.log($('#bankinfo-saved').val());                    
+                $('input#account_number').addClass('desable').prop('disabled', true);
+                $('input#account_number_re').addClass('desable').prop('disabled', true);
+                $('input#routing_number').addClass('desable').prop('disabled', true);
+                $('input#routing_number_re').addClass('desable').prop('disabled', true);
+            }
+            else{
+                $('input#account_number').removeClass('desable').prop('disabled', false);
+                $('input#account_number_re').removeClass('desable').prop('disabled', false);
+                $('input#routing_number').removeClass('desable').prop('disabled', false);
+                $('input#routing_number_re').removeClass('desable').prop('disabled', false);
+            }
+        },
+        close_popup_form : function(){
+            window.parent.close_popup();
+        }        
+    }
+            
+</script>

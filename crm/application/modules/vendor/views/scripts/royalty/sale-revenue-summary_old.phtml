@@ -1,0 +1,82 @@
+<?php //$action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+<div class="leftalign">    
+    <a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/settings.png" class="mgright5" alt="" /><span>Royalty Report History</span></a> &nbsp; 
+    <a href="<?php echo $this->baseUrl("vendor/royalty/sale-revenue"); ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/plus.png" class="mgright5" alt="" /><span>Add Sale Revenue</span></a>
+</div>
+<div class="spacer clear"></div>
+
+<div class="notification msginfo">
+    <a class="close"></a>
+    Your report has been successfully submitted. We have worked out how much you owe in royalty fees based on the information you submitted. Please review the royalty fee calculation and make your royalty payment. You can either pay online or by mailing in a check. 
+</div>
+<div class="clear"></div>
+
+<div class="one">    
+    You owe <b><?php echo $this->BUtils()->getCurrency($this->total); ?></b> in royalty feed for <b><?php echo 'Q'.$this->quarter; ?></b> of <b><?php echo $this->fiscal_year; ?></b>. The calculation is below:<br />
+    <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+        <thead>
+            <tr role="row">
+                <th align="left">Greek Org.</th>                                
+                <th align="left">Royalty Due Before Applying Advance</th>
+                <th align="left">Royalty Advance</th>
+                <th align="left">Royalty Due After Applying Advance</th>                
+            </tr>
+        </thead>
+        <tbody>        
+            <?php $alt = true; ?>
+            <?php foreach ($this->summary as $s): ?>                       
+            <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                <td><?php echo $s->client->organization_name;  ?></td>                                
+                <td><?php echo $this->BUtils()->getCurrency($s->royalty_before_adv); ?></td>
+                <td><?php echo $this->BUtils()->getCurrency(is_null($s->annual_advance) ? 0 : $s->annual_advance);  ?></td>
+                <td><?php echo $this->BUtils()->getCurrency($s->royalty_after_adv); ?></td>
+            </tr>                   
+            <?php endforeach; ?>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>                
+                <td class="total_row">Total</td>
+                <td class="total_col"><?php echo $this->BUtils()->getCurrency($this->total); ?></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="spacer clear"></div>
+
+<a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>">*View Prior Royalty Reports</a>
+<div class="rightalign">    
+    <button name="invoice_payment" id="invoice_payment" class="button button_black">View Invoice & Make Payment</button>
+</div>
+
+<style type="text/css">     
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+    .status{width: 120px;}
+    .button_pos{width: 176px; float: right;}    
+    .button_payment{width: 50%; float: right;}    
+    #city, #state, #zip{
+        width:114px;
+    }
+    .total_row{text-align: right; font-weight: bold;}
+    .total_col{font-weight: bold;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        event_functions._initialize();        
+        
+        $(document).on('click', 'button#invoice_payment', event_functions.view_invoice);
+    });
+    
+    event_functions = {
+        _initialize : function(){            
+            $.jGrowl('<?php echo $this->message; ?>');
+        },
+        view_invoice : function(){
+            window.location.href = site_url+'/vendor/invoice/';
+        }
+    }    
+</script>

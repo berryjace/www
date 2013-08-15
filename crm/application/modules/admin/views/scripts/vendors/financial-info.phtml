@@ -1,0 +1,179 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'financial-info', 'id' => $this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+
+ $errorsMessages = $this->form->getMessages();
+//  print_r($errorsMessages);
+?>
+
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>       
+        </div>
+    </div>  
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<div id="view-content">
+    <form id="form4"  method="post" >
+<!--
+        <div class="one">
+            (All fields must be answered with the exception of the top 3, and the comments box)
+        </div>
+        <div class="spacer clear"></div>-->
+
+        <div class="one">
+            <label>Please check any of the following that are available for further review during the application process:</label><br />
+            <div class="spacer"> </div>
+            <?php
+                if(isset ($errorsMessages['application_process']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['application_process']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->application_process->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"></div>
+
+        <div class="one">
+            <label>How many full time employees do you have? </label><br />
+            <?php
+                if (isset($errorsMessages['full_time_employee_num']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['full_time_employee_num']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->full_time_employee_num->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="spacer clear"></div>
+
+        <div class="one">
+            <label>How many years has your business been in operation? </label><br />
+            <?php
+                if(isset ($errorsMessages['years_in_business']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['years_in_business']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->years_in_business->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="spacer clear"></div>
+
+        <div class="one">
+            <label>Has any officer or relevant person of the business been involved with a business failure in last 5 years (liquidation, voluntary administration or receivership)?</label><br />
+            <?php
+                if(isset ($errorsMessages['business_failure_in_5_years']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['business_failure_in_5_years']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->business_failure_in_5_years->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+        <div class="one">
+            <label>Has any officer or relevant person of the business has been declared bankrupt?</label><br />
+            <?php
+                if(isset ($errorsMessages['any_person_bankrupt']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['any_person_bankrupt']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->any_person_bankrupt->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+        <div class="one">
+            <label>Has the business, related entities, officers or relevant persons been involved in a Government investigation?</label><br />
+            <?php
+                if(isset ($errorsMessages['government_investigation']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['government_investigation']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->government_investigation->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+        <div class="one">
+             <label>Has any contract with the business been terminated for cause in the last 2 years?</label><br />
+            <?php
+                if(isset ($errorsMessages['contract_terminated_in_last_2_years']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['contract_terminated_in_last_2_years']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->contract_terminated_in_last_2_years->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+        <div class="one">
+            <label>Is there any past, pending or finalized litigation against the officers, relevant persons or the business during the last 5 years?</label><br />
+            <?php
+                if(isset($errorsMessages['litigation_against_the_officers']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['litigation_against_the_officers']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->litigation_against_the_officers->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+        <div class="one">
+            <label>Have there been any collections by a debt collection agency on behalf of creditors of the business, officers or relevant persons of the business?</label><br />
+            <?php
+                if(isset ($errorsMessages['any_collections_by_debt_collection_agency']['isEmpty']))
+                    echo '<span class="errors">'.$errorsMessages['any_collections_by_debt_collection_agency']['isEmpty'].'</span><br />';
+            ?>
+            <?php echo $this->form->any_collections_by_debt_collection_agency->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+        <div class="one">
+            <label>If you answered “yes” to any of the above questions, please provide additional explanation here: </label><br />
+            <?php
+                /*if(isset ($errorsMessages['additional_explanation']['isEmpty']))
+                    echo $errorsMessages['additional_explanation']['isEmpty'];*/
+            ?>
+            <?php echo $this->form->additional_explanation->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="spacer clear"> </div>
+
+<!--        <div class="one">
+            <div class="one_half">
+                <button type="submit" class="button button_black detail_button">Submit</button>
+            </div>
+        </div>-->
+        <div class="spacer clear"></div>
+    </form>
+</div>
+
+<link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/style.css" />
+<?php if(isset($this->fancy)):
+?>
+<style type="text/css">
+    body{background-color:#EEEEEE;border-width: 10px;padding:10px;}
+</style>
+<?php endif; ?>
+<style type="text/css">
+.lebel {
+    color: #42251B;
+    font-weight: bold;
+    line-height: 28px;
+}
+
+.rightalign {
+    text-align: right;
+}
+.errors{
+    color: red;
+    list-style: none;
+}
+.clear{clear: both;}
+.padding5{padding: 3px;}
+.jGrowl-notification{
+background-color: #917C54 !important;
+}
+.text_dimmed{opacity:.5;height: 22px;border: 1px solid #DDDDDD;
+    padding: 4px;}
+
+</style>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#additional_explanation').css('height', '50px');
+    });
+</script>

@@ -1,0 +1,99 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('layout/sidebar-calendar.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<h2>License Agreements Overview</h2>
+<div class="spacer"></div>
+<div class="licensed_vendor">
+    <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="vendors-data-table">
+        <thead>
+            <tr>
+                <th class="head0">Vendor Name</th>
+                <th class="head1">Date Applied</th>
+                <th class="head0">Status</th>    
+                <th class="head1">Action</th>
+            </tr>            
+        </thead>
+    </table>
+</div>
+<div class="licenses">
+    
+</div>
+
+<style type="text/css">
+    .aphabetical_filters{
+        margin:0 0 0 10px; 
+    }
+    .licenses {width:65%;float:right;}
+    .licensed_vendor {width:100%;float:left;}
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+</style>
+
+<script type="text/javascript">
+    /** Datatable code **/    
+     var oTable;
+    $(window).bind('load',function(){        
+        init_oTable_initialize();
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress        
+    });
+
+    function init_oTable_initialize(){
+        oTable=$('#vendors-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/client/license/ajax-get-licensed-vendors-dt/',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search:"
+            },
+            "aaSorting": [[2,'asc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": true, "aTargets": [ 0 ] },{ "bSortable": true, "aTargets": [ 1 ] },{ "bSortable": true, "aTargets": [ 2 ] },{ "bSortable": false, "aTargets": [ 3 ] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+            }
+        } );
+    }
+            
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+//                oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $('.letter_filter').on('click',function(){
+            oTable.fnFilter($(this).text());
+        });
+    }
+    
+    /** Datatable code **/
+    
+    $(document).on('click', 'a.sign_link', function(){    
+       window.location.href = site_url+"/client/license/signature/l_id/"+$(this).attr('rel');            
+    });
+    
+    $(document).on('click', 'a.view_link', function(){            
+       window.location.href = site_url+"/client/license/signature/l_id/"+$(this).attr('rel');    
+    });
+    
+</script>
+

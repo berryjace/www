@@ -1,0 +1,325 @@
+<?php
+//$vendor_profile = $this->vendor_profile;
+//echo $vendor_profile->id;
+//echo '<br/>vendor_product_info: '.$this->vendor_product_info->id;
+//echo '<br/>Total Product: '.sizeof($this->vendor_product_info_details);
+//echo '<br/>Total Sample File: '.sizeof($this->vendor_sample_file);
+?>
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #first_name{
+        width:250px;
+    }
+    .selected_products{
+        width: 390px !important;
+    }
+    .profile_logo img{
+        border: 1px solid #cccccc;
+    }
+    .profile_logo{
+        float: left;
+        width: 110px;    
+    }
+    .sample_products{
+        /*float: right;*/
+        /*border: 1px solid;*/
+    }
+    .sampleimg{
+        border: 1px solid #cccccc;
+        margin: 10px 10px 0 0;
+        float: left;
+        padding: 1px;
+        width: 80px;
+    }
+    #ctnactiveImages{
+    
+    }
+
+</style>
+<!--<div class="one_fifth" style="margin-left:10px;display: block;" id="submit_wait">@@@@@@@@@@</div>-->
+<form  method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">
+
+    <div style="display: none;">
+        <div id="loader"><img src="<?php echo $this->baseUrl("assets/images/loading.gif"); ?>" /></div>
+    </div>
+
+
+    <input type="hidden" id="profile_id" name="profile_id" value="<?php echo $this->vendor_profile->id; ?>"/>
+    <div id ="logo" class="form_container_left">
+        <?php echo $this->form->organization_name->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->form->address1->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->form->address2->setAttrib('readonly', 'true'); ?>
+        <div class="one_third">
+            <?php echo $this->form->city->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip->setAttrib('readonly', 'true'); ?>
+        </div><div class="clear"></div>
+        <?php echo $this->form->email->setAttrib('readonly', 'true'); ?>
+        <div class="clear"></div>
+    </div>
+    <div id="logo" class="form_container_left" style="display:none;">
+        <?php echo $this->formCurrent->organization_name->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->formCurrent->address1->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->formCurrent->address2->setAttrib('readonly', 'true'); ?>
+        <div class="one_third">
+            <?php echo $this->formCurrent->city->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->formCurrent->state->setAttrib('readonly', 'true'); ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->formCurrent->zip->setAttrib('readonly', 'true'); ?>
+        </div><div class="clear"></div>
+        <?php echo $this->formCurrent->email->setAttrib('readonly', 'true'); ?>
+        <div class="clear"></div>
+    </div>
+
+    <div class="form_container_right" id="logo">
+        <?php echo $this->form->phone1->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->form->phone2->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->form->fax->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->form->web_page->setAttrib('readonly', 'true'); ?>
+    </div>    
+    <div class="form_container_right" id ="logo" style="display:none;">
+        <?php echo $this->formCurrent->phone1->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->formCurrent->phone2->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->formCurrent->fax->setAttrib('readonly', 'true'); ?>
+        <?php echo $this->formCurrent->web_page->setAttrib('readonly', 'true'); ?>
+    </div>
+    <div class="clear"></div>
+    <hr size="1">
+    <div class="spacer"></div>
+
+
+    <div class="form_container_left">
+
+        <div id="logo" class="profile_logo">
+            <label>Company Logo</label>
+            <?php
+            if (sizeof($this->vendor_profile->logo_url)) {
+                ?>            
+                <img src="<?php echo $this->baseUrl("assets/files/vendor_profile/thumbs/" . $this->logo); ?>"/>
+                <?php
+            }
+            ?>
+        </div>
+	<div id="logo" class="profile_logo" style="display:none;">
+            <label>Company Logo</label>
+            <?php
+            if (sizeof($this->vendor_profile->logo_url)) {
+                ?>
+                <img src="<?php echo $this->baseUrl("assets/files/vendor_profile/thumbs/" . $this->logoCurrent); ?>"/>
+                <?php
+            }
+            ?>
+        </div>
+
+        <div class="clear"></div>
+        <div class="spacer"></div>
+        <div class="sample_products">
+            Sample Product Images
+            <div class="clear"></div>
+            <div style="border: 1px solid #cccccc;height: 170px;overflow: auto;">
+                <?php
+                if (sizeof($this->vendor_sample_file)) {
+                    $count = 0;
+                    $active_img_count = 0;
+                    $decline_img_count = 0;
+                    $activeImages = '';
+                    $declineImages = '';
+                    foreach ($this->vendor_sample_file as $file) {
+                        $img_class = ($file->active == 1) ? ' class="sampleimg activeImg" ' : ' class="sampleimg declineImg" ';
+                        if ($file->active == 1) {
+                            $active_img_count++;
+                            $activeImages.= '<img id="' . $file->id . '" class="sampleimg" src="' . $this->baseUrl("assets/files/samples/products/thumbs/" . $file->file_url) . '" />';
+                            if ($active_img_count % 4 == 0) {
+                                $activeImages.= '<div class="clear"></div>';
+                            }
+                        } else {
+                            $decline_img_count++;
+                            $declineImages.= '<img id="' . $file->id . '" class="sampleimg" src="' . $this->baseUrl("assets/files/samples/products/thumbs/" . $file->file_url) . '" />';
+                            if ($decline_img_count % 4 == 0) {
+                                $declineImages.= '<div class="clear"></div>';
+                            }
+                        }
+                    }
+                    ?>
+                    <div id="ctnActiveIamges"><?php echo $activeImages; ?><div class="clear"></div></div>
+                    <div id="ctnDectineIamges"><?php echo $declineImages; ?><div class="clear"></div></div>
+                    <?php
+                }
+                ?>                
+                <div class="clear"></div>
+            </div>
+            <div class="spacer"></div>
+        </div>
+    </div>
+
+    <div class="form_container_right">
+	<div id="logo">
+        <?php echo $this->form->services->setAttrib('onClick', 'javascript:return false;'); ?>
+	</div>
+	<div id="logo" style="display:none;">
+	<?php echo $this->formCurrent->services->setAttrib('onClick', 'javascript:return false;'); ?>
+        </div>
+        <div class="clear"></div>
+        <div class="spacer"></div>
+        <label>Products Offered</label>
+        <span id="product_val_set" class="one txtinput selected_products">
+            <?php
+            $total_products = '';
+            if (sizeof($this->products)) {
+                foreach ($this->products as $product) {
+                    $total_products .= $product['id'] . ',';
+                    ?>
+                    <a href="#
+			<?php echo $product['id']; ?>" class="cross" style="text-decoration:none;" 
+			rel="<?php echo $product['id']; ?>">
+			<?php echo $product['product_name']; ?>
+			<img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> 
+		    </a>
+                    <?php
+                }
+                $total_products = substr($total_products, 0, -1);
+            }
+            ?>
+        </span>
+
+	<span id="product_val_set" class="one txtinput selected_products" style="display:none;">
+            <?php
+            $total_products = '';
+            if (sizeof($this->productsCurrent)) {
+                foreach ($this->productsCurrent as $product) {
+                    $total_products .= $product['id'] . ',';
+                    ?>
+                    <a href="#
+                        <?php echo $product['id']; ?>" class="cross" style="text-decoration:none;"
+                        rel="<?php echo $product['id']; ?>">
+                        <?php echo $product['product_name']; ?>
+                        <img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/>
+                    </a>
+                    <?php
+                }
+                $total_products = substr($total_products, 0, -1);
+            }
+            ?>
+        </span>
+        <?php echo $this->form->products; ?>
+        <div class="spacer"></div>
+	<div id="logo">
+        <?php echo $this->form->company_discripction->setAttrib('readonly', 'true')->setAttrib('cols', '52')->setAttrib('rows', '3'); ?>
+	</div>
+	<div id="logo" style="display:none;">
+	<?php echo $this->formCurrent->company_discripction->setAttrib('readonly', 'true')->setAttrib('cols', '52')->setAttrib('rows', '3'); ?>
+	</div>
+        <div class="spacer"></div>
+        <?php
+        if (sizeof($this->vendor_profile)) :
+            $Button_1 = '';
+            $Button_2 = '';
+            $Button_3 = '';
+
+            switch ($this->vendor_profile->active) {
+                case -1:
+                    $Button_1 = 'Current';
+                    $Button_2 = 'approve';
+                    $Button_3 = 'decline';
+                    break;
+                case 0:
+                    $Button_1 = 'current';
+                    $Button_2 = 'approve';
+                    break;
+                case 1:
+                    $Button_1 = 'current';
+                    $Button_2 = 'decline';
+                    break;
+            }
+            ?>
+
+            <div style="float: left;">
+                <button id="current" type="button" class="button button_black detail_button">View <?php echo ucwords($Button_1); ?> version</button>&nbsp;
+            </div>
+            <div id="btnCtn" style="float: left;">
+                <button id="<?php echo $Button_2; ?>" type="button" class="button button_black detail_button"><?php echo ucwords($Button_2); ?></button>&nbsp;
+            </div>
+            <?php if ($this->vendor_profile->active == -1): ?>
+                <div id="btnCtn" style="float: left;">
+                    <button id="<?php echo $Button_3; ?>" type="button" class="button button_black detail_button"><?php echo ucwords($Button_3); ?></button>&nbsp;
+                </div>
+            <?php endif; ?>
+            <div class="clear"></div>
+        <?php endif; ?>        
+    </div>
+
+    <div style="display: none;">
+        <div id="decline_ctn">
+            <p>Reason for Declining</p><textarea rows="8" cols="80" id="txt_decline_reason" name="txt_decline_reason"></textarea>
+            <div class="clear"></div>
+            <div class="spacer"></div>
+            <button id="btnDecline" type="button" class="button button_black detail_button">Send</button>
+        </div>        
+    </div>
+
+</form>
+
+
+<script type="text/javascript">
+    $(document).ready( function($) {
+        $('#decline').click(function() {
+            var profile_id = $('#profile_id').val();
+            //window.parent.update_status(profile_id,0);
+            //window.parent.decline_reason();
+            decline_reason();
+            return false;
+        });
+
+        $('#approve').click(function() {
+            loading();
+            var profile_id = $('#profile_id').val();
+            window.parent.update_status(profile_id,1);
+            return false;
+        });
+
+        $('#btnDecline').click(function() {
+            loading();
+            var profile_id = $('#profile_id').val();
+            var reason = $('#txt_decline_reason').val();            
+            window.parent.update_status(profile_id,0,reason);
+            return false;
+        });
+
+        $('#current').toggle(
+        function(){
+            $(this).text('View New version');
+            $('#ctnDectineIamges,#btnCtn,#logo,#product_val_set').toggle();
+        },
+        function(){
+            $(this).text('View Current version');
+            $('#ctnDectineIamges,#btnCtn,#logo,#product_val_set').toggle();
+        }
+    );
+        
+    }); // end document ready
+</script>
+
+<script type="text/javascript">
+    function decline_reason(){
+        $.fancybox({
+            //'type'                  : 'iframe',
+            'href'                  : '#decline_ctn'
+        });
+    }
+
+    function loading(){        
+        $.fancybox({
+            'showCloseButton'       : false,
+            'href'                  : '#loader'
+        });
+    }
+</script>

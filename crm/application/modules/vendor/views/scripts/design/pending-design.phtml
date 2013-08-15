@@ -1,0 +1,105 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml', array('selected' => 'design'));
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('design/sub-menu-bar.phtml', array('selected' => 'pending'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<div id="view-content">
+    <h2>Pending Designs</h2> <hr size="1" />
+    <div class="spacer"></div>
+
+    <div class="one">
+        <!--        <ul class="design-view">-->
+        <?php if (sizeof($this->design)) { ?>
+            <?php foreach ($this->design as $design) { ?>
+                <div class="detail_design_view" style="float:left;padding-right:15px;padding-top: 20px;padding-left: 18px; padding-bottom: 10px; position:relative;overflow: hidden; ">
+                    <!--                    <li>-->
+                    <!--                        <span class="del-pic" style="background-color: orange">!</span>-->
+                    <div class="pending"> </div> 
+                    <a rel="<?php echo $design->id; ?>" class="main_link" href="javascript:;">
+                        <?php if ('' != $design->file_url) { ?>
+                            <img src="<?php echo $this->baseUrl("assets/files/design/thumbs/_thumb") . $design->file_url; ?>" class="list_pic" width="110px" height="110px" onerror="ImgError(this);"/>
+                        <?php } else { ?>
+                            <img src="<?php echo $this->baseUrl("assets/images/no_image.jpg"); ?>" width="110px" height="110px"  onerror="ImgError(this);"/>
+                        <?php } ?>
+                    </a><br>
+                    <a rel="<?php echo $design->id; ?>" class="main_link" href="javascript:;"><?php echo substr($design->file_url, -15, 15); ?></a>                    
+                    <!--                    </li>-->
+                </div>
+            <?php } ?>
+        <?php } ?>
+        <!--        </ul>-->
+    </div>
+    <div class="spacer one"></div>
+
+    <div class="one">
+        <?php echo $this->paginationControl($this->design, 'Sliding', '/layout/pagination.phtml'); ?>
+    </div>
+</div>
+<script type="text/javascript">       
+    $(document).on('click', '.main_link', function(){               
+        var url = site_url+"/vendor/design/view/id/"+$(this).attr('rel');
+        show_result_popup(url);        
+        return false;
+    });        
+    
+    function show_result_popup(url){
+        $.fancybox({
+            'width'                 : 450,
+            'height'                : 550,
+            'href'                  : url,    
+            'transitionIn'         : 'none',
+            'transitionOut'        : 'none',
+            'padding'               : 20,            
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF',
+            'titlePosition'        : 'inside',
+            'speedIn'               : 100,
+            'speedOut'              : 100
+        });      
+    }
+    
+    /* Broken Image */
+    function ImgError(source){
+        source.src = "<?php echo $this->baseUrl("assets/images/_thumbno_image.jpg"); ?>";
+        source.onerror = "";
+        return true;
+    }    
+</script>
+
+<style type="text/css">      
+    .design-view{
+        list-style-type:none;
+        position: relative;
+    }
+    .design-view li{
+        float: left; 
+        padding: 5px 15px 5px 0px;                
+        width:150px;
+        height: 110px;
+    }
+    .design-view li .del-pic {
+        color: #FFFFFF;
+        display: block;
+        font: 11px arial,helvetica;        
+        padding: 1px 5px;
+        position: absolute;        
+    }
+    .pending {
+        background: none repeat scroll 0 0 #FF6600;
+        display: block;
+        float: left;
+        height: 15px;
+        position: absolute;
+        width: 15px;
+        text-align: center;
+        color: white;
+    }
+
+</style>

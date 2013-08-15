@@ -1,0 +1,121 @@
+<div class="one">
+    <div class="container_left one_half">
+        <h2><?php echo $this->organization; ?></h2>
+    </div>
+    <div class="container_right rightalign">
+        <h3><?php echo "Fiscal Year: " . $this->reports[0]->year; ?></h3>
+    </div>
+</div>
+<div class="spacer"></div>
+<hr size="1" noshade />
+<div class="spacer"></div>
+<div class="one padding15">
+    <p>The vendor has submitted their quarterly report for review.</p><p>Click on the "Pending Approval" link below to review the report.</p>
+</div>
+<div class="clear"></div>
+<div class="one padding15">
+    <!--
+    <span class="revenue"><a href="javascript:;" class="revenue_link" rel="v:<?php echo $this->vendor_id; ?>,s:<?php echo$this->report_status; ?>">Upload</a> vendor sales revenue report here.<span>
+    -->
+            </div>
+            <div class="spacer clear"></div>
+            <div class="one">
+                <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+                    <thead>
+                        <tr role="row">
+                            <th>Period</th>
+                            <th align="left">Review Status</th>
+                            <th>Email Sent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($this->reports as $r): ?>
+                            <tr style="text-align: center;">
+                                <td><b><?php echo "Q" . $r->quarter; ?></b></td>
+                                <td align="left">
+                                    <?php if (trim($r->status) === "Pending Review"): ?>
+                                        <?php if ($r->submission_type == "file"): ?>
+                                            <a href="javascript:;" class="report_file pending" rel="<?php echo $r->id; ?>" data-submission="<?php echo $r->submission_hash?>">
+                                                Pending Approval &nbsp;
+                                                <img src="<?php echo $this->baseUrl("assets/images/icons/file.png"); ?>" alt="File" />
+                                            </a>
+                                        <?php else : ?>
+                                            <a href="javascript:;" class="pending" rel="<?php echo $r->id; ?>" data-submission="<?php echo $r->submission_hash?>" >Pending Approval<?php //echo $this->reports->status;   ?></a>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="<?php echo trim($r->status) === "Approved" ? "green" : "red"; ?>">
+                                            <a href="<?php echo $this->baseUrl('/admin/reports/get-reports/vendor_id/'.$r->client->id)?>"><?php echo $r->status; ?></a>
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><b><?php echo ($r->email_date!='') ? $r->email_date->format('m-d-Y') : 'N/A'?></b></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <style type="text/css">
+                p{font-size: 130%}
+                span.revenue{font-size: 115%}
+                span.green{color:green;}
+                span.red{color:red;}
+            </style>
+
+            <script type="text/javascript">
+                $(window).bind('load',function(){
+                    init_revenue_link();
+                    init_approval_link();
+                });
+
+                function init_revenue_link(){
+                    $(document).on("click", "a.revenue_link", function(e){
+                        $('.sTable2 tr.selected').removeClass('selected');
+                        $(this).parents('tr').addClass('selected');
+                        v_obj={};
+                        param_array=$(this).attr('rel').split(",");
+                        $.each(param_array,function(i,v){
+                            v_obj[v.split(":")[0]]=v.split(":")[1];
+                        });
+                        console.log(v_obj);
+                        show_revenue_popup(v_obj);
+                    });
+                }
+
+                function show_revenue_popup(obj){
+                    /**
+                     * obj.v=vendor
+                     * obj.m=section . e.g correspondence
+                     * obj.c=section id. e.g. correspondence id
+                     */
+                    $.fancybox({
+                        'width'                 : 500,
+                        'height'                : 400,
+                        'href'                  : site_url+"/admin/reports/revenue-upload/vid/"+obj.v+"/status/"+obj.s,
+                        'transitionIn'         : 'none',
+                        'transitionOut'        : 'none',
+                        'padding'               : 20,
+                        'speedIn'               : 0,
+                        'type'                  : 'iframe',
+                        'changeSpeed'           : 0,
+                        'changeFade'            : 0,
+                        'speedOut'              : 0,
+                        'overlayColor'          : '#FFF',
+                        'titlePosition'        : 'inside',
+                        'onStart'               :  function(){
+                            is_fb_open=true;
+                        },
+                        'onClosed'               :  function(){
+                            is_fb_open=false;
+                        },
+                        'titleFormat'       : function(title, currentArray, currentIndex, currentOpts) {
+                            //return '<button type="Button" id="pop_prev" class="button button_blue">Prev</button>&nbsp; <button id="pop_next" type="Button" class="button button_blue">Next</button>&nbsp; ';
+                        }
+                    });
+                }
+
+                function init_approval_link(){
+                    $(document).on('click', 'a.pending', function(e){
+                        window.parent.execute_parent($(this).attr('rel')+'/submission_hash/'+$(this).attr('data-submission'));
+                    });
+                }
+            </script>

@@ -1,0 +1,383 @@
+<?php
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('contact/sub-menu-bar.phtml', array('selected'=>'vendor-profile'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+<style type="text/css">
+    #events-data-table {
+    border-collapse: collapse;
+}
+#events-data-table tr td {
+    border-bottom: 1px solid #DDDDDD;
+    border-right: 1px solid #FFFFFF;
+    padding: 8px 10px;
+    vertical-align: top;
+}
+#events-data-table thead th {
+    border-right: 1px solid #777777;
+    color: #CCCCCC;
+    font-size: 12px;
+    padding: 8px 10px;
+    text-shadow: 1px 1px #444444;
+    text-transform: uppercase;
+}
+#events-data-table thead th {
+    font-weight: normal;
+    text-align: left;
+}
+#events-data-table tr td:last-child {
+    border-right: 0 none;
+}
+#events-data-table tr:last-child td {
+    border-bottom: 0 none;
+}
+#events-data-table tr:hover {
+    background: none repeat scroll 0 0 #CACACA;
+}
+#events-data-table tr.selected {
+    background: none repeat scroll 0 0 #FFFCCC;
+}
+#events-data-table .head0 {
+    background-color: #A79269;
+}
+#events-data-table .head1 {
+    background-color: #77623D;
+}
+#events-data-table .odd {
+    background-color: #EAEAEA;
+}
+#events-data-table .even {
+    background-color: #DDDDDD;
+}
+
+.dataTables_processing {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    width: 100px;
+    margin-left: -125px;
+    background-color: #E30;
+    text-align: center;
+    color: #FFF;
+    padding: 2px 0;
+    -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+}
+#banners-data-table td{
+    vertical-align: middle;
+} 
+
+#city,#state,#zip,#sal{
+    width:110px;
+}
+.jGrowl-notification{
+background-color: #917C54 !important;
+}
+</style>
+
+<?php
+//Zend_Debug::dump($this->messages);
+if(sizeof($this->messages) && $this->messages[0]!='Sample Product Deleted'){
+    ?>
+    <div class="notification msginfo">
+        <a class="close"></a>
+        Your changes have been submitted successfully. The Admin will review the changes and if it does not violate our terms and conditions, then it will be posted to your public profile within 1 business day.
+    </div>
+<?php
+    }
+?>
+
+
+
+
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">
+    <div class="form_container_left">
+        <?php echo $this->form->organization_name; ?>
+        <?php echo $this->form->address1; ?>
+        <?php echo $this->form->address2; ?>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>
+        </div><div class="clear"></div>
+        <?php echo $this->form->email; ?>
+        <div class="clear"></div>
+    </div>
+
+    <div class="form_container_right extSpace">
+        <?php echo $this->form->phone1; ?>
+        <?php echo $this->form->phone2; ?>
+        <?php echo $this->form->fax; ?>
+        <?php echo $this->form->web_page; ?>
+    </div>
+    <div class="form_container_left">
+        <?php echo $this->form->logo_url; ?>
+        The optimal size of the logo should be ZZZpx X ZZZpx.
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <?php echo $this->form->services; ?>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <?php echo $this->form->product_offered;?>
+    <?php echo $this->form->company_discripction;?>
+    
+    
+<!--    <div style="text-align: right;">
+        <button type="button" id="btnSubmit" class="button button_black detail_button">Submit</button>
+    </div>-->
+
+    <div class="spacer"></div>
+</form>
+
+<!--    <div class="form_default">
+        <fieldset>
+            <legend>Upload Product Sample Images</legend>
+            <div style="border: 0px solid;width: 80%;float: left; overflow: scroll;height:190px;">
+                <table cellspacing="0" cellpadding="0" border="1" id="events-data-table" class="dyntable dataTable" aria-describedby="licenses-data-table_info" style="border-color: #CCCCCC;">
+                    <tr class="tr_heading">
+                        <td width="25%" class="td_bkg1">Update Date</td>
+                        <td width="25%" class="td_bkg2">File</td>
+                        <td width="25%" class="td_bkg1">Title</td>                        
+                    </tr>
+                    <?php                    
+                    if(sizeof($this->vendorSampleFile)){
+                        $i=1;
+                        foreach($this->vendorSampleFile as $sample_file){
+                            if($i%2==0){
+                                $class = ' class="even"';
+                            }else{$class = ' class="odd"';}
+                            $i++;
+                            ?>
+                            <tr <?php echo $class;?> >
+                                <td><?php echo $sample_file->upload_date->format('m/d/Y');?></td>
+                                <td>
+                                    <?php
+                                    switch($sample_file->file_extension){
+                                        case 'jpg':
+                                            $image = $this->baseUrl('/assets/images/jpg.png');
+                                            break;
+                                        case 'jpeg':
+                                            $image = $this->baseUrl('/assets/images/jpeg.png');
+                                            break;
+                                        case 'gif':
+                                            $image = $this->baseUrl('/assets/images/gif.png');
+                                            break;
+                                    }
+                                    ?>
+                                    <a href="<?php echo $this->baseUrl("assets/files/samples/products/".$sample_file->file_url);?>" class="view_image">
+                                        <img src="<?php echo $image;?>"/>
+                                    </a>
+                                </td>
+                                <td><?php echo $sample_file->title;?></td>                                
+                            </tr>
+                    <?php
+                        }
+                    ?>
+                    
+                    <?php
+                    }
+                    ?>
+                </table>
+            </div>
+            <div style="border: 0px solid;float: right;">
+                <button type="button" id="upload_artwork" class="button button_black detail_button">Add Product Sample</button>
+            </div>
+            <div class="clear"></div>
+        </fieldset>
+    </div>-->
+
+<hr size="1">
+<div class="spacer"></div>
+<div style="position: relative;">
+    <div style="width:60%;float:left;">
+        <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="banners-data-table">
+            <thead>
+                <tr>
+                    <th class="head1" width="25%">Added on</th>
+                    <th class="head0" width="45%">Title</th>
+                    <th class="head1" width="25%">File</th>
+                    <th class="head0" width="30%">Action</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div style="float: left;margin-left: 40px;">
+        <?php
+        if(sizeof($this->vendorSampleFile)<10){
+        ?>
+        <button type="button" id="upload_sample" class="button button_black detail_button">Add Product Sample</button>&nbsp;&nbsp;
+        <?php
+        }
+        ?>
+        
+        <button type="button" id="btnSubmit" class="button button_black detail_button">Submit</button>
+    </div>
+    <div class="clear"></div>
+</div>
+
+
+
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    $(window).bind('load',function(){
+        oTable=$('#banners-data-table').dataTable( {
+            "bProcessing": true,
+            "bServerSide": true,
+            "iDisplayLength": 5,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/vendor/contact/ajax-get-sample-product/use_for/web_profile/id/'+<?php echo $this->vendor_id;?>,
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 2,3 ] }],  // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+
+            }
+        } );
+
+        $('.default').parent().addClass('aa');
+        $('#banners-data-table_length label').html('<h2>Upload Product Sample Images</h2>');
+        init_action_links();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+    });
+
+    function init_action_links(){
+
+        $(document).on('click','a.fancy',function(){
+            $src=$(this).find("img").attr("src").replace("thumbs/","");
+            $.fancybox({
+                'href'                  : $src,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'autoScale'        : true,
+                'autoDimensions'    :   true,
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'image',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        });
+
+        $(document).on('click','a.view_clients',function(){
+            banner_id=$(this).attr('rel');
+            $.fancybox({
+                'href'                  : site_url+'/admin/portal/ajax-get-banner-clients/id/'+banner_id,
+                'transitionIn'         : 'none',
+                'transitionOut'        : 'none',
+                'autoScale'        : true,
+                'autoDimensions'    :   true,
+                'padding'               : 20,
+                'speedIn'               : 0,
+                'type'                  : 'iframe',
+                'changeSpeed'           : 0,
+                'changeFade'            : 0,
+                'speedOut'              : 0,
+                'overlayColor'          : '#FFF',
+                'titlePosition'        : 'inside'
+            });
+            return false;
+        });
+
+        $(document).on('click','a.delete',function(){
+            if(confirm("Are you sure to delete this banner ?")){
+                return true;
+            }
+            return false;
+        })
+    }
+
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                return;
+            }
+        });
+    }
+
+    /** Datatable code **/
+</script>
+
+
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+
+    $(document).on('click', '#upload_sample', function(){
+        //alert($("#uploaded_pics").find("img").size());
+        if($("#uploaded_pics").find("img").size()<5){
+        
+        upload_left=$("#uploaded_pics").find("img").size() ? (5-$("#uploaded_pics").find("img").size()) : 5;
+            $.fancybox({
+                'width'                 : 650,
+                'height'                : 350,
+                'title'                 : '<h4>Upload Product Sample. (Max '+upload_left+')</h4>',
+                'titlePosition'         : 'inside',
+                'autoDimensions'        : false,
+                'href'                  : site_url+"/vendor/contact/upload-files/max/"+upload_left,
+                'transitionIn'          : 'elastic',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe'
+            });
+        }else{
+            alert("You have reached the maximum number of files to be uploaded")
+        }
+        return false;
+    })
+
+
+    $('#btnSubmit').click(function(){        
+        $('#vendor_profile').find('.title').remove();
+        $('#banners-data-table .title').clone(true).attr('type','hidden').appendTo("#vendor_profile");
+        $('#vendor_profile').submit();
+    });
+
+    
+
+}); // end document ready
+
+function add_picture_to_form(pic){    
+    
+    if($("#uploaded_pics").find("img").size()<5){
+        
+        var row_class='';        
+        if($('#events-data-table > tbody > tr').length%2==0){
+            row_class='even';
+        }else{
+            row_class='odd';
+        }
+
+        var now = new Date();
+        var update_date = '<?php echo date("m/d/yy") ;?>';
+
+        $("#vendor_profile").append('<input type="hidden" name="pics[]" value="'+pic+'" />');        
+        var image_path = site_url+'/assets/files/samples/products/thumbs/'+pic;
+        //var large_image = site_url+'/assets/files/samples/products/'+pic;
+        $("#banners-data-table tbody").append('<tr class="'+row_class+'"><td>'+update_date+'</td>'
+            +'<td><input type="text" name="title[]" class="title" value=""/></td>'
+            +'<td><img height="50" src="'+image_path+'"/></td>'
+            +'<td>&nbsp;</td>'
+            );
+        
+
+    }else{
+        alert("Maximum 5 pictures can be added");
+    }
+}
+
+
+</script>

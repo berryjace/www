@@ -1,0 +1,9 @@
+<h3><?php echo sizeof($this->banner->clients); ?> Orgs</h3><hr size="1" noshade />
+<ul id="banner-client_list">    
+
+    <?php foreach ($this->banner->clients as $client): ?>
+        <li>
+            <?php echo $client->organization_name; ?>
+        </li>
+    <?php endforeach; ?>
+</ul>

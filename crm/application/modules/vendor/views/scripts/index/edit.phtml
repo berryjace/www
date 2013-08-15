@@ -1,0 +1,158 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<?php
+$this->headTitle('Edit Profile');
+?>
+<div class="grid_16">
+    <h1>Edit Profile</h1>
+    <div class="clear"></div>
+    <div class="form" id="customer" name="customer">
+        <?php
+        if ($this->hybrid_session) :
+            //$social_provider = ZB_Auth::getProvider(Zend_Auth::getInstance()->getIdentity());
+            //$social_provider = ucfirst($social_provider);
+            ?>
+            <div class="social_info">
+                You are logged in via <?php echo $social_provider; ?>. &nbsp;
+                <a href="<?php echo $this->getHelper("BUrl")->site_url("login/logout"); ?>">[ Logout ]</a><br />
+                After you signup using <b><?php echo $social_provider; ?></b>, you will be able to login to the site with a click.
+            </div>
+        <?php endif; ?>
+        <?php
+        $extra_params = "";
+        $extra_params = strstr($this->getHelper("BUrl")->currentUrl(), "?") ? end(explode("?", $this->getHelper("BUrl")->currentUrl())) : "";
+        $extra_input = ($extra_params <> "") ? '<input type="hidden" name="extra_param" value="' . $this->getHelper("BUtils")->site_encrypt($extra_params) . '" />' : '';
+        ?>
+        <form action="<?php echo $this->getHelper("BUrl")->site_url("vendor/index/edit"); ?><?php echo ($extra_params <> "") ? "?$extra_params" : ""; ?>" method="post" enctype="multipart/form-data">
+
+            <?php if ($this->custom_err_mssg != '') { ?>
+                <div class="notification error">
+                    <div class="messages">
+                        <?php echo $this->custom_err_mssg; ?>
+                    </div>
+                </div>
+            <?php } ?>
+            <?php //echo $this->form->renderErrors(); ?>
+            <div class="form_container_left">
+            <?php if ($this->custom_err_mssg != '') { ?>
+                <div class="notification error">
+                    <div class="messages">
+                        <?php echo $this->custom_err_mssg; ?>
+                    </div>
+                </div>
+            <?php } ?>
+                Company Name *<br /><?php echo $this->form->organization_name; ?>
+                <div class="clear"></div>
+                Email *<br /><?php echo $this->form->email; ?>
+                <ul class="errors"><li></li></ul>
+                <div class="clear"></div>
+                Address<?php echo $this->form->address_line1; ?>
+                <div class="clear"></div><br />
+                <?php echo $this->form->address_line2; ?>
+                <div class="clear"></div>
+                City <br /><?php echo $this->form->city; ?>
+            </div>
+            <div class="form_container_right">
+                
+                State <br /><?php echo $this->form->state; ?>
+                <div class="clear"></div>
+                Zip Code <br /><?php echo $this->form->zipcode; ?>
+                <div class="clear"></div>
+                Phone <br /><?php echo $this->form->phone; ?>
+                <div class="clear"></div>
+                Fax <br /><?php echo $this->form->fax; ?>
+                <div class="clear"></div>
+                Website <br /><?php echo $this->form->website; ?>
+                <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+            <div>
+                <?php echo $this->form->picture; ?>
+                <?php if($this->user_details->picture) {?>
+                <img src="<?php echo $this->baseUrl("assets/files/user/thumbs/_thumb").$this->user_details->picture?>" />
+                <?php }?>
+                <div class="clear"></div>
+                <?php echo $this->form->vendor_sale_online; ?> Sale Online
+                <?php echo $this->form->vendor_have_storefont; ?> Have a Storefont
+                <div class="clear"></div>
+                Products Offered <br /><?php echo $this->form->vendor_products; ?>
+                <div class="clear"></div>
+                Company Description <br /><?php echo $this->form->vendor_recommendation_to_client; ?>
+                <div class="clear"></div>
+            </div>
+            <?php echo $this->form->submit; ?>
+        </form>
+    </div>
+    <div class="clear"></div>
+    <div class="clear"></div>
+</div>
+<style type="text/css">
+    .form_container_right{ float:left; width:350px; padding-left:23px}
+    ul.errors {
+        color: red;
+        font-family: tahoma,arial,helvetica;
+        font-size: 12px;
+        font-weight: normal;
+        list-style-type: none;
+    }
+    .form-errors{
+        border:2px solid #A20;
+        font-size:13px;
+        padding:10px;
+    }
+    .form-errors b{
+        display:none;
+    }
+    .form-errors .errors{
+        color:#E30;
+        margin: 3px 0 0 0;
+    }
+    .form-errors li{
+        list-style-type:none;
+        margin:0 0 6px 0;
+    }
+    
+    dd{
+        margin:0;
+    }
+
+    #content .box-content .form p#err_usrnm, #content .box-content .form p#err_eml{
+        color: #E00;
+    }
+    
+    .clear {height:10px;}
+</style>
+
+<script type="text/javascript">
+    $(function(){
+        $("label.required").append(" <span class='red'>*</span>");
+
+    })
+    function check_email() {
+        $("#err_eml").remove();
+        var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if(emailPattern.test($("#email").val())){
+            var string = 'email/'+ $("#email").val() ;
+            $.ajax({
+                type: "POST",
+                data: string,
+                url: "<?php echo $this->baseUrl('vendor/signup/check-email/'); ?>"+string,
+                cache: false,
+                success: function($mssg){
+                    if('found'==$mssg){
+                        //$("#email").append('<p id="err_eml">The email you entered is already in use. Please enter a different email address.</p>');
+                        $("#email").val('') ;
+                        //                        $("#customer_email").focus();
+                    }
+                }
+            });
+        } else {
+            //$("#customer_email").val('') ;
+            //$("#customer_email").focus();
+            //$("#email").append('<p id="err_eml">Invalid email address.</p>');
+        }
+    }
+</script>

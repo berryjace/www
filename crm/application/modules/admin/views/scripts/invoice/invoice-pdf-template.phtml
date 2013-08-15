@@ -1,0 +1,99 @@
+<div>
+<?php
+ 
+	$MAX_PER_PAGE = 42;
+	$page=0;
+	if(sizeof($this->lineitems)) :
+ 	$currency = new Zend_Currency('en_US');
+        $i = $total_due = $total_paid =0;$count=0;$set=array();
+        foreach ($this->lineitems as $item){
+        	$i++; 
+		$total_due += $item->amount_due; 
+		$total_paid += $item->amount_paid; 
+		if($this->invoice->invoice_type=="Annual")
+		{
+			$set[$i]=array('Client_id'=>$item->client_id->organization_name,'Status'=>$this->status_array[$item->license_status],'Due'=>$currency->toCurrency($item->amount_due));
+		}
+		elseif(true){
+			$set[$i]=array('Client_id'=>$item->client_id->organization_name,
+					'Check#'=>$item->check_number,
+					'Status'=>$item->payment_status,
+					'Due'=>$currency->toCurrency($item->amount_due-$item->amount_paid),
+					'Paid'=>$currency->toCurrency($item->amount_paid));
+		}
+	} 
+
+	for($count=1;$count<=$i;$count++) {
+	?>
+	<?php
+		if($this->invoice->invoice_type=="Annual")
+                {
+	?>
+	<table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top;10px">
+		<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                    <td width="50%">
+			<?php echo $set[$count]['Client_id']; ?>
+		    </td>
+                    <td width="20%">
+			<?php echo $set[$count]['Status']; ?>
+		    </td>
+                    <td width="30%" align="right">
+			<?php echo $set[$count]['Due']; ?>
+		    </td>
+                </tr>
+	<?php 	}
+		elseif(true){
+
+		?>
+	<table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top;10px">
+                <tr>
+                    <td width="24%" border="1">
+                        <?php echo $set[$count]['Client_id']; ?>
+                    </td>
+                    <td width="12%" style="border:1px solid black;">
+                    </td>
+                    <td width="16%" align="right" style="border:1px solid black;">
+                        <?php echo $set[$count]['Due']; ?>&nbsp;&nbsp;
+                    </td>
+                    <td width="24%" align="right" style="border:1px solid black;">
+                        <?php
+                                echo $set[$count]['Paid'];
+                        ?>&nbsp;&nbsp;
+                    </td>
+                    <td width="12%" align="center" style="border:1px solid black;">
+                        <?php echo $set[$count]['Check#']; ?>
+                    </td>
+                    <td width="16%" align="center" style="border:1px solid black;">
+			<?php echo $set[$count]['Status']; ?>
+                    </td>
+                </tr>
+		</table>
+        <?php
+		} 
+
+}
+	if($this->invoice->invoice_type=="Annual")
+        {
+	?>
+
+	<?php
+	}
+	?>
+	<table>
+                <tr>
+                    <td width="15%">&nbsp;</td>
+                    <td width="15%">&nbsp;</td>
+                    <td width="10%">&nbsp;</td>
+                    <td width="35%" class="total_txt">Total Due:&nbsp;&nbsp;</td>
+                    <td width="25%" class="total_amt"><?php echo $currency->toCurrency($total_due-$total_paid); ?></td>
+                </tr>
+    </table>
+<?php endif; 
+
+?>
+</div>
+
+<style type="text/css">
+    .total_txt{font-weight: bold; text-align: right;}
+    .total_amt{font-weight: bold; text-align: right;}
+</style>

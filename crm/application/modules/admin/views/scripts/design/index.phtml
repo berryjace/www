@@ -1,0 +1,406 @@
+<div id="container">
+    <?php
+
+    $itemsPerPage = 6 * 4;
+
+    if($this->page != 1) {
+	$pageNo = ($this->page-1) * $itemsPerPage + 1;
+    } else {
+	$pageNo = 1;
+    }
+
+    $CurrentAction = "index";
+    $CurrentActionNO = -1;
+    $CurrentController = Zend_Controller_Front::getInstance()->getRequest()->getControllerName();
+    $CurrentAction = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+
+    if ($CurrentAction == "pending") {
+        $ContentHeaderTitle = "Pending Vendor Designs";
+        $CurrentActionNO = 0;
+    } else if ($CurrentAction == "approved") {
+        $ContentHeaderTitle = "Approved Vendor Designs";
+        $CurrentActionNO = 1;
+    } else if ($CurrentAction == "rejected") {
+        $ContentHeaderTitle = "Rejected Vendor Designs";
+        $CurrentActionNO = 2;
+    } else {
+        $ContentHeaderTitle = "Vendor Designs Review";
+        $CurrentActionNO = -1;
+    }
+    ?>
+    <div id="header">
+        <h3 class="hyperlink">
+            <a href="<?php echo $this->baseUrl('admin/design/all/vendor/') . '/start_date//end_date/'; ?>" style="color:#3B2216;" <?php echo $CurrentAction == "all" ? ' class="current_header"' : ''; ?> >&nbsp; All Designs &nbsp;</a>
+        </h3>
+        <h5 class="hyperlink"> | </h5>
+        <h3 class="hyperlink">
+            <a href="<?php echo $this->baseUrl('admin/design/pending/vendor/') . $this->currentvendor . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date; ?>" style="color:#FF6600;" <?php echo $CurrentAction == "pending" ? ' class="current_header"' : ''; ?> >&nbsp; Pending &nbsp;</a>
+        </h3>
+        <h5 class="hyperlink"> | </h5>
+        <h3 class="hyperlink">
+            <a href="<?php echo $this->baseUrl('admin/design/approved/vendor/') . $this->currentvendor . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date; ?>" style="color:#00CC00;" <?php echo $CurrentAction == "approved" ? ' class="current_header"' : ''; ?> >&nbsp; Approved &nbsp;</a>
+        </h3>
+        <h5 class="hyperlink"> | </h5>
+        <h3 class="hyperlink">
+            <a href="<?php echo $this->baseUrl('admin/design/rejected/vendor/') . $this->currentvendor . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date; ?>" style="color:#FF0000;" <?php echo $CurrentAction == "rejected" ? ' class="current_header"' : ''; ?> >&nbsp; Rejected &nbsp;</a>
+        </h3>
+    </div>
+    <div id="subcontainer" style="float:left">
+        <?php $this->placeholder('main_side_bar')->captureStart(); ?>
+        <div id="menu">
+            <div id="bottom_menu">
+                <h3>Vendor Name</h3>
+                <ul class="manual_toc" style="list-style: none;" >
+                    <li <?php echo $this->selected_vendor == "All" ? ' class="select_vendor"' : ''; ?> ><a href="<?php echo $this->baseUrl('admin/design/' . $CurrentAction . '/vendor//start_date//end_date/'); ?>">ALL</a></li>
+                    <?php foreach ($this->owner_list as $owner) { ?>
+                        <li <?php echo $this->selected_vendor == $owner['vendor_id'] ? ' class="select_vendor"' : ''; ?> ><a href="<?php echo $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/') . $owner['vendor_id'] . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date; ?>"><?php echo $owner['vendor_org_name']; // echo $this->url(array('vendor' => $owner['vendor_id']));                                     ?></a></li>
+                    <?php } ?>
+                </ul>
+            </div>
+        </div>
+        <?php $this->placeholder('main_side_bar')->captureEnd(); ?>
+        <div id="content">
+            <div id="content_header" style="text-align:center;color: #3B2216; padding-top: 15px;padding-bottom: 15px;" ><h2><b><?php echo $ContentHeaderTitle; ?></b></h2></div>
+            <div id="content_tag_date" style="width:950px;height:100px" >
+
+                <form name="tag_date_form" action="<?php echo $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/') . $this->currentvendor; ?>" onsubmit="return validateTagDateForm()" method="get"  >
+                    <div id="tag_filter"  class="grid_tag" style=" padding-top:15px; float:left; padding-left:20px;color: #3B2216;/*padding-right:175px;*/">
+                        <b>Tag Filter: </b>
+                        <br>
+                        <input id="tag" name="tagfilter" type="text" style="width: 350px; padding-left: 5px; padding-top: 5px;" placeholder="">
+                    </div>
+                    &nbsp;
+                    <div id="button" class="grid_button" style="float:right;padding-top:35px;padding-right:30px;padding-left:25px;">
+                        <button id="box3Clear" class="button button_brown" type="submit" style="width:60px; height:30px; margin-top: -0px;" >OK</button>
+                    </div>
+                    &nbsp;
+                    <div id="end" class="grid_end" style="float:right;padding-top:15px;padding-right:10px;padding-left:10px;color: #3B2216;">
+                        <b>End Date: </b>
+                        <br>
+                        <input id="end_date"  type="text" size="25" name="end_date" >
+                    </div>
+                    &nbsp;
+                    <div id="start" class="grid_start" style="float:right;padding-top:15px;padding-right:10px;color: #3B2216;/*padding-left:100px;*/">
+                        <b>Start Date: </b>
+                        <br>
+                        <input id="start_date"  type="text" size="25" name="start_date">
+                    </div>
+                </form>
+
+                <span  style="float:left;padding-left:20px;padding-top:12px;color: #3B2216;<?php echo $CurrentAction != 'all' ? 'padding-right:220px;' : '' ?>" ><b id="counter"></b></span>&nbsp;
+                <script type='text/javascript'>
+                    $(window).load(function(){
+<?php
+if ($CurrentAction == 'all') :
+    $StatusCounterArray = array(0 => 0, 1 => 0, 2 => 0, 3 => 0);
+    foreach ($this->counter as $counter) {
+        $StatusCounterArray[3] += (int) $counter['count'];
+        $StatusCounterArray[(int) $counter['type']] = (int) $counter['count'];
+    }
+    ?>
+                document.getElementById("counter").innerHTML = 'Total: '+<?php echo $StatusCounterArray[3]; ?>+' | Pending: '+<?php echo $StatusCounterArray[0]; ?>+' | Approved: '+<?php echo $StatusCounterArray[1]; ?>+' | Rejected: '+<?php echo $StatusCounterArray[2]; ?>;
+<?php else : $StatusArray = array(0 => 'Pending', 1 => 'Approved', 2 => 'Rejected'); ?>
+                document.getElementById("counter").innerHTML = 'Total <?php echo $StatusArray[$this->counter[0]['type']] . ': ' . $this->counter[0]['count']; ?>';
+<?php endif; ?>
+    });
+                </script>
+                <span style="float:left;padding-left:240px;padding-top:12px;color: #3B2216;" >
+                    <?php
+                    if ($this->from_date != '' && $this->to_date != '') {
+                        echo "<b>" . date('jS F Y', strtotime($this->from_date)) . " - " . date('jS F Y', strtotime($this->to_date)) . "</b>&nbsp;<a href='" . $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/' . $this->currentvendor . '/start_date//end_date/') . "'>Clear</a>";
+                    } else {
+                        echo '';
+                    }
+                    ?>
+                </span>
+            </div>
+            <div id="content_design" >
+                <div id="view_content">
+                    <?php
+                    //$pageNo = $this->page;
+                      $designNo = 1;
+                    if ($this->tagfilter == NULL || $this->tagfilter == '') {
+                        /* All Design */
+                        if (sizeof($this->all_designs)) {
+                            foreach ($this->all_designs as $this->design) {
+                                if ($this->design->file_url != '') {
+                                    if ($this->design->is_approved == 1) {
+                                        $approval_status = "approved";
+                                    } elseif ($this->design->is_approved == 2) {
+                                        $approval_status = "rejected";
+                                    } else {
+                                        $approval_status = "pending";
+                                    }
+                                    ?>
+                                    <div class="detail_design_view" style="float:left;padding-right:15px;padding-top: 20px;padding-left: 18px;position:relative;overflow: hidden; ">
+
+                                        <a href="<?php echo $this->baseUrl('admin/' . $CurrentController . '/details-view/') . 'status/' . $CurrentActionNO . '/vendor/' . $this->currentvendor . '/design_id/' . $this->design->id . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date . '/tagfilter/' . $this->tagfilter . '/pg/' . $designNo; ?>" param="<?php echo $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/') . $this->currentvendor; ?>" title="<?php echo $this->design->upload_date->format('jS F Y'); ?>" onclick="loadDetailsView(this); return false;" >
+                                            <span>
+                                                <div class="<?php echo $approval_status; ?>"></div>
+                                                <img src="<?php echo $this->baseUrl("assets/files/design") . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . "_thumb" . $this->design->file_url; ?>" width="110px" height="110px"  class="list_pic" onerror="ImgError(this);" />
+                                                <br> <h5 style="width:125px;overflow:hidden;height:30px;line-height:30px;"><?php echo $this->design->owner_id->organization_name; ?></h5>
+                                            </span>
+                                        </a>
+
+                                    <?php } else { ?>
+                                        <a href="<?php echo $this->baseUrl('admin/' . $CurrentController . '/details-view/') . 'status/' . $CurrentAction . '/vendor/' . $this->currentvendor . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date . '/tagfilter/' . $this->tagfilter . '/pg/' . $designNo; ?>" param="<?php echo $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/') . $this->currentvendor . '/page/'.$this->page; ?>" title="<?php echo $this->design->upload_date->format('jS F Y'); ?>" onclick="loadDetailsView(this); return false;" >
+                                            <span>
+                                                <img src="<?php echo $this->baseUrl("assets/images/_thumbno_image.jpg"); ?>" width="110px" height="110px" onerror="ImgError(this);" />
+                                                <br> <h5 style="width:125px;overflow:hidden;height:30px;line-height:30px;"><?php echo $this->design->owner_id->organization_name; ?></h5>
+                                            </span></a>
+                                    <?php } ?>
+                                </div>
+                                <?php
+                                $pageNo++;
+				$designNo++;
+                            }
+                        } else {
+                            echo "<script language='javascript'>noDesign();</script>";
+                        }
+                    } else {
+                        /* Tag Design */
+                        if (sizeof($this->tag_designs)) {
+                            foreach ($this->tag_designs as $this->design) {
+                                if ($this->design['file_url'] != '') {
+                                    if ($this->design['is_approved'] == 1) {
+                                        $approval_status = "approved";
+                                    } elseif ($this->design['is_approved'] == 2) {
+                                        $approval_status = "rejected";
+                                    } else {
+                                        $approval_status = "pending";
+                                    }
+                                    ?>
+                                    <div class="detail_design_view" style="float:left;padding-right:15px;padding-top: 20px;padding-left: 18px;position:relative;overflow: hidden; ">
+
+                                        <a href="<?php echo $this->baseUrl('admin/' . $CurrentController . '/details-view/') . 'status/' . $CurrentActionNO . '/vendor/' . $this->currentvendor . '/design_id/' . $this->design['id'] . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date . '/tagfilter/' . $this->tagfilter . '/pg/' . $pageNo; ?>" param="<?php echo $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/') . $this->currentvendor; ?>" title="<?php echo date('jS F Y', strtotime($this->design['upload_date'])); ?>" onclick="loadDetailsView(this); return false;" >
+                                            <span>
+                                                <div class="<?php echo $approval_status; ?>"></div>
+                                                <img src="<?php echo $this->baseUrl("assets/files/design") . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . "_thumb" . $this->design['file_url']; ?>" width="110px" height="110px"  class="list_pic" onerror="this.src='<?php echo $this->baseUrl("assets/images/no_image.jpg"); ?>';"/>
+                                                <br> <h5 style="width:125px;overflow:hidden;height:30px;line-height:30px;"><?php echo $this->design['organization_name']; ?></h5>
+                                            </span>
+                                        </a>
+                                    <?php } else { ?>
+                                        <a href="<?php echo $this->baseUrl('admin/' . $CurrentController . '/details-view/') . 'status/' . $CurrentAction . '/vendor/' . $this->currentvendor . '/start_date/' . $this->from_date . '/end_date/' . $this->to_date . '/tagfilter/' . $this->tagfilter . '/pg/' . $pageNo; ?>" param="<?php echo $this->baseUrl('admin/' . $CurrentController . '/' . $CurrentAction . '/vendor/') . $this->currentvendor . '/page/'.$this->page; ?>" title="<?php echo date('jS F Y', strtotime($this->design['upload_date'])); ?>" onclick="loadDetailsView(this); return false;" >
+                                            <span>
+                                                <img src="<?php echo $this->baseUrl("assets/images/_thumbno_image.jpg"); ?>" width="110px" height="110px" />
+                                                <br> <h5 style="width:125px;overflow:hidden;height:30px;line-height:30px;"><?php echo $this->design['organization_name']; ?></h5>
+                                            </span></a>
+                                    <?php } ?>
+                                </div>
+                                <?php
+                                $pageNo++;
+                            }
+                        } else {
+                            echo "<script language='javascript'>noDesign();</script>";
+                        }
+                    }
+                    ?>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="pagination_control" style="text-align: center;width:950px;float:left;position:absolute;bottom:30px;" >
+        <?php
+        if ($this->tagfilter == NULL || $this->tagfilter == '') {
+            echo $this->paginationControl($this->all_designs, 'Sliding', '/design/pagination.phtml');
+        } else {
+            echo $this->paginationControl($this->tag_designs, 'Sliding', '/design/pagination.phtml');
+        }
+        ?>
+    </div>
+</div>
+
+<style type="text/css">
+    #container{
+        height:900px;
+        width:950px;
+    }
+    #header{
+        width:950px;
+        padding-right:20px;
+        padding-left:20px;
+        float:left;
+    }
+    #subcontainer{
+        height:850px;
+        width:950px;
+        float:left;
+    }
+    #menu{
+        height:850px;
+        width:215px;
+        float:left;
+    }
+    #top_menu{
+        height:25px;
+        width:175px;
+        padding-top:25px;
+        padding-right:20px;
+        padding-left:20px;
+    }
+    #bottom_menu{
+        height:745px;
+        width:175px;
+        float:left;
+        padding-top:15px;
+        padding-bottom:10px;
+        padding-right:19px;
+        padding-left:19px;
+        /*                border-style:solid;
+                        border-width:1px;
+                        border-color:#A79269; */
+    }
+    #content{
+        background-color:#EEEEEE;
+        height:850px;
+        width:950px;
+        float:right;
+    }
+    #footer{
+        background-color:#A79269;
+        clear:both;
+        text-align:center;
+    }
+    .hyperlink{
+        margin-bottom:0;
+        float:left;
+    }
+    .all {
+        background: none repeat scroll 0 0 #3B2216;
+        display: block;
+        float: left;
+        height: 10px;
+        position: absolute;
+        width: 10px;
+    }
+    .pending {
+        background: none repeat scroll 0 0 #FF6600;
+        display: block;
+        float: left;
+        height: 10px;
+        position: absolute;
+        width: 10px;
+    }
+    .approved {
+        background: none repeat scroll 0 0 #00CC00;
+        display: block;
+        float: left;
+        height: 10px;
+        position: absolute;
+        width: 10px;
+    }
+    .rejected {
+        background: none repeat scroll 0 0 #FF0000;
+        display: block;
+        float: left;
+        height: 10px;
+        position: absolute;
+        width: 10px;
+    }
+    .current_header{
+        font-style:oblique;
+    }
+    .select_vendor{
+        font-weight: bold;
+    }
+</style>
+
+<script type="text/javascript">
+    /* Broken Image */
+    function ImgError(source){
+        source.src = "<?php echo $this->baseUrl("assets/images/_thumbno_image.jpg"); ?>";
+        source.onerror = "";
+        return true;
+    }
+
+    /* JQuery Datepicker */
+    $(function() {
+        //var myDate = new Date();
+        var dates = $( "#start_date, #end_date" ).datepicker(  {
+            //defaultDate: myDate,
+            dateFormat:"yy-mm-dd",
+            showWeek: true,
+            firstDay: 1,
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            onSelect: function( selectedDate ) {
+                var option = this.id == "start_date" ? "minDate" : "maxDate",
+                instance = $( this ).data( "datepicker" ),
+                date = $.datepicker.parseDate(
+                instance.settings.dateFormat ||
+                    $.datepicker._defaults.dateFormat,
+                selectedDate, instance.settings );
+                dates.not( this ).datepicker( "option", option, date );
+            }
+        });
+    });
+
+    /* Tag Text Ext */
+    //            $(function() {
+    //                $('#tag')
+    //                .textext({
+    //                    plugins : 'tags prompt focus autocomplete ajax arrow filter',
+    //                    prompt : 'Add one...',
+    //                    ajax : {
+    //                        url : '<?php //echo $this->baseUrl('admin/design/ajax-get-tags');                ?>',
+    //                        dataType : 'json',
+    //                        cacheResults : true
+    //                    }
+    //                });
+    //            });
+
+    /* Form Validation */
+    function validateTagDateForm()
+    {
+        var start=document.forms["tag_date_form"]["start_date"].value;
+        var end =document.forms["tag_date_form"]["end_date"].value;
+        var tag =document.forms["tag_date_form"]["tagfilter"].value;
+        if ( ( (start==null || start=="") || (end==null || end=="") ) &&  (tag==null || tag=="") )
+        {
+            $( "<div title='Warning'><p><span class='ui-icon ui-icon-circle-check' style='float:left; margin:0 7px 50px 0;'></span>Tag Filter and Start-Date & End-Date is empty.</p></div>" ).dialog({
+                modal: true,
+                buttons: {
+                    Ok: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            return false;
+        }
+    }
+
+    /* No Design */
+    function noDesign()
+    {
+        $( "<div title='Warning'><p><span class='ui-icon ui-icon-circle-check' style='float:left; margin:0 7px 50px 0;'></span>No Designs Found.</p></div>" ).dialog({
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $( this ).dialog( "close" );
+                    //window.location = "<?php //echo $this->baseUrl('admin/design');                                    ?>";
+                }
+            }
+        });
+        return false;
+    }
+
+    /*Fancy Box*/
+    function loadDetailsView(thisItem){
+        $obj = $(thisItem);
+        $.fancybox({
+            'width'                 : 950,
+            'height'                : '100%',
+            'href'                  : $obj.attr('href'),
+            'autoScale'             : true,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'type'                  : 'iframe',
+            'onClosed'              : function() {
+                window.location = $obj.attr('param');
+            }
+        });
+    }
+</script>

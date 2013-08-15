@@ -1,0 +1,23 @@
+<?php
+$this->headScript()->appendFile($this->baseUrl("assets/js/qtip/jquery.qtip.min.js"));
+$this->headLink()->appendStylesheet($this->baseUrl("assets/js/qtip/jquery.qtip.min.css"));
+//$this->headScript()->appendFile($this->baseUrl("assets/js/jquery.hotkeys.js"));
+//$this->headLink()->appendStylesheet($this->baseUrl('assets/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css'));
+$request_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+$user = Zend_Auth::getInstance()->getIdentity();
+?>
+<ul class="leftmenu">
+    <li<?php echo $this->selected=='setup' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/view/id/{$this->id}"); ?>" class="file">Setup</a></li>
+    <li<?php echo $this->selected=='contacts' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/contacts/id/{$this->id}"); ?>" class="file">Contacts</a></li>
+    <li<?php echo $this->selected=='legal' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/legal/id/{$this->id}"); ?>" class="file">Legal</a></li>
+    <li<?php echo $this->selected=='operations' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/operations/id/{$this->id}"); ?>" class="file">Operations</a></li>
+    <li<?php echo $this->selected=='client_vendors' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/vendors/id/{$this->id}"); ?>" class="file">Client Vendors</a></li>
+    <li<?php echo $this->selected=='royalty' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/royalty/id/{$this->id}"); ?>" class="file">Royalty Fees</a></li>
+    <li<?php echo $this->selected=='client_notes' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/client-notes/id/{$this->id}"); ?>" class="file">Client Notes</a></li>
+    <?php if ($user->account_type == 1){?><li<?php echo $this->selected=='payments' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/payments/id/{$this->id}"); ?>" class="file">Payments</a></li><?php }?>
+    <li<?php echo $this->selected=='correspondence' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/correspondence/id/{$this->id}"); ?>" class="file">Correspondence</a></li>
+    <?php if ($user->account_type ==1 ){?><li<?php echo $this->selected=='lic_agreement_tpl' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/license-agreement/id/{$this->id}"); ?>" class="file">Lic Agreement Templates</a></li><?php }?>
+    <li<?php echo $this->selected=='artwork' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/artwork/id/{$this->id}"); ?>" class="file">Artwork</a></li>
+    <li<?php echo $this->selected=='web_profile' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/web-profile/id/{$this->id}"); ?>" class="file">Web Profile</a></li>
+        <li<?php echo $this->selected=='change_password' ? ' class="current"' :  ''; ?>><a href="<?php echo $this->baseUrl("admin/clients/change-password/id/{$this->id}"); ?>" class="file">Change Password</a></li>
+</ul>

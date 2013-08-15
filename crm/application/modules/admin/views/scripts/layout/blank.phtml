@@ -1,0 +1,26 @@
+<?php echo $this->doctype() ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+        <?php echo $this->headTitle(); ?>
+        <?php echo $this->headLink(); ?>
+        <script type="text/javascript">
+            var site_url="<?php echo $this->baseUrl(); ?>";
+        </script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery-1.7.min.js"></script>
+        <?php echo $this->headScript(); ?>
+    </head>
+    <body>        
+        <?php if (count($this->messages)) : ?>
+            <?php
+            $this->messages = array_unique($this->messages);
+            ?>
+            <?php foreach ($this->messages as $message) : ?>
+                <div class="notification<?php echo is_array($message) ? " " . key($message) : ' info'; ?>">
+                    <div class="messages"><?php echo $message ? $this->escape($message) : ''; ?></div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        <?php echo $this->layout()->content ?>
+    </body>
+</html>

@@ -1,0 +1,136 @@
+<style type="text/css">
+    .lebel {
+        color: #42251B;
+        font-weight: bold;
+        line-height: 28px;
+    }
+
+    .rightalign {
+        text-align: right;
+    }
+    .errors{
+        color: red;
+        list-style: none;
+    }
+    .clear{clear: both;}
+    .padding5{padding: 3px;}
+</style>
+<script type="text/javascript">
+
+    //var p_txt = '';
+
+    //jQuery.noConflict();
+    jQuery(document).ready( function($) {
+        var $form = $('#form1');
+
+        $form.submit( function() {
+            //alert('Hi'+$form.attr( 'action' ));
+            $.ajax({
+                type: 'POST',
+                beforeSend: function() { $('#wait1').show(); },
+                complete: function() { $('#wait1').hide(); },
+                url: $form.attr( 'action' ),
+                data: $form.serialize(),
+                success: function( response ) {
+                    appendContentWrapper(response);
+                    //alert('HI'+response);
+                }
+            });
+
+            return false;
+        });
+    });
+</script>
+
+<?php
+$errorsMessages = $this->form->getMessages();
+//print_r($errorsMessages);
+?>
+<div id="view-content">
+    <h4>Licensing Application</h4>
+    <div class="one"><img src="<?php echo $this->baseUrl("assets"); ?>/images/application_steps_1.png" alt="Step1" title="Step1" /></div>
+    <div class="spacer clear"></div>
+
+
+    <form id="form1" action="<?php echo $this->url(array('controller' => 'license', 'action' => 'apply2')); ?>" method="post">
+
+        <div class="form_default">
+            <fieldset>
+                <legend>1. Company Information</legend>                   		
+                <p>
+                    <!--             <label>Company/Organization Name :</label>-->
+                    <?php
+//                if (isset($errorsMessages['organization_name']['isEmpty']))
+//                    echo '<span style="color:red;">'.$errorsMessages['organization_name']['isEmpty'].'</span><br />';
+                    ?>
+                    <?php echo $this->form->organization_name; ?><!--.'&nbsp;Instructional text associated with this field'-->
+                </p>
+
+                <p>
+                    <!--            <label>Contact First Name :</label>-->
+                    <?php echo $this->form->firstname; ?>
+                </p>
+                <p>
+                    <!--                    <label>Contact Last Name :</label>-->
+                    <?php echo $this->form->lastname; ?>
+                </p>
+                <p>
+                    <!--                    <label>Address :</label>-->
+                    <?php echo $this->form->address_line1; ?>
+                </p>
+                <p>
+                    <!--                    <label>Address 2 :</label>-->
+                    <?php echo $this->form->address_line2; ?>
+                </p>
+                <p>
+                    <!--                    <label>City :</label>-->
+                    <?php echo $this->form->city; ?>
+                </p>
+                <p>
+                    <!--                    <label>State :</label>-->
+                    <?php echo $this->form->state; ?>
+                </p>
+                <p>
+                    <!--                    <label>Zip :</label>-->
+                    <?php echo $this->form->zipcode; ?>
+                </p>
+                <p>
+                    <!--                    <label>Phone :</label>-->
+                    <?php
+//                    if (isset($errorsMessages['phone']['isEmpty']))
+//                        echo '<span style="color:red;">' . $errorsMessages['phone']['isEmpty'] . '<span><br />';
+                    ?>
+                    <?php echo $this->form->phone; ?>
+                </p>
+                <p>
+                    <!--                    <label>Alternate Phone :</label>            -->
+                    <?php echo $this->form->alternate_phone; ?>
+                </p>
+                <p>
+                    <!--                    <label>Fax :</label>			-->
+                    <?php echo $this->form->fax; ?>
+                </p>
+                <p>
+                    <!--                    <label>Email :</label>            -->
+                    <?php
+//                    if (isset($errorsMessages['email']['isEmpty']))
+//                        echo '<span style="color:red;">' . $errorsMessages['email']['isEmpty'] . '<span><br />';
+                    ?>
+                    <?php echo $this->form->email; ?>
+                </p>
+                <p>
+                    <!--                    <label>Website :</label>            -->
+                    <?php echo $this->form->website; ?>
+                </p>
+                <p>
+                    <!--                    <label>Prior Experience with Licensors :</label>            -->
+                    <?php echo $this->form->v_past_experience; ?>
+                </p>
+                <p>
+                    <label>&nbsp;</label>
+                    <button type="submit" class="button button_black detail_button">Next</button>
+                </p>
+            </fieldset>
+        </div>  
+    </form>   
+</div>

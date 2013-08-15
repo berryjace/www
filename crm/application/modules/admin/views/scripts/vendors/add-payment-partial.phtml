@@ -1,0 +1,51 @@
+<?php if (sizeof($this->items)): ?>
+    <?php
+//        echo str_repeat("&nbsp;", 2);
+//        $payment_statuses = BL_AMC::parseYAML(APPLICATION_PATH . '/configs/payment_status.yml');   
+        $invoice_statuses = BL_AMC::parseYAML(APPLICATION_PATH . '/configs/invoice_status.yml');
+    ?>
+    <?php
+    $quarters = array(0 => 'N/A', 1 => 'First', 2 => 'Second', 3 => 'Third', 4 => 'Fourth');
+    $alt = true;
+    $currency = new Zend_Currency('en_US');
+    ?>
+<!--    <h4>Invoice ID : <?php //echo $this->inv_number; ?></h4>-->
+    <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+        <thead>
+            <tr role="row">
+                <th>Id #</th>
+                <th>Organization</th>                
+                <th>Date</th>
+                <th>Amount Due</th>
+                <th>Amount Paid</th>
+                <th>Check Number</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $i = $total_due = $total_paid = 0; ?>
+            <?php foreach ($this->items as $item): ?>                
+                <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                    <td><?php echo $this->formHidden("lineitem_id[]", $item->id, array('id' => '', 'class' => 'text inv_inputs', 'size' => 30)); echo $item->id; ?></td>
+                    <td><?php echo $item->client_id->organization_name; //echo $this->formText("greek_org[]", $item->client_id->organization_name, array('id' => '', 'class' => 'text inv_inputs desable', 'size' => 30)); ?></td>                    
+                    <td><?php echo ( (int) $item->created_at->format("Y") > 0 ? $item->created_at->format("m/d/Y") : 'N/A');  //$this->formText("submit_date[]", ( (int) $item->created_at->format("Y") > 0 ? $item->created_at->format("m/d/Y") : 'N/A'), array('id' => '', 'class' => 'text inv_inputs desable', 'size' => 30)); ?></td>                    
+                    <td><?php echo $this->formText("amount_due[]", $item->amount_due, array('id' => '', 'class' => 'text inv_inputs')); //$currency->toCurrency($item->amount_due); ?></td>
+                    <td><?php echo $this->formText("amount_paid[]", $item->amount_paid, array('id' => '', 'class' => 'text inv_inputs')); //$currency->toCurrency($item->amount_paid); ?></td>
+                    <td><?php echo $this->formText("check_number[]", $item->check_number, array('id' => '', 'class' => 'text inv_inputs')); //$item->check_number; ?></td>
+                    <td><?php echo $this->formSelect("invoice_status_$i", $item->invoice_status, array('class' => 'filters'), $invoice_statuses); //$this->formSelect("invoice_status", $item->invoice_status, array('class' => 'filters'), $invoice_statuses); ?></td>
+                </tr>
+            <?php $i++; ?>
+            <?php $total_due += $item->amount_due;$total_paid += $item->amount_paid; ?>
+            <?php endforeach; ?>
+                <tr class="">
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>  
+                    <td class="total_txt">Total</td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_due); ?></td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_paid); ?></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>                
+        </tbody>
+    </table>
+<?php endif; ?>

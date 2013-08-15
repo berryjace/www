@@ -1,0 +1,83 @@
+<table>
+    <tr>
+        <td width="50%">
+        	<table style="font-size:12pt">
+			<tr>
+                	<td></td>
+			</tr>
+
+        		<tr>
+        		        <td style="font-size:16pt;font-weight:bold;">Affinity Consultants</td>
+        		</tr>
+        		<tr>
+       			        <td>3231-C Business Park Drive</td>
+        		</tr>
+        		<tr>
+                		<td>#300</td>
+        		</tr>
+        		<tr>
+                		<td>Vista, CA 92081</td>
+        		</tr>
+        		<tr>
+                		<td><u>accounting@affinity-consultants.com</u></td>
+        		</tr>
+			<tr>
+                        <td>
+                                <div style="border:1px solid black;padding-left:5px;font-size:14pt">
+                                        <?php echo "Bill To:<br>"; ?>
+                                        <?php echo "  ".$this->invoice->company_name."<br>"; ?>
+                                        <?php echo "  ".$this->invoice->address_line1.$this->invoice->address_line2."<br>"; ?>
+                                        <?php echo "  ".$this->invoice->city.", ".$this->invoice->state." ".$this->invoice->zip; ?>
+                                </div>
+                        </td>
+                </tr>
+        	</table>
+        </td>
+        <td width="10%" ></td>
+        <td width="40%" align="left">
+		<table style="padding-bottom:10px;" height="80%">
+			<tr>
+        			<td align="center" style="font-size:18pt"><?php  echo $this->invoice->invoice_type." "; ?>Invoice</td>
+    			</tr>
+                        <tr>
+                                <td width="40%" style="border:1px solid black;"><?php  echo " " ?>Date:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_date->format('m/d/Y'); ?></td>
+                                <td width="60%" style="border:1px solid black;">&nbsp;Invoice #:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_number; ?></td>
+                        </tr>
+                        <tr>
+                        <?php
+                        $currency = new Zend_Currency('en_US');
+                        if($this->invoice->invoice_term=="Net 15 days")
+                                $date_due=15;
+                        elseif($this->invoice->invoice_term=="Net 30 days")
+                                $date_due=30;
+                        elseif($this->invoice->invoice_term=="Net 60 days")
+                                $date_due=60;
+                        else
+                                $date_due=0;
+                        ?>
+                                <td style="border:1px solid black;">&nbsp;Term:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_term; ?></td>
+                                <td style="border:1px solid black;">&nbsp;Due Date:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_date->add(new DateInterval('P'.$date_due.'D'))->format('m/d/Y'); ?></td>
+                        </tr>
+			<tr><td></td></tr>
+                        <tr>
+                        	<td style="border:1px solid black;">
+					&nbsp;Amt Due:</td><td align="right" style="border:1px solid black;"><?php echo $currency->toCurrency($this->invoice->amount_due);?>&nbsp;&nbsp;</td>
+                        </tr>
+                        <tr>
+                                 <td style="border:1px solid black;">&nbsp;Amt. Enclosed:</td><td style="border:1px solid black;"></td>
+                        </tr>
+                </table>
+	</td>
+    </tr>
+</table>
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top;10px">
+			<tr>
+				<th width="24%">Organization</th>
+				<th width="12%">Status</th>
+				<th width="16%">Amount Due</th>
+                                <th width="24%">Organization</th>
+                                <th width="12%">Status</th>
+                                <th width="16%">Amount Due</th>
+			</tr>
+</table>
+

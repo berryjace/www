@@ -1,0 +1,614 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('index/sidebar-menus.phtml', array('selected' => 'license'));
+$this->placeholder('main_side_bar')->captureEnd();
+$vendor_name = $this->license->vendor_name;
+//$this->BUtils()->doctrine_dump($this->license,1);
+?>
+<link href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/Aristo/Aristo.css" rel="stylesheet" type="text/css" media="all" />
+<!-- Zea Codes start on 21/05/12 -->
+
+<form action="" method="post" id="sign_form">
+    <?php if ($this->license->status == 1) { ?>
+        <h2>Review Licensing Contracts</h2>
+    <?php } else { ?>
+        <h2>License Agreement Detail</h2>
+    <?php } ?>
+    <div class="spacer"></div>
+    <div style="width:875px">
+        <?php if ($this->license->status == 2) { ?>
+            <?php if (is_null($this->license->recom_for_vendor)) { ?>
+                <b>Status:</b> Signed by vendor
+                <div class="spacer"></div>
+            <?php } else { ?>
+                <b>Status:</b> Signed by vendor with notes
+                <div class="one_third" style="float:right">
+                    <div class="div_left" style="float:right">
+                        <!-- &nbsp;<a href="javascript:;" id="view_notes" >View Notes from Affinity</a> -->
+                    </div>
+                    <div class="div_left" style="float:right">
+                        <!-- <img src="<?php echo $this->baseUrl('assets'); ?>/images/notes-icon.gif" class="" />-->
+                    </div>
+
+                </div>
+                <?php
+            }
+        }
+        ?>
+<style type="text/css">
+@font-face {
+        font-family: signed;
+        src: url('http://poweros.softura.com/crm/black_jack.ttf');
+}
+</style>
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="one">
+        <div class="inputdiv1">
+            Vendor Name <br /><?php echo $this->form->vendor_name; ?>
+            <?php //echo $this->form->vendor_id; ?>
+        </div>
+        <div class="inputdiv">
+            Client By Org Name <br /><?php echo $this->form->client_name; ?>
+            <?php //echo $this->form->client_id; ?>
+        </div>
+        <div class="inputdiv">
+            License Number <br /><?php echo $this->form->license_number; ?>
+        </div>
+    </div>
+
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="">
+    </div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->royalty_description; ?>
+    </div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->grant_of_license; ?>
+    </div>
+    <div class="spacer"></div>
+    <div class="">
+        <?php echo $this->form->vendor_products; ?>
+        <div class="spacer"></div>
+        Supplier Name<br/>
+        <?php echo $this->form->supplier_name; ?>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        Target Audience<br/>
+        <?php echo $this->form->target_audience; ?>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+       <!-- <a href="javascript:;" class="print"><img src="<?php // echo $this->baseUrl("assets/images/printer.png");      ?>" /> Print Agreement</a>-->
+        <?php echo $this->form->agreement_statement; ?>
+        <div class="spacer"></div>
+    </div>
+    <?php
+    //print_r($this->sample_link_saver);
+    if ($this->sample_link_saver) {
+        echo "Product Samples";
+        echo '<div class="spacer"></div>';
+        echo '<div class="spacer"></div>';
+        ?>
+        <div style="float:left; width:930px"><ul style="list-style:none" class="container_image">
+                <?php
+                foreach ($this->sample_link_saver as $sample) {
+                    ?>
+                    <li id="imageContainer" class="sample detail_design_view" style="float:left;position:relative; height: 85px; width: 110px; margin-bottom: 20px; margin-right: 20px; ">
+                        <div style="position:absolute; right: -8px; top: -11px">
+                            <a id="sample_image" href="<?php echo $this->baseUrl("assets/files/samples/products/large/") . $sample; ?>"   >
+                                <img style="height:75px; width: 110px" src="<?php echo $this->baseUrl("assets/files/samples/products/thumbs/") . $sample; ?>" class="list_pic" onerror="this.src='<?php echo $this->baseUrl("assets/images/no_image.jpg"); ?>';"/>
+                            </a>
+                        </div>
+                    </li>
+                <?php } ?>
+        </div>
+        <?php
+    } else {
+        echo "No Product Sample Given";
+    }
+    ?> 
+    <div class="spacer"></div>
+    <?php echo $this->form->recom_for_client; ?>
+
+    <?php
+    if ($this->license->status == 2) {
+        ?>        
+        <div class="spacer"></div>
+        Authorized Signature<br /> <?php echo $this->form->client_signature; ?>
+        <div class="spacer"></div>
+        <div id="vendor_signature_error"></div>
+        Title<br /> <?php echo $this->form->client_title; ?>
+        <div class="spacer"></div>
+        <div id="vendor_title_error"></div>
+        <div class="spacer"></div>
+        <?php echo $this->form->approve; ?>
+        <?php echo $this->form->reject; ?>
+
+        <div class="spacer clear"></div>
+        <p>By clicking approve, you acknowledge that you have read and agree to the terms and conditions stated in the above licensing contract.</p>
+        <input type="hidden" id="app_form" name="app_form">
+
+        <?php
+    }
+    if ($this->license->status == 4) {
+        ?>
+        <div style="width:850px;float:left;">
+            <div class="one_half" style="margin-right:0px">
+                <h3>Vendor Signature</h3>
+                Title<br>
+                <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_title ?>" ><br>
+		Digital Signature <br>
+            <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_signature ?>"style="font-family: signed;"><br>
+                Date<br>
+                <input class="text_dimmed" type="text" readonly="readonly" value="<?php
+                        echo $this->license->vendor_sign_date!=NULL ? $this->license->vendor_sign_date->format('m-d-y H:i:s') : ''
+                ?>
+		"><br>
+            </div>
+            <div class="one_half">
+                <h3>Client Signature</h3>
+                Digital Signature <br>
+                <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->client_signature ?>"style="font-family: signed;" ><br>
+                Title<br>
+                <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->client_title ?>" ><br>
+                Date<br>
+                <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->client_sign_date!=NULL ? $this->license->client_sign_date->format('m-d-y H:i:s') : '' ?>" ><br>
+            </div>
+        </div>
+    <?php } ?>
+    <div id="statusDialog"></div>
+    <div class="spacer"></div>
+    <div class="one_fifth" style="margin-left:10px;display: none" id="submit_wait">
+        <img style="margin-top:8px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif">
+    </div>
+
+    <div id="dialog-preview-notified" class="notified-class" title="" style="display:none;">
+        <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+    </div>
+
+    <input type ="hidden" id="hidden_mail_body" name="hidden_mail_body"/>
+    <input type ="hidden" id="mail_subject_text" name="mail_subject_text"/>
+    <input type ="hidden" id="hidden_decline_reasons" name="hidden_decline_reasons"/>
+
+    <div id="mail-send" style="display:none">
+        <div style="width:730px; height:auto">
+            <div style="padding: 10px;">
+                Subject:<br/>
+                <input type="text" name="mail_subject" id="mail_subject" style="width:600px;" value="">
+            </div>
+            <div class="clear"></div>
+            <div id="decline_reasons" style="padding: 10px;">&nbsp;</div>
+            <div style="width:610px; height:auto;padding: 10px;">           
+                <?php echo $this->form->email_body_text; ?>
+            </div>
+        </div>
+    </div>
+</form>
+<!-- Zea Codes ends here -->
+<style type="text/css">
+    .inputdiv1 {float:left;min-width:320px;padding-right: 20px;}
+    .inputdiv {float:left;padding-right: 20px;}
+    #license_approval_form .text {width: auto;}
+    .sample img {vertical-align: text-bottom;}
+    .remove {margin-bottom: -100px;}
+    div.jGrowl div.jGrowl-notification
+    {
+        color:#000000;
+        background-color:#A79269;
+    }
+    .text_dimmed{opacity:.5;height: 22px;border: 1px solid #DDDDDD;
+                 padding: 4px;}
+    .textarea{opacity:.5;border: 1px solid #DDDDDD;
+              padding: 4px;}
+    </style>
+    <style type="text/css">
+    .agreement, .agree_label {width: 750px}
+    .agree_label h3 {float: left}
+    .agree_label a.print {float: right;}
+    .agree_label img {padding-right: 2px;vertical-align:text-top;}
+    .agreement {height:400px;overflow: scroll;padding: 10px;border:1px solid #ccc;background-color:#fff;}
+    .agreement h1 {padding-bottom:5px;}
+    .div_left{float: left}
+    .arrow_icon{width: 12px; height: 16px;}
+    #view_note{cursor: pointer; color: #1C70AD}
+
+</style>
+<script type="text/javascript">
+    $(document).on('click','.print', function(){
+        printContract($('#agreement_statement').val());
+    });
+
+    $(document).on('ready', function(){
+        $('#client_signature').css("font-family", "signed");
+    });
+
+    function printContract(data) {
+        var c_name = "<?php echo $this->license->client_name; ?>";
+        var v_name = "<?php echo $this->license->vendor_name; ?>"
+        var mywindow = window.open('', 'Print Agreement', 'height=400,width=750');
+        mywindow.document.write('<html><head><title>Agreement Between '+c_name+' and '+v_name+' </title>');
+        /*optional stylesheet*/ //mywindow.document.write('<link rel="stylesheet" href="main.css" type="text/css" />');
+        mywindow.document.write('</head><body>');
+        mywindow.document.write(data);
+        mywindow.document.write('</body></html>');
+        mywindow.document.close();
+        mywindow.print();
+        return true;
+    }
+
+    function appendToDialog(data){
+        if (data != ''){
+            jQuery("#statusDialog").empty().html(data);
+        }
+    }
+</script>
+<script type="text/javascript">
+    tinyMCE.init({
+        mode : "exact",
+        elements : "agreement_statement",
+        theme : "advanced",
+        height: "300",
+        theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+        theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+        theme_advanced_buttons3 : "",
+        theme_advanced_toolbar_location : "top",
+        theme_advanced_toolbar_align : "left",
+        theme_advanced_statusbar_location : "bottom",
+        theme_advanced_path : false,
+        theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+        font_size_style_values : "13px, 14px,16px,18px,20px",
+        content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+        force_br_newlines : true,
+        force_p_newlines : false,
+        forced_root_block : "",
+        theme_advanced_resizing : true,
+        skin : "o2k7",
+        skin_variant : "silver",
+        theme_advanced_toolbar_location : "top",
+        theme_advanced_toolbar_align : "left",
+        readonly : true
+    });
+
+    /*validated=false;
+    $(function(){
+        $("#license_sign_form").on('submit',function(){
+            $form=$(this);
+            if(!validated){
+                $.ajax({
+                    type: 'post',
+                    data : $("#license_sign_form").serialize(),
+                    dataType: 'json',
+                    success: function(e){
+                        $valid=$.isEmptyObject(e) ? true : false;
+                        if(!$valid){
+                            $form.find('.error').removeClass('error');
+                            $form.find('.js_gen_errors').remove();
+                            for(var i in e){
+                                $.map( e[i], function(val, k) {
+                                    $('input[name='+i+']').addClass('error')
+                                    .after('<ul class="errors js_gen_errors"><li>'+val+'</li></ul>');
+                                });
+                            }
+                            return false;
+                        }else{
+                            validated=true;
+                            $form.find('.error').removeClass('error');
+                            $form.find('.js_gen_errors').remove();
+                            $form[0].submit();
+                            return true;
+                        }
+                    }
+                });
+                return false;
+            }
+        })
+    });*/
+
+    /*Fancy Box*/
+    function load_View(thisItem){
+        $.fancybox({
+            'href'                  : thisItem,
+            'autoScale'             : true,
+            'autoDimensions'        : true,
+            'transitionIn'     : 'elastic',
+            'transitionOut'     : 'elastic',
+            'speedIn'      : 300,
+            'speedOut'      : 300,
+            'overlayShow'     : true,
+            'onClosed'              : function() {
+                //window.location = $obj.attr('param');
+            }
+        });
+    }
+    
+    $(document).on("click", "#sample_image", function(){
+        var link = $(this).attr('href');
+        load_View(link);
+        return false;
+    });
+
+    $(document).on('click','#view_notes', function(){
+        var message = "<?php echo $this->license->recom_for_client ?>";
+        var data = message;
+        appendToDialog(data);
+        $( "#statusDialog" ).dialog({
+            height: 550,
+            width: 450,
+            modal: true,
+            autoOpen: false,
+            title: 'Notice',
+            buttons: {
+                "Ok": function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        $( "#statusDialog" ).dialog('open');
+    });
+
+    $(document).on("click", "#approve", function(){
+        $('#approved').val('approved');
+        $.ajax({
+            url:'<?php echo $this->baseUrl("client/license/signature/ajax/1/l_id/") . $this->license->id; ?>',
+            type: "POST",
+            dataType: 'json',
+            data:$('#sign_form').serialize(),
+            beforeSend: function() { $('#submit_wait').show(); },
+            complete: function() { $('#submit_wait').hide();},
+            success: function(msg) {
+                $('.errors').html('');
+                if(msg.error == true) {
+                    $.each(msg.message, function(k, mg){
+                        $.each(mg, function(ky, m){
+                            var html = '<ul class="errors">';
+                            html = html + '<li>'+m+'</li></ul>';
+                            $('#'+k+'_error').append(html);
+                            $.jGrowl(m);
+                        });
+                    });
+                }
+                else {                
+                    var html ='You are about to sign a license agreement on behalf of '+$('#client_name').val()+' with a vendor <b><u>('+$('#vendor_name').val()+')</u></b>. Do you wish to continue?';
+                    $( "#dialog-preview-notified" ).html(html)
+                    $( "#dialog-preview-notified" ).dialog({
+                        resizable: false,
+                        height:'auto',
+                        width: 640,
+                        beforeClose: function() {},
+                        modal: true,
+                        title: "Confirmation",
+                        buttons: {
+                            "Continue": function() {
+                                $( this ).dialog( "close" );
+                                var after_confirmation = 'approved';
+                                $('#app_form') .val('approved');
+                                modifyAgreement();
+                                $.ajax({
+                                    url:'<?php echo $this->baseUrl("client/license/signature/send/1/ajax/1/l_id/") . $this->license->id; ?>',
+                                    type: "POST",
+                                    dataType: 'json',
+                                    data:$('#sign_form').serialize(),
+                                    beforeSend: function() { $('#submit_wait').show(); },
+                                    complete: function() { $('#submit_wait').hide();},
+                                    success: function(msg) {
+<?php
+$vendor_name = str_replace("'", "&apos;", $vendor_name);
+?>
+                                        document.location = '<?php echo $this->baseUrl("client/license/index/vendor_name/" . $vendor_name . "/confirm/") ?>'+after_confirmation
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    });
+    
+    $(document).on('click', '#reject', function(){
+        var html ='You are about to <b><u>decline</u></b> a license agreement between a vendor ('+$('#vendor_name').val()+') and you. Are you sure you want to continue?'
+        $( "#dialog-preview-notified" ).html(html)
+        $( "#dialog-preview-notified" ).dialog({
+            resizable: false,
+            height:'auto',
+            width: 640,
+            beforeClose: function() {},
+            modal: true,
+            title: "Confirmation",
+            buttons: {
+                "Continue": function() {
+                    $( this ).dialog( "close" );
+                    $('#mail_subject').val('Your application to get licensed was declined')
+                    send_mail('cancel');                                                                                
+                }
+            }
+        });
+    });
+
+    function send_mail(type){
+        var title_confirmation = "";
+        var after_confirmation = "";
+        var first_name = "<?php echo $first_name = !is_null($this->license->vendor_id->first_name) ? $this->license->vendor_id->first_name : ''; ?>";
+        var mail_text = '<div style="padding:5px">Dear '+ first_name+',<br><br>';
+
+        if(type == "cancel"){
+            var html = 'Reason for decline:<br/><input type="text" name="decline_reason" id="decline_reason" value="' + decline_reason + '" style="width:600px;" value="">';
+            $('#decline_reasons').css('display', 'block');
+            $('#decline_reasons').html(html);
+            mail_text += 'The application to be licensed with a client ('+$('#client_name').val()+') was declined.<br><b>Reason for decline:</b><br><div>';                    
+            mail_text += '<br>If you want to re-apply, please log into your portal and click on the re-apply button next to the organization name. To log in go to: ';
+            title_confirmation = "Write the email to let the vendor application to get licensed with an organization was declined"                  
+            after_confirmation = type;
+        }
+        
+        mail_text += '<a href="<?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?>"><?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?></a><br><br>'
+        mail_text += 'Regards,<br><br>'
+        mail_text += $('#client_name').val()+'<br />';                       
+        mail_text += '</div>';
+       
+        $( "#mail-send" ).dialog({
+            open: function() {
+                tinyMCE.init({
+                    mode : "exact",
+                    elements: "email_body_text",
+                    theme : "advanced",
+                    height: "300",
+                    width: "600",
+                    theme_advanced_buttons1 : "newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
+                    theme_advanced_buttons2 : "cut,copy,paste,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,forecolor,backcolor,hr,removeformat,visualaid,|,sub,sup,|,charmap",
+                    theme_advanced_buttons3 : "",
+                    theme_advanced_toolbar_location : "top",
+                    theme_advanced_toolbar_align : "left",
+                    theme_advanced_statusbar_location : "bottom",
+                    theme_advanced_path : false,
+                    theme_advanced_font_sizes: "8px, 9px, 10px, 11px, 12px,14px,16px,18px,20px,24px,28px,36px,44px",
+                    font_size_style_values : "13px, 14px,16px,18px,20px",
+                    content_css : "<?php echo $this->baseUrl("assets"); ?>/css/custom_content.css",
+                    force_br_newlines : true,
+                    force_p_newlines : false,
+                    forced_root_block : "",
+                    theme_advanced_resizing : true,
+                    skin : "o2k7",
+                    skin_variant : "silver",
+                    theme_advanced_toolbar_location : "top",
+                    theme_advanced_toolbar_align : "left"
+                });
+                $('textarea.FormElement').each(function(index) {
+                    tinyMCE.execCommand('mceAddControl', false, $(this).attr('id'));                                                     
+                });                
+                $('#email_body_text').html(mail_text)
+            },
+            resizable: false,
+            height:'auto',
+            width: 665,
+            modal: true,
+            title: title_confirmation,
+            buttons: {
+                "Send": function() {
+                    $('#mail_subject_text').val($('#mail_subject').val());
+                    mail_text = tinyMCE.getInstanceById('email_body_text').getBody().innerHTML
+                    $('#hidden_mail_body').val(mail_text)
+                    $('#hidden_decline_reasons').val(decline_reason);                            
+                    $('#app_form') .val('cancel');
+                    $( this ).dialog( "close" );
+                    $.ajax({
+                        url:'<?php echo $this->baseUrl("client/license/signature/send/1/ajax/1/l_id/") . $this->license->id; ?>',
+                        type: "POST",
+                        dataType: 'json',
+                        data:$('#sign_form').serialize(),
+                        beforeSend: function() { $('#submit_wait').show(); },
+                        complete: function() { $('#submit_wait').hide();},
+                        success: function(msg) {
+<?php
+$vendor_name = str_replace("'", "&apos;", $vendor_name);
+?>
+                            document.location = '<?php echo $this->baseUrl("client/license/index/vendor_name/" . $vendor_name . "/confirm/") ?>'+after_confirmation
+                        }
+                    });    
+                },
+                "Cancel": function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+    }
+    
+    //for adding reason for declining with email
+    var message = '';
+    var count = 0;
+    var decline_reason = '';
+    $(document).on('keyup', '#decline_reason', function(){
+        if(count == 0){
+            message = tinyMCE.getInstanceById('email_body_text').getBody().innerHTML;
+            count++;
+        }                
+        decline_reason = $('#decline_reason').val();
+        var message_text = message.replace('<div>', $('#decline_reason').val()+'<div>');    
+        //    console.log(message);               
+        tinyMCE.activeEditor.setContent(message_text);                         
+    });
+    
+    $(window).bind("load", function() {
+        var url = site_url+"/assets/images/printer.png";
+        var url_pdf = site_url+"/assets/images/icon_pdf_16x16.png";
+        var loader = site_url+"/assets/images/loading.gif";
+        var html_print = '<div style="width:150px;float:right;" ><a href="javascript:;" class="preview_pdf" style="float:right"><img src="'+url_pdf+'" />Preview in PDF </a></div>\n\
+                          <div style="width:150px;float:right" >&nbsp;</div>\n\
+                           <div id="submit_wait1" style="width:150px; float:right; display:none">Loading PDF&nbsp; <img src="'+loader+'"</div>';
+        $('#agreement_statement-label').css('width', '837px');
+        $('#agreement_statement-label').append(html_print);      
+        if($.browser.mozilla){
+            $('#agreement_statement-label').css('width', '977px');
+        }
+    });
+
+    function modifyAgreement(){
+        var d = new Date();
+
+	var editor = tinymce.get('agreement_statement');
+
+        var html_text = 'FRATERNITY: <br /> '+ $('#client_name').val()+'<br /><br />';
+        html_text = html_text+'Signature<br />'+ $('#client_signature').val()+'<br /><br />';
+        html_text = html_text+'Title<br />'+$('#client_title').val()+'<br /><br />Date<br />';
+        html_text = html_text + (d.getMonth()+1)+' - '+d.getDate()+' - '+d.getFullYear();
+
+        //document.agreement_statement = tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML;
+        //document.agreement_statement = $(document.agreement_statement).find('.client_sign').html(html_text).end().html();
+
+        //tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML = "<div>"+document.agreement_statement+"</div>";
+        //tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML = "<div>"+document.agreement_statement+"</div>";
+        //$('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+	
+	var td = $('#agreement_statement_ifr').contents().find('.client_sign');
+        td.html(html_text);
+
+        var agreement_statement = editor.getContent();
+        $('#agreement_statement').val(agreement_statement);
+
+    }
+   
+    function review_pdf(){
+        var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+        $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+        $.ajax({
+            url:'<?php echo $this->baseUrl("client/license/printinpdf/") ?>',
+            type: "POST",
+            data:$('#sign_form').serialize()+'&agreement_statement'+ agreement,
+            dataType: 'json', 
+            beforeSend: function() { $('#submit_wait1').show(); },
+            complete: function() { $('#submit_wait1').hide();},
+            success: function(msg) {                    
+                pdf_url = msg.name
+                $.fancybox({
+                    'href'                  : site_url+"/client/license/pdflink/filename"+pdf_url,
+                    'height'                : 40,
+                    'width'                 : 300,
+                    'autoScale'             : true,
+                    'autoDimensions'        : true,
+                    'transitionIn'          : 'none',
+                    'transitionOut'         : 'none',
+                    'type'                  : 'iframe',
+                    'transitionIn'     : 'none',
+                    'transitionOut'     : 'none',
+                    'speedIn'      : 100,
+                    'speedOut'      : 100,
+                    'overlayShow'     : true,
+                    'overlayColor'     : "#FFF",
+                    'onClosed'              : function() {
+                    }
+                });
+            }
+        });      
+    }
+    
+    $(document).on('click','.preview_pdf', function(){
+        review_pdf();       
+    });     
+    
+</script>

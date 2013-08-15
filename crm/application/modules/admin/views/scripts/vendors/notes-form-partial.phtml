@@ -1,0 +1,45 @@
+<?php echo $this->form; ?>
+<script type="text/javascript">
+    $(function(){
+        $("#notes_form").on('submit',function(){
+            if($.trim($("#description").val())==""){
+                alert('Please write a note');
+                $("#description")[0].focus();
+            }else{
+                $.ajax({
+                    url:site_url+'/admin/vendors/ajax-save-notes/',
+                    dataType:'json',
+                    data : $('#notes_form').serialize()+'&vid='+<?php echo $this->vendor->id; ?>,
+                    type:'post',
+                    success:function(e){                   
+<?php if ($this->is_popup == "yes"): ?>
+                            window.parent.$.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+<?php else: ?>
+                            $.jGrowl(e.msg,{header:"<b>"+e.code+"</b>"});
+<?php endif; ?>
+                        if(e.code=='success'){
+                            oTable.fnDraw();
+                            $('#notes_form')[0].reset();
+                        }
+                        $('#description').val('');
+                    }
+                });
+            }
+            return false;            
+        });
+<?php if (sizeof($this->notes)):
+    if (!is_null($this->notes->update_date)) {
+        $update_date = ( (int) $this->notes->update_date->format("Y") > 0 ? $this->notes->update_date->format("M d, Y H:i A") : 'N/A');
+    } else {
+        $update_date = 'N/A';
+    }
+?>      
+    $('label[for=description]').prepend('Vendor : <b><?php echo $this->vendor->organization_name; ?></b><br />Date : <?php echo $update_date; ?><hr size="1" />');
+<?php endif; ?>
+    });
+</script>
+<style type="text/css">
+    .text,.textarea{
+        width:420px;
+    }
+</style>

@@ -1,0 +1,235 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'invoices', 'id' => $this->invoice->vendor_id->id));
+$this->placeholder('main_side_bar')->captureEnd();
+if (!is_null($this->form->vendorName)) error_log("\nform is set on view", 3, "./errorLog.log");
+?>
+
+<div class="left_div">
+    <div class="one"><?php echo $this->form->getElement('vendor_name')->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->getElement('inv_num')->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->getElement('fiscal_year')->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->getElement('quarter')->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+</div>
+<div class="right_div">
+	<div class="one"><?php echo $this->form->getElement('inv_type')->setAttrib('readonly', 'true') ;?></div><div class="clear"></div>
+	<div class="one"><?php echo $this->form->getElement('ref_number')->setAttrib('readonly', 'true') ;?></div><div class="clear"></div>
+	<div class="one"><?php echo $this->form->getElement('total')->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+	<div class="one"><?php echo $this->form->getElement('inv_date')->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+</div>
+<div class="spacer clear"></div>
+<div class="spacer clear"></div>
+
+<div class="one">
+    <?php if (sizeof($this->items)): ?>
+        <?php
+        $quarters = array(0 => 'N/A', 1 => 'First', 2 => 'Second', 3 => 'Third', 4 => 'Fourth');
+        $alt = true;
+        $currency = new Zend_Currency('en_US');
+        ?>
+        <h4>Invoice ID : <?php echo $this->invoice->invoice_number; ?></h4>
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+            <thead>
+                <tr role="row">
+                    <th width="25%">Organization</th>
+                    <th width="20%">Amt Received</th>
+                    <th width="10%">Sharing</th>
+                    <th width="5%">AMC %</th>
+                    <th width="20%">Amt to AMC</th>
+                    <th width="20%">Amt to Organization</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $i = $total_due = $total_paid = 0; ?>
+                <?php 
+                	$totalAMC = $totalORG = 0;
+                	error_log("\nthis licenses: " . count($this->licenses), 3, "./errorLog.log");
+                	
+                foreach ($this->items as $item): ?>
+                    <?php
+                    $total_due += $item->amount_due;
+		    	
+                    $orgnizationName = ($item->client_id instanceof \BL\Entity\User) ? $item->client_id->organization_name : 'N/A';
+		    		
+		    		$amtToAMC = "0";
+		    		$amtToOrg = $this->paymentData[$i]['paid'];
+		    		
+		    		if (!is_null($this->licenses[$i])){
+				    	if (strtolower($this->licenses[$i]->sharing) == "yes" && !is_null($this->operation[$i])){
+							$percent = floatval($this->operation[$i]->commission_per);
+							
+							error_log("\nPercent: " . $percent, 3, "./errorLog.log");
+							
+							if ($percent > 0){
+							
+								$amtToAMC = (floatval($this->paymentData[$i]['paid'])*$percent);
+								$amtToOrg = $this->paymentData[$i]['paid'] - $amtToAMC;
+							}
+				    	}
+			    	}
+			    	$totalAMC += $amtToAMC;
+			    	$totalORG += $amtToOrg;
+			    	
+		    ?>
+                    <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                        <td><?php echo $orgnizationName ?></td>
+                        <td class = "money"><?php echo ($this->paymentData[$i]['paid'] != '')? $currency->toCurrency($this->paymentData[$i]['paid']): "0"; ?></td>
+                        <td><?php echo (!is_null($this->licenses[$i]))? $this->licenses[$i]->sharing : "no"; ?></td>
+                        <td><?php echo (!is_null($this->licenses[$i]))? (strtolower($this->licenses[$i]->sharing) == "yes")? (!is_null($this->operation[$i]))? (!is_null($this->operation[$i]->commission_per))? $this->operation[$i]->commission_per: '0' : '0' : '0' :'0'; ?></td>
+                        <?php error_log("\nAmtToAmc: " . $amtToAMC, 3, "./errorLog.log");?>
+                        <td class = "money"><?php echo $currency->toCurrency($amtToAMC); ?></td>
+                        <td class = "money"><?php echo $currency->toCurrency($amtToOrg); ?></td>
+                    </tr>
+                <?php
+                    $i++; endforeach; ?>
+                <tr>
+                    <td class="total_row">Total</td>
+                    <td class="total_col money"><?php echo $currency->toCurrency($this->paymentTotal); ?></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="total_col total_paid money"><?php echo $currency->toCurrency($totalAMC); ?></td>
+                    <td class="total_col total_due money"><?php echo $currency->toCurrency($totalORG); ?></td>
+                </tr>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>
+<div class="spacer clear"></div>
+
+<div class="one">
+    <span class="status"><b>Emailed on:</b></span>
+    <?php if ($this->invoice->email_date): ?>
+        <?php $emailed_on = explode(',', trim($this->invoice->email_date,',')); ?>
+        <?php for ($i=0; $i<count($emailed_on); $i++): ?>
+            <span class="emailed_on"><?php echo $emailed_on[$i]; ?></span>
+        <?php endfor; ?>
+    <?php else: ?>
+        <span class="emailed_on notmailed">Not yet</span>
+    <?php endif; ?>
+    <button class="blueButton" id="addDate" style="float: none">Add Date</button>
+    <input type="text" id="ndate" value="" style="display:none;"/>
+    <button class="blueButton" id="saveDate" style="float: none; display:none">Save</button>
+
+</div>
+<div class="spacer clear"></div>
+
+<?php echo $this->partial('vendors/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status)); ?>
+
+<?php if ($this->invoice->invoice_status != "Closed"): ?>
+    <div class="rightalign">
+        <?php echo $this->formButton('back', 'Return to Invoice & Edit Distribution', array('type'=>'button', 'class' => 'button button_blue')); ?> &nbsp;
+        <?php echo $this->formButton('approve', 'Approve Payment', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+    </div>
+    <div class="spacer"></div>
+<?php endif; ?>
+
+<div id="dialog-progress-bar" class="notified-class" title="" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
+</div>
+
+<style type="text/css">
+    .status{width: 120px; float: left;}
+    .button_pos{width: 176px; float: right;}
+    .button_payment{width: 50%; float: right;}
+    #city, #state, #zip{width:112px;}
+    .total_row{text-align: right; font-weight: bold;}
+    .total_col{font-weight: bold;}
+    .emailed_on{background-color: #999999; font-weight: bold; font-size: 12px; padding: 2px 5px; margin-right: 2px;}
+    .notmailed{background-color: red;}
+    
+    .money{text-align: right;}
+</style>
+
+<script type="text/javascript">
+    $(window).bind('load', function(){
+        $('input.paidClass').on('change', function(){
+
+        	 console.log('doop');
+ 			var payment = parseFloat($(this).val());
+ 		    
+ 		    var due = parseFloat($(this).parents('tr').find('.amt_due').text().substring(1).replace(",", "").replace(".00", ""));
+
+ 		    var paid = due-payment;
+
+ 		    $(this).parents('tr').find('td.amt_remaining').text("$" + paid.toFixed(2));
+
+ 		    var totalPaid = 0;
+
+ 		    $(".paidClass").each(function(){
+ 			    totalPaid += parseFloat($(this).val());
+ 		    });
+
+ 		    var totalRemains = 0;
+
+ 		    $(".amt_remaining").each(function(){
+ 			    totalRemains += parseFloat($(this).text().substring(1).replace(",", "").replace(".00", ""));
+ 		    });
+
+ 		    $("td.total_paid").text("$" + totalPaid.toFixed(2));
+ 		    $("td.total_due").text("$" + totalRemains.toFixed(2));
+
+ 		    console.log("due " + due + " payment " + payment + " paid " + paid + " totalPaid " + totalPaid + " totalRemains ");
+            });
+
+        $('#continue').on('click', function(){
+            
+        });
+    });
+
+	$(function(){
+		$('#back').on('click', function(e){
+			window.history.go(-1);
+		});
+
+		$('#approve').on('click', function(e){
+			console.log("approve");
+
+			$.ajax({
+                'url'	:	site_url + '/admin/invoice/ajax-finalize-payment/invoice_id/<?php echo $this->invoice->id; ?>/quarter/'+ $('#quarter').val() + '/fiscal_year/' + $('#fiscal_year').val(),
+                'dataType': 'json',
+                'type'	:	'post',
+                'success' : function(d){
+                    console.log("got response");
+
+                    window.location.href = site_url + '/admin/vendors/invoices/id/<?php echo $this->vendor_id?>';
+                }
+            })
+		});
+		
+		$('#addDate').on('click', function(e){
+			e.preventDefault();
+			var pr = $(this).parent();
+			$(this).hide();
+			pr.find('#saveDate,#ndate').show();
+
+		});
+		$('#saveDate').on('click', function(e){
+			e.preventDefault();
+			var pr = $(this).parent();
+			me = $(this);
+			var ndate = pr.find('#ndate');
+			$.ajax({
+				'url'	:	site_url+'/admin/vendors/ajax-add-invoice-date/invoice_id/<?php echo $this->invoice->id?>',
+				'data'	:	'date='+$('#ndate').val(),
+				'dataType':	'json',
+				'type'	:	'post',
+				'success'	:	function(d){
+					if(d.code == 'success') {
+						me.hide();
+						ndateVal = ndate.val();
+						pr.prepend('<span class="emailed_on">'+ndateVal+'</span>');
+						pr.find('#ndate').val('').hide();
+						pr.find('#addDate').show();
+					}
+				}
+			})
+
+		})
+	})
+</script>
+
+
+
+
+
+

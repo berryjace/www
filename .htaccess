@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+#RewriteBase /amcportal/
+RewriteCond %{REQUEST_URI} /our-clients$
+RewriteRule . ?page_id=72$1 [L]
+RewriteCond %{REQUEST_URI} /about-us$
+RewriteRule . ?page_id=6$1 [L]
+RewriteCond %{REQUEST_URI} /become-a-licensed-vendor$
+RewriteRule . ?page_id=11$1 [L]
+RewriteCond %{REQUEST_URI} /find-licensed-products$
+RewriteRule . ?page_id=9$1 [L]
+RewriteCond %{REQUEST_URI} /vendor-profile$
+RewriteRule . ?page_id=78$1 [L]
+RewriteCond %{REQUEST_URI} /contact$
+RewriteRule . ?page_id=18$1 [L]
+RewriteRule ^(svnup\.php)($|/) - [L]
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php [L]
+</IfModule>

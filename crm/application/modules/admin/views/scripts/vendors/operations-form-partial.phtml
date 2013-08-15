@@ -1,0 +1,63 @@
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">
+    <div class="form_container_left">
+        <div class="one_half omega">
+            <?php echo $this->form->vendor_type; ?>
+        </div>
+        <div class="two_fifth alpha">
+            <?php echo $this->form->vendor_status; ?>
+        </div>
+        <div class="one_half omega">
+            <?php echo $this->form->insurance_received; ?>
+        </div>
+        <div class="two_fifth alpha">
+            <?php echo $this->form->insurance_expire; ?>
+        </div>
+        <div class="clear"></div>
+        <?php echo $this->form->insurance_company; ?>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->have_late_fee; ?>
+        <div class="clear"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <?php echo $this->form->insurance_contact; ?>
+        <?php echo $this->form->insurance_phone; ?>
+    </div>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+    <?php echo $this->form->vendor_reporting_type; ?>
+    <?php echo $this->form->vendor_royalty_structure; ?>
+    <?php echo $this->form->vendor_products; ?>
+    <?php echo $this->form->vendor_recommendation_to_client; ?>
+    <?php echo $this->form->default_note_to_vendor; ?>
+    <div class="spacer"></div>
+    <button type="submit" class="button button_black">Save</button>
+</form>
+<script type="text/javascript">
+    $(function(){
+        $(".date").datepicker({
+            dateFormat:"mm/dd/yy"
+        });
+
+        $("#vendor_products").css('height', 50);
+        $("#vendor_recommendation_to_client").css('height', 50);
+        $("#default_note_to_vendor").css('height', 50);
+        //        $("#vendor_name").prop('disabled', true).css('padding-left', 10);
+    });
+</script>
+<style type="text/css">
+    #insurance_received, #insurance_expire{
+        width:155px;
+    }
+    .vendor_types{
+        display:block;
+        float:left;
+        margin:4px 10px 0 0!important;
+    }
+    #ui-datepicker-div{
+        display:none;
+    }
+    .textarea{
+        width:810px;
+    }
+</style>

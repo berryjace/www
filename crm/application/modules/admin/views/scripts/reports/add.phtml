@@ -1,0 +1,153 @@
+<br /><br />
+<?php
+$this->headTitle('Add Quarterly Report');
+$this->headScript()->appendFile($this->baseUrl("assets/js/jquery-ui/jquery-ui-timepicker-addon.js"));
+?>
+<form action="" method="POST" enctype="multipart/form-data" id="royalty_report_form">
+<div id="view-content">
+    <table width="100%">
+        <tr>
+            <td>Vendor</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->form->vendor_name?><?php echo $this->form->vendor_id?></td>
+        </tr>
+        <tr>
+            <td>
+             <table width="100%">
+                <tr>
+                    <td width="10%">Year</td>
+                    <td>Quarter</td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->form->report_year?></td>
+                    <td><?php echo $this->form->quarter?></td>
+                </tr>
+             </table>
+            </td>
+        </tr>
+    </table>
+    <table width="100%">
+       <thead>
+        <tr>
+            <td>
+                <table width="100%">
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td width="210">Product Sold To</td>
+                        <td width="140">invoice date</td>
+                        <td width="95">invoice number</td>
+                        <td width="385">product description</td>
+                        <td width="55">quantity</td>
+                        <td width="55">price/unit</td>
+                        <td width="65">gross<br />sales</td>
+                        <td>Greek Org</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+       </thead>
+        <tr>
+            <td>
+                <div class="report_form">
+                  <table width="100%">
+                    <tr>
+                        <td>&nbsp;&nbsp;</td>
+                        <td width="215"><?php echo $this->form->product_sold_to?></td>
+                        <td width="140"><?php echo $this->form->invoice_date?></td>
+                        <td width="95"><?php echo $this->form->invoice_number?></td>
+                        <td width="385"><?php echo $this->form->product_description?></td>
+                        <td width="55"><?php echo $this->form->quantity?></td>
+                        <td width="55"><?php echo $this->form->price_per_unit?></td>
+                        <td width="65"><?php echo $this->form->gross_sales?></td>
+                        <td><?php echo $this->form->greek_client_name?><?php echo $this->form->greek_client_id?></td>
+                    </tr>
+                  </table>
+                </div>
+            </td>
+        </tr>
+    </table>	
+</div>
+<?php echo $this->form->submit_quarterly?>
+<?php echo $this->form->save?>
+<?php echo $this->form->addmore?>
+</form>
+<script type="text/javascript">
+$(window).load(function(){
+    var i = 0;
+    $('#addmore').click(function(){
+       i++; 
+       $('.report_form:first').find('[id^=invoice_date_]').datepicker("destroy").end()
+           .clone().insertAfter(".report_form:last")
+           .find('input[type=text]').val('').end()
+           .find('#invoice_date_0').removeAttr('id').attr('id', 'invoice_date_'+i).end()
+           .find('td:first').html('<a href="javascript:;" class="remove_row">X</a>').end();
+       //.find('.remove_row_0').removeAttr('class').attr('class', 'remove_row_'+i);
+    });
+    $(document).on('click', 'a.remove_row', function(){
+       $(this).parents('div[class^=report_form]').remove();
+    });
+    $(document).on('focus', '[id^=invoice_date_]', function(){
+       $(this).datepicker({dateFormat:"mm/dd/yy", minYear:'<?php echo date('Y', strtotime('-10years'))?>', maxDate:0, changeMonth:true, changeYear:true});
+    });
+    $('#report_year').datepicker({dateFormat:"yy"});
+   
+    $(document).on( "focus", '#greek_client_name', function() {
+        $( this ).autocomplete({
+            minLength: 0,
+            source: [<?php echo $this->greek_names;?>],
+            focus: function( event, ui ) {
+                    $(this).val( ui.item.label );
+                    return false;
+            },
+            select: function( event, ui ) {
+                    $(this).val( ui.item.label );
+                    $(this).next().val( ui.item.value );
+                    //$(this).parents('div[class^=report_form]').find("input[name^=greek_client_id]" ).val( ui.item.value );
+                    return false;
+            }
+        });
+        
+    });
+    $( '#vendor_name' ).autocomplete({
+        minLength: 2,
+        source: [<?php echo $this->vendor_names;?>],
+        focus: function( event, ui ) {
+                $(this).val( ui.item.label );
+                return false;
+        },
+        select: function( event, ui ) {
+                $(this).val( ui.item.label );
+                $(this).next().val( ui.item.value );
+                //$(this).parents('div[class^=report_form]').find("input[name^=greek_client_id]" ).val( ui.item.value );
+                return false;
+        }
+    });
+});
+
+
+        function split( val ) {
+            return val.split( /,\s*/ );
+        }
+        function extractLast( term ) {
+            return split( term ).pop();
+        }
+</script>
+<style type="text/css">
+    thead td {font-size:11px;font-weight:bold;vertical-align:bottom;}
+    .ui-autocomplete-loading { background: white url('/amc/assets/images/loading.gif') right center no-repeat; }
+    .ui-autocomplete {
+            max-height: 100px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+    }
+    /* IE 6 doesn't support max-height
+     * we use height instead, but this forces the menu to always be this tall
+     */
+    * html .ui-autocomplete {
+            height: 100px;
+    }
+</style>

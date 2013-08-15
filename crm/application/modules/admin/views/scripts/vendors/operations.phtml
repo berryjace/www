@@ -1,0 +1,25 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'operations', 'id' => $this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+
+<div class="one">
+    <div class="one_third">
+        <h2><?php echo $this->vendor->organization_name; ?></h2>
+    </div>
+    <div class="spacer"></div>
+    <div class="rightalign">
+        <div class="leftalign">
+            <h3>Vendor Status:&nbsp;&nbsp;</h3>
+        </div>
+        <div class="leftalign">
+            <h4><?php echo ucfirst(strtolower($this->vendor->user_status)); ?></h4>       
+        </div>
+    </div>          
+</div>
+<br />
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<?php echo $this->partial('vendors/operations-form-partial.phtml', array('form' => $this->form, 'vendor' => $this->vendor, 'status_array' => $this->status_array)); ?>

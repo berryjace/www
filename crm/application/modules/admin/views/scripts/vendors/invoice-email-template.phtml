@@ -1,0 +1,47 @@
+Dear <?php echo $this->username; ?>, <br /><br />
+
+An invoice from Affinity Consultants has been generated and is ready for payment.  <br /><br />
+
+The details of the invoice are below: <br /><br />
+
+<table width="100%">
+    <tr width="100%">
+        <td><b>Item No.</b></td>
+        <td><b>Description</b></td>
+        <td><b>Greek Org.</b></td>
+        <td><b>Amount</b></td>
+    </tr>
+
+    <?php
+    for ($i = 0; $i < count($this->item_no); $i++) {
+        $total = 0;
+        if ($this->total[$i] == NULL || $this->total[$i] == "") {
+            $total = 0;
+        } else {
+            $total = $this->total[$i];
+        }
+        ?>
+        <tr width="100%">
+            <td><?php echo $this->item_no[$i]; ?></td>
+            <td><?php echo $this->description[$i]; ?></td>
+            <td><?php echo $this->greek_org[$i]; ?></td>
+            <td><?php echo $this->BUtils()->getCurrency($total); ?></td>
+        </tr>
+    <?php } ?>
+    <tr width="100%">
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><b>Total</b></td>
+        <td><b><?php echo $this->BUtils()->getCurrency(array_sum($this->total)); ?></b></td>
+    </tr>
+</table>
+<br />
+
+Please log into your account by going to <a href="http://www.greeklicensing.com">www.greeklicensing.com/login</a> and click on the Invoices tab in order to view details and submit payment.<br/>
+
+Thank you, <br />
+
+Accounting Department<br />
+e: accounting@greeklicensing.com<br />
+p: 760-734-6764 ext. 140<br />
+f: 707-202-0532 <br />

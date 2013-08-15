@@ -1,0 +1,294 @@
+<?php
+$show_notification = $this->Notification('client');
+$current_controller = Zend_Controller_Front::getInstance()->getRequest()->getControllerName();
+$current_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+$totalNotification = 0;
+if ($show_notification == 1) {
+    $session_notification = new Zend_Session_Namespace('notification');
+    $userName = $session_notification->name;
+    $totalNotification = count($userName);
+}
+$session_msg_header = new Zend_Session_Namespace('msg_header');
+$msg_header = 'Information';
+if (isset($session_msg_header->message_header)) {
+    if ($session_msg_header->message_header == 'approved') {
+        $msg_header = "Signed a License Agreement";
+    }
+    if ($session_msg_header->message_header == 'cancel') {
+        $msg_header = "Declined a License Agreement";
+    }
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <?php echo $this->headTitle(); ?>
+        <?php echo $this->headLink(); ?>
+        <link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/style.css" />
+        <link href="<?php echo $this->baseUrl("assets"); ?>/css/ui_themes/pepper-grinder/jquery-ui-1.8.6.custom.css" media="screen" rel="stylesheet" type="text/css" />
+        <!--[if IE 9]><link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/ie9.css"/><![endif]-->
+        <!--[if IE 8]><link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/ie8.css"/><![endif]-->
+        <!--[if IE 7]><link rel="stylesheet" media="screen" href="<?php echo $this->baseUrl("assets"); ?>/css/ie7.css"/><![endif]-->
+        <link href="<?php echo $this->baseUrl("assets"); ?>/css/plugins/jquery.jgrowl.css" media="screen" rel="stylesheet" type="text/css" />
+        <?php if (APPLICATION_ENV == "production"): ?>
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <?php else: ?>
+            <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>            
+        <?php endif; ?>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery-ui-1.8.16.custom.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery.validate.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/custom/general.js"></script>
+        <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/plugins/jquery.jgrowl.js"></script>
+        <script type="text/javascript">
+            var site_url="<?php echo $this->baseUrl(); ?>";
+        </script>
+        <?php echo $this->headScript(); ?>
+    </head>
+
+    <body class="bodygrey">
+
+        <div class="headerspace"></div>
+
+        <div class="header">
+
+            <!--logo-->
+            <a href="" class="logo"><img src="<?php echo $this->baseUrl("assets"); ?>/images/logo.png" alt="Logo" /></a>
+
+            <div class="mainmenu">
+                <ul>
+                    <li<?php echo $current_controller == "license" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('/client/license/index'); ?>" class="dashboard"><span>Licenses</span></a></li>
+                    <li<?php echo $current_controller == "index" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('/client/index/contact'); ?>" class="elements"><span>Profile</span></a></li>
+                    <li<?php echo $current_controller == "artworks" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('/client/artworks/index'); ?>" class="artwork"><span>Artwork</span></a></li>
+                    <li<?php echo $current_controller == "payments" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('/client/payments'); ?>" class="payments"><span>Quarterly Payment Reports</span></li>                                        
+                    <li<?php echo $current_controller == "event" ? ' class="current"' : ''; ?>><a href="<?php echo $this->baseUrl('/client/event/index'); ?>" class="reports"><span>Events</span></a></li>                    
+                    <!--
+                    <li><a href="users.html" class="users"><span>Website Management</span></a></li>
+                    -->
+                    <?php
+                    if ($totalNotification > 0) {
+                        ?>
+                        <li<?php echo $current_controller == "notifications" ? ' class="current"' : ''; ?> id=""><a id="click_notification" href="javascript:;" class="users">
+                                <div class="notifiaction_box"><?php echo $totalNotification ?></div>
+                                <span id="disolve_span">Notifications</span></a>
+
+                            <div id="dropbox_message" class="dropbox" style="display: none">
+                                <div class="messagelist" >
+                                    <h4>Messages</h4>
+                                    <ul>
+                                        <?php
+                                        $counter = 0;
+                                        foreach ($session_notification->name as $s_n) {
+                                            $counter++;
+                                            $replace = array("<br>", "<br />", "<br/>");
+                                            $message = str_replace($replace, " ", $s_n['message']);
+                                            $message = strip_tags($message);
+                                            if (strlen($message) > 40) {
+                                                $message = substr($message, 0, 45) . "...";
+                                            } else {
+                                                $message = strip_tags($message);
+                                            }
+                                            $title = str_replace($replace, " ", $s_n['title']);
+                                            $title = strip_tags($title);
+                                            if (strlen($title) > 40) {
+                                                $title = substr($title, 0, 30) . "...";
+                                            } else {
+                                                $title = strip_tags($title);
+                                            }
+                                            $link = 'client/notification/notification-Details/id/' . $s_n['id'];
+                                            ?>
+
+                                            <li <?php echo $current_controller == "notification" ? ' class="current"' : ''; ?>>
+                                                <a class="view_client" href="javascript:;" rel="<?php echo $s_n['id'] ?>" rev="<?php echo $link; ?>"><?php echo $title ?>
+                                                <span><?php echo $message ?></span>
+                                                <small><?php echo $s_n['time'] ?></small></a>
+                                            </li>
+        <?php
+        if ($counter == 5) {
+            break;
+        }
+    }
+    ?>
+                                    </ul>
+                                        <?php if (sizeof($session_notification->name) > 5) { ?>
+                                        <div class="link"><a href="<?php echo $this->url(array('controller' => 'notification', 'action' => 'index')); ?>">More...</a></div>
+                                    <?php } else { ?>
+                                        <div class="link"><a href="<?php echo $this->url(array('controller' => 'notification', 'action' => 'index')); ?>">View All Messages</a></div>
+                                    <?php } ?>
+                                </div>
+                            </div>
+
+                        </li>
+<?php
+} else {
+    ?>
+                        <li<?php echo $current_controller == "notification" ? ' class="current"' : ''; ?> ><a href="<?php echo $this->url(array('controller' => 'notification', 'action' => 'index')); ?>" class="users"><span>Notifications</span></a></li>
+                    <?php } ?>
+                </ul>
+            </div><!--tabmenu-->
+<?php
+$current_controller = Zend_Controller_Front::getInstance()->getRequest()->getControllerName();
+$current_action = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+$user = Zend_Auth::getInstance()->getIdentity();
+//print_r($this->messages);die('=========')
+?>
+
+            <div class="accountinfo">
+<?php /* ?>                <img src="<?php echo $this->baseUrl("assets").($user->picture ? '/files/user/thumbs/_thumb'.$user->picture : '/images/avatar.png'); ?>" alt="Avatar" width="50" />
+  <?php */ ?>                <div class="info">
+                    <h3><?php echo $user->organization_name; ?></h3>
+                    <small><?php echo $user->email; ?></small>
+                    <p>
+                        <a href="<?php echo $this->baseUrl("client/index/setting") ?>">Account Settings</a> <a href="<?php echo $this->baseUrl("index/logout"); ?>">Logout</a>
+                    </p>
+                </div><!--info-->
+            </div><!--accountinfo-->
+        </div><!--header-->
+
+        <div class="sidebar">
+            <div id="accordion">
+                <div class="content" style="display: block;">
+<?php echo $this->placeholder('main_side_bar'); ?>                                        
+                </div>
+                <h3 class="open"></h3>
+            </div>
+            <br clear="all" />
+        </div><!--leftmenu-->
+
+
+        <div class="maincontent">
+<?php echo $this->placeholder('sub_menu_bar'); ?>                                
+            <!--
+            <div class="breadcrumbs">
+                <a href="dashboard.html">Dashboard</a>
+                <span>Table Styling</span>
+            </div>
+            -->
+
+            <div class="left">
+                <div id="wait" style="display: none;"><img src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" alt="loading..." /></div>
+                <div class="content_wrapper">
+<?php if (count($this->messages)) : ?>
+                        <?php
+                        $this->messages = array_unique($this->messages);
+                        ?>
+                        <div class="clear"></div>
+                        <script type="text/javascript">
+                            $(function(){
+                                //$.jGrowl("testing");
+    <?php foreach ($this->messages as $message) : ?>
+        <?php if ($message <> "") : ?>
+                                                $.jGrowl("<?php echo $message ? $this->escape($message) : ''; ?>", { header: '<?php echo $msg_header; ?>', life: 10000});
+        <?php endif; ?>
+    <?php endforeach; ?>
+                                    $.extend( $.fn.jGrowl.prototype , {
+                                        /** Default JGrowl Settings **/
+                                        defaults: {
+                                            pool: 		0,
+                                            header: 		'',
+                                            group: 		'',
+                                            sticky: 		false,
+                                            position: 		'top-right',
+                                            glue: 		'after',
+                                            theme: 		'default',
+                                            themeState: 	'highlight',
+                                            corners: 		'15px',
+                                            check: 		1000,
+                                            life: 		7000,
+                                            closeDuration:  'normal',
+                                            openDuration:   'normal',
+                                            easing: 		'swing',
+                                            closer: 		true,
+                                            closeTemplate: '&times;',
+                                            closerTemplate: '<div>[ close all ]</div>',
+                                            log: 		function(e,m,o) {},
+                                            beforeOpen: 	function(e,m,o) {},
+                                            afterOpen: 		function(e,m,o) {},
+                                            open: 		function(e,m,o) {},
+                                            beforeClose: 	function(e,m,o) {},
+                                            close: 		function(e,m,o) {},
+                                            animateOpen: {
+                                                opacity: 	'show'
+                                            },
+                                            animateClose: {
+                                                opacity: 	'hide'
+                                            }
+                                        }
+                                    });
+                                });
+                        
+                        </script>
+<?php endif; ?>
+<?php echo $this->layout()->content ?>
+                </div>
+                <div id="wait1" style="display: none;"><img src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" alt="loading..." /></div>
+            </div><!--left-->
+
+            <br clear="all" />
+
+        </div><!--maincontent-->
+
+        <br />
+        <div class="footer footer_float">
+            <div class="footerinner">
+                &copy; 2011. Greek Licensing Portal
+            </div><!-- footerinner -->
+        </div><!-- footer -->
+
+    </body>
+    <script type="text/javascript">
+        var counter = 0;
+        jQuery(function($){
+            init_client_link()
+            $(document).on("click", "#click_notification", function(){
+            
+                if(counter<1){
+                    $('#dropbox_message').show();
+                    $('.notifiaction_box').hide();
+                    $("#disolve_span").addClass("disolve");
+                    jQuery.ajax({
+                        dataType: 'html',
+                        success: function(data){appendContentWrapper(data)},
+                        type: 'GET',
+                        url: site_url+'/client/notification/update-Notification-Last-View/userId/'+"<?php echo $user->id; ?>"
+                    });
+                }
+                else{
+                    window.location.href = "<?php echo $this->url(array('controller' => 'notification', 'action' => 'index')); ?>"
+                }
+                counter++;
+                return false;
+            })        
+        });
+
+        function appendContentWrapper(data){
+            //alert(data)
+        }
+        function init_client_link(){
+            $(document).on("click", ".view_client", function(){
+                // window.location.href=site_url+"/vendor/e/view/id/"+$(this).attr('rel');
+                var link = site_url+"/client/notification/notification-details/id/"+$(this).attr('rel');
+                loadDetailsNotification(link);
+            });
+        }
+        function loadDetailsNotification(thisItem){
+            $.fancybox({
+                'width'                 : '60%',
+                'height'                : '80%',
+                'href'                  : thisItem,
+                'autoScale'             : true,
+                'transitionIn'          : 'none',
+                'transitionOut'         : 'none',
+                'type'                  : 'iframe',                    
+                'speedIn'               : 600,
+                'speedOut'		    : 200,
+                'overlayShow'           : false,
+                'onClosed'              : function() {
+                    window.location.href=site_url+"/client/notification";
+                }
+            });
+        }
+    
+    </script>
+</html>

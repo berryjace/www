@@ -1,0 +1,289 @@
+<?php 
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('layout/sidebar-calendar.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+
+$this->placeholder('sub_menu_bar')->captureStart();
+echo $this->partial('artworks/sub-menu-bar.phtml', array('selected'=>'usage-guides'));
+$this->placeholder('sub_menu_bar')->captureEnd();
+?>
+    
+<div id="view-content">
+    <div class="one">
+        <div class="one_third"><h2>Manage Usage Guides</h2></div>
+        <div class="link_button">       
+            <a href="<?php echo $this->baseUrl("client/artworks/add-usage-guides")?>" class="addNewButton">+Add Usage Guides</a>
+        </div>
+        <br />
+        Bellow is a list of usage guidelines that you have provided to all of your licensed vendors.
+    </div>  
+    <div class="spacer clear"></div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="dyntable" id="usageguides-data-table">
+        <thead>
+            <tr>
+                <td id="event_del" colspan="6" style="padding:0">
+                    <div class="sTableOptions" style="border:none 0">
+                          <a class="button delete" id="deleteAll">
+                            <span>Delete</span>
+                          </a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th width="5%" class="head0"><input type="checkbox" id="master_checkbox"></th>
+                <th width="10%" class="head1">Type</th>
+                <th width="25%" class="head0">Title</th>
+                <th width="40%" class="head1">Description</th>                
+                <th width="20%" class="head0">Action</th>
+            </tr>
+        </thead>
+    </table>
+    <div class="hidden">
+        <span class="aphabetical_filters">
+            <?php
+            foreach (range('A', 'Z') as $char) {
+                echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
+            }
+            ?>
+        </span>
+    </div>
+</div>
+<div id="dialog-confirm" title="Are you sure you want to delete?" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Notification will be permanently deleted and cannot be recovered. Are you sure?</p>
+</div>
+
+<script type="text/javascript">
+ $(document).ready( function($) {
+    $("#wait1").hide();
+ });
+</script>
+<script type="text/javascript">
+    /** Datatable code **/
+    var oTable;
+    var alphabet_list = jQuery(".hidden").html();
+    $(document).ready( function($) {
+        $('#master_checkbox').removeAttr("checked");
+    });
+    $(document).on('click',"#usageguides-data-table_paginate a", function(){
+         $('#master_checkbox').removeAttr("checked");
+    })
+    $(window).bind('load',function(){
+        init_oTable_initialize();
+        init_alphabetical_filters();
+        init_server_search_fix();   // Will search only hitting enter not keypress
+        init_edit_usageguide_link();
+        init_view_usageguide_link();
+        init_download_usageguide_link();                
+        init_col_color();
+        init_row_delete();
+        init_toggleChecked();
+        init_delete_all_checked();        
+    });
+    
+    function init_oTable_initialize(destroy){
+        destroy=destroy || false;
+        oTable=$('#usageguides-data-table').dataTable( {
+            "bProcessing": true,
+            "bDestroy" : destroy,
+            "bServerSide": true,
+            "iDisplayLength": 25,
+            "sPaginationType": "full_numbers",
+            "sAjaxSource": site_url+'/client/artworks/ajax-Get-Usage-Guides-Dt/',
+            "sServerMethod": "POST",
+            "oLanguage": {
+                "sSearch": "Search Usage Guide by Title:"
+            },
+            "aaSorting": [[1,'desc']], // Initial sorting order when page loads
+            "aoColumnDefs":[
+                { "bSortable": false, "aTargets": [ 0 ] },
+                { "bSortable": true, "aTargets": [ 1 ] },
+                { "bSortable": true, "aTargets": [ 2 ] },
+                { "bSortable": false, "aTargets": [ 3 ] },
+                { "bSortable": false, "aTargets": [ 4 ] }],   // Turning sorting on/off for cols
+            "fnInitComplete": function (oSettings, json) {
+                $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after(alphabet_list);
+            }
+        } );
+    }
+
+    function init_edit_usageguide_link(){
+        $(document).on("click", "a.edit_link", function(){
+            var url =site_url+"/client/artworks/edit-usage-guide/id/"+$(this).attr('rel');            
+            loadPopupView(url, 750, 550);
+            return false;
+        });
+    }
+
+    function init_view_usageguide_link(){
+        $(document).on("click", "a.view_link", function(){
+            var url = site_url+"/client/artworks/view-usage-guide/id/"+$(this).attr('rel');
+            loadPopupView(url, 750, 550)();
+            return false;
+        });
+    }
+    
+    function init_download_usageguide_link(){
+        $(document).on("click", "a.download_link", function(){          
+            window.location.href = site_url+"/client/artworks/download-usage-guide/file/"+$(this).attr('rel');            
+            return false;
+        });
+    }
+    
+    function init_server_search_fix(){
+        $('.dataTables_filter input').unbind('keypress keyup').bind('keypress', function(e){
+            if (e.which == 13){
+                oTable.fnFilter($(this).val(), null, false, true);
+                //oTable.fnDraw();
+                return;
+            }
+        });
+    }
+
+    function init_alphabetical_filters(){
+        $(document).on('click', '.letter_filter',function(){
+            oTable.fnDestroy();
+            init_oTable_initialize(page);
+            oTable.fnFilter($(this).text());
+        });
+    }
+
+    function init_col_color(){
+        //oTable.$('td').addClass('')
+    }
+
+    function row_delete(usageGuideId, pageTitle){         
+            var message = pageTitle + " will be permanently deleted and cannot be recovered. Are you sure?";
+            $("#dialog-confirm").text(message);
+            $( "#dialog:ui-dialog" ).dialog( "destroy" );
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height:'auto',
+                modal: true,
+                buttons: {
+                    "Delete": function() {
+                        var mine = $( this )
+                        $.ajax({
+                            type : 'post',
+                            url: site_url+'/client/artworks/delete-usage-guide/',
+                            data:'id='+usageGuideId,
+                            success: function(response) {
+                                mine.dialog( "close" );
+                                $('#master_checkbox').removeAttr("checked");
+                                oTable.fnDraw();
+                                $.jGrowl(pageTitle+" has been deleted.");
+                            }
+                        });
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+    }
+
+    function init_row_delete(){
+        $(document).on('click', '.delete_usageguide',function(){
+            var usageGuideId = ($(this).attr('rel'));
+            var usageGuideTitle = '"'+($(this).attr('title'))+'"';      
+            row_delete(usageGuideId, usageGuideTitle);
+        });
+    }
+
+    function init_toggleChecked() {
+        $(document).on('click', '#master_checkbox',function(){
+            var status = this.checked;
+            $(".checkbox").each( function() {
+                $(this).attr("checked",status);
+            })
+        })
+    }
+
+    function init_delete_all_checked(){
+         $(document).on('click', '#deleteAll', function(){
+            var checkedCheckboxes = $("input:checkbox[name=usageguide_name]:checked");
+            var selectedValues="";
+            var i=0;
+            checkedCheckboxes.each(function () {
+               if(i==0){
+                 selectedValues = $(this).attr('rel')
+               }
+               else{
+                 selectedValues +=  ","+$(this).attr('rel');
+               }
+               i++;
+            });
+            row_delete(selectedValues,"Selected usage guide(s)");
+         })
+    }
+    /** Datatable code **/
+        
+    function loadPopupView(url, w, h){                
+        $.fancybox({
+            'width'                 : w,
+            'height'                : h,
+            'href'                  : url,    
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,            
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'               
+        });        
+        return false;
+    }
+    
+    function execute_refresh(msg){
+        $.fancybox.close();   
+        $.jGrowl(msg);
+//        init_oTable_initialize(true);
+        oTable.fnDraw();
+    }
+</script>
+
+<style type="text/css">
+    .aphabetical_filters{
+        display: none;
+        margin:0 0 0 10px;
+    }
+    a.letter_filter{
+    }
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+
+    #usageguides-data-table { border-collapse: collapse; }
+    #usageguides-data-table tr td { padding: 8px 10px; border-right: 1px solid #fff; border-bottom: 1px solid #ddd; vertical-align: top;}
+    #usageguides-data-table thead th { padding: 8px 10px; color: #ccc; text-shadow: 1px 1px #444; font-size: 12px; text-transform: uppercase; border-right: 1px solid #777; }
+    #usageguides-data-table thead th { font-weight: normal; text-align: left; }
+    #usageguides-data-table tr td:last-child { border-right: 0; }
+    #usageguides-data-table tr:last-child td { border-bottom: 0;}
+    #usageguides-data-table tr:hover { background: #cacaca; }
+    #usageguides-data-table tr.selected { background: #fffccc; }
+    /*
+    #usageguides-data-table .head0 { background-color: #A79269; }
+    #usageguides-data-table .head1 { background-color: #77623d; }
+    */
+    #usageguides-data-table .odd { background-color: #eaeaea; }
+    #usageguides-data-table .even { background-color: #ddd; }
+    div.jGrowl.top-right {
+	right: 				0px;
+	top: 				100px;
+    }
+    div.jGrowl div.jGrowl-notification{
+           color:#000000;
+           background:#A79269 ;
+    }
+
+</style>

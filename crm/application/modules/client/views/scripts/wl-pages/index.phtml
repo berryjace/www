@@ -1,0 +1,164 @@
+<div id="login_wrap">
+	<div id="banner_container">
+		<?php  
+			$count = 0;
+			$bans = array();
+			$today = new DateTime();
+			foreach($this->user->client_banners as $ban){
+				if ($today >= $ban->start_date && $today <= $ban->end_date){
+					$count ++;
+					$bans[] = $ban;
+				}
+			}
+			if ($count > 0){
+				$id = rand(0, $count-1);
+			?>
+			<a href="<?php echo $bans[$id]->link;?>">
+				<img src="<?php echo $this->baseUrl('assets');?>/files/banners/<?php echo $bans[$id]->image;?>" />
+			</a>
+			
+		<?php } else {}?>
+	</div>
+    <h1 class="h1"><?php echo $this->clientProfile->user_id->organization_name; ?></h1>
+    <div class="" style="background-color: #FFF;padding:20px; border:1px solid #ddd;box-shadow:inset 0 0 20px #eee; overflow: auto;"><h2 style="font-size:20px;margin-bottom: 10px;">Narrow Result</h2>
+        <form action="" method="GET" id="<?php echo $this->searchForm->getName(); ?>">
+        <div class="left" style="width:20%">
+            <?php echo $this->searchForm->service; ?>
+        </div>
+        <div class="left" style="width:80%">
+
+            Looking For:
+            <?php echo $this->searchForm->looking; ?> &nbsp; &nbsp;
+            <?php echo $this->searchForm->vendor; ?> &nbsp; &nbsp;
+	    Near &nbsp; &nbsp;
+
+            <?php echo $this->searchForm->zip; ?> &nbsp; &nbsp;
+	    Or &nbsp; &nbsp;
+	    <?php echo $this->searchForm->city; ?> &nbsp; &nbsp;
+            <?php echo $this->searchForm->submit; ?>
+        </div>
+        </form>
+        <div class="right" style="margin-right:115px;"><a href="javascript:goBack()">View Previous Result</a></div>
+    </div>
+    <div class="clear"></div>
+    <div><img src="<?php echo $this->baseUrl("assets"); ?>/images/greeklicensing_box_shadow.jpg" /></div>
+    <div style="margin-top:-4px;background:url(<?php echo $this->baseUrl('assets'); ?>/images/greeklicensing_gray_gradient.jpg) repeat-x; height:47px;  border-left:1px solid #ddd; border-right:1px solid #ddd; text-align:center; padding-left:10px">
+
+        <table width="1151" border="0" cellspacing="0" cellpadding="0" height="47" align="center">
+            <tr>
+                <td width="159" height="47" align="left" valign="middle"><?php echo mysql_num_rows($this->vendors); ?>  search results</td>
+                <td width="715" align="center" valign="middle">&nbsp;</td>
+                <td width="277" align="right" valign="middle"><img src="<?php echo $this->baseUrl("assets"); ?>/images/information.png" /> Click company Logo to view Profile </td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="background-color: white; border:1px solid #eee; padding:18px; padding-right:0px;">
+        <div id="paging_container3" class="">
+            <ul class="alt_content">
+        <?php while ($row = mysql_fetch_assoc($this->vendors)) { ?>
+                <div class="outer_b">
+                        <div class="logo_b">
+                            <ul>
+                                <li>
+                                    <a href="<?php echo $this->baseUrl('client/wl-pages/vendor-profile/c/'.$this->slug.'/vid/'.$row['id']) ?>">
+                                        <?php
+                                        if (trim($row['logo_url']) != '') {
+                                            ?>
+                                            <img class="resized_img" src="<?php echo $this->baseUrl("assets"); ?>/files/vendor_profile/thumbs/<?php echo $row['logo_url']; ?>" />
+                                            <?php
+                                        } else {
+                                            ?>
+                                            <img src="<?php echo $this->baseUrl("assets"); ?>/images/OLP_Logo_GRAY_150.jpg" />
+                                            <?php
+                                        }
+                                        ?>
+
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="info_b">
+
+                            <?php echo(substr($row['organization_name'], 0, 30)); ?> <br />
+                            <span><?php // echo $vendor->website;        ?></span>
+                            <?php echo $row['phone']? $row['phone'] :"<br>"; ?>
+                        </div>
+                    </div>
+        <?php } ?>
+       </ul>
+
+            <div class="alt_page_navigation"> </div>
+
+        </div>
+        <br  style="clear:both" />
+    </div>
+
+
+</div>
+<style type="text/css">
+	#banner_container{
+    	margin: 0 auto;
+    	width: 1170px;
+    	text-align: center;
+    	max-height: 100px;
+    	overflow: hidden;
+    }	
+</style>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        if($(".outer_b").size()){
+            $('#paging_container3').pajinate({
+                items_per_page: 15,
+                item_container_id: '.alt_content',
+                nav_panel_id: '.alt_page_navigation'
+
+            });
+
+            $('#view_previous').on('click', function() {
+			
+                jQuery('#form_filter')[0].submit();
+                return false;
+            });
+        }
+
+		$('#looking').attr("value", "<?php echo (!empty($this->product))? $this->product:"Product Name"?>");
+		$('#vendor').attr("value", "<?php echo (!empty($this->vendor_name))? $this->vendor_name:"Company Name"?>");
+		$('#zip').attr("value", "<?php echo (!empty($this->zip_code))? $this->zip_code:"Zip Code"?>");
+		$('#city').attr("value", "<?php echo (!empty($this->city))? $this->city:"City or State" ?>");
+
+        $(".resized_img").each(function(){
+
+            var dim = $(this).width()/$(this).height();
+
+            var bWide = $(this).width() > $(this).height();
+
+            if (bWide){
+ 				$(this).width("150px");
+ 				$(this).height(dim*150 + "px");
+
+            } else {
+ 				$(this).width(dim*150 + "px");
+ 				$(this).height("150px");
+            }
+     	   
+        });
+        
+		<?php 
+		if( isset($this->services)){
+			foreach($this->services as $service){
+                                        ?>
+
+        $('#service-<?php echo $service?>').prop('checked', true);
+        <?php }}?>
+
+    });
+
+</script>
+<script>
+function goBack()
+  {
+  window.history.back()
+  }
+</script>

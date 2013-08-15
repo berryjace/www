@@ -1,0 +1,215 @@
+<?php 
+$user = Zend_Auth::getInstance()->getIdentity();
+$isAdmin = ($user->account_type == 1) ? 1 : 0;
+?>
+<h2>Invoice</h2>
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<div class="one">
+    <div class="leftalign">
+        <?php echo $this->partial('invoice/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status)); ?>
+    </div>
+    <div class="rightalign">
+        <div class="one">
+            <a href="javascript:;" id="exportaspdf" rel="<?php echo $this->invoice->id; ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/pdf.png" class="mgright5" alt="" /><span>Export to PDF</span></a> &nbsp;
+            <?php echo $this->formButton('pay_online', 'Pay Online', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+            <?php echo $this->formButton('send_check', 'Send a Check', array('type' => 'button', 'class' => 'button button_black')); ?>
+        </div>
+        <div class="clear"></div>
+    </div>
+</div>
+<div class="clear"></div>
+
+<div class="left_div">
+    <div class="one"><?php echo $this->form->vendor_name->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->inv_type->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->inv_term->setAttrib('readonly', 'true'); ?></div><div class="spacer clear"></div>
+    <div class="one"><?php echo $this->form->address_line_1->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->address_line_2->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one_third"><?php echo $this->form->city->setAttrib('readonly', 'true'); ?></div>
+    <div class="one_third"><?php echo $this->form->state->setAttrib('readonly', 'true'); ?></div>
+    <div class="one"><?php echo $this->form->zip->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+</div>
+<div class="right_div">
+    <div class="one"><?php echo $this->form->inv_num->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->inv_date->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->email->setAttrib('readonly', 'true'); ?></div><div class="spacer clear"></div>
+    <div class="one"><?php echo $this->form->phone_1->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->phone_2->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+    <div class="one"><?php echo $this->form->fax->setAttrib('readonly', 'true'); ?></div><div class="clear"></div>
+</div>
+<div class="spacer clear"></div>
+
+<div class="one">
+    <?php if (sizeof($this->items)): ?>
+        <?php
+        $quarters = array(0 => 'N/A', 1 => 'First', 2 => 'Second', 3 => 'Third', 4 => 'Fourth');
+        $alt = true;
+        $currency = new Zend_Currency('en_US');
+        $count = 1;
+        $total_due = $total_paid = 0;
+        ?>
+        <h4>Invoice ID : <?php echo $this->invoice->invoice_number; ?></h4>
+        <table cellpadding="0" cellspacing="0" border="1" class="sTable2" width="100%">
+            <thead>
+                <tr role="row">
+                    <th>Item#</th>
+                    <th>Client</th>
+                    <th>Fiscal Year</th>
+                    <th>Quarter</th>
+                    <th>Date</th>
+                    <th>Payment #</th>
+                    <th>Amount Due</th>
+                    <th>Amount Paid</th>
+                    <th>Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $i = $total_due = $total_paid = 0; ?>
+                <?php foreach ($this->items as $item): ?>
+                    <?php
+                    $i++;
+                    $total_due += $item->amount_due;
+                    $total_paid += $item->amount_paid;
+                    ?>
+                    <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
+                        <td><?php echo $i; ?></td>
+                        <td><?php echo $item->client_id->organization_name; ?></td>
+                        <td><?php echo $item->fiscal_year; ?></td>
+                        <td><?php echo $quarters[$item->quarter]; ?></td>
+                        <td><?php echo ( (int) $item->created_at->format("Y") > 0 ? $item->created_at->format("m/d/Y") : 'N/A'); ?></td>
+                        <td><?php echo $item->check_number; ?></td>
+                        <td><?php echo $currency->toCurrency($item->amount_due); ?></td>
+                        <td><?php echo $currency->toCurrency($item->amount_paid); ?></td>
+                        <td><?php echo $currency->toCurrency($item->amount_due > 0 ? ($item->amount_due - $item->amount_paid) : 0); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="total_txt">Total</td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_due); ?></td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_paid); ?></td>
+                    <td class="total_amt"><?php echo $currency->toCurrency($total_due > 0 ? ($total_due- $total_paid) : 0); ?></td>
+                </tr>
+            </tbody>
+        </table>
+<?php endif; ?>
+</div>
+<div class="spacer clear"></div>
+
+<?php if ($isAdmin){?>
+<div class="one">
+    <span class="status"><b>Emailed on: &nbsp;</b></span>
+    <?php if (!empty($this->invoice->email_date)): ?>
+        <?php $emailed_on = explode(',', trim($this->invoice->email_date, ',')); ?>
+        <?php for ($i=0; $i<count($emailed_on)-1; $i++): ?>
+            <span class="emailed_on"><?php echo $emailed_on[$i]; ?></span>
+        <?php endfor; ?>
+    <?php else: ?>
+        <span class="emailed_on notmailed">Not yet</span>
+<?php endif; ?>
+
+</div>
+<div class="spacer clear"></div>
+
+
+<?php 
+echo $this->partial('invoice/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status, 'admin'=>$isAdmin)); 
+                    }
+?>
+
+    <?php if ($this->invoice->invoice_status != "Closed"): ?>
+    <div class="rightalign">
+    <?php echo $this->formButton('pay_online_bottom', 'Pay Online', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+    <?php echo $this->formButton('send_check_bottom', 'Send a Check', array('type' => 'button', 'class' => 'button button_black')); ?>
+    </div>
+    <div class="spacer"></div>
+<?php endif;  ?>
+
+<style type="text/css">
+    .status{width: 120px; float: left;}
+    .button_pos{width: 176px; float: right;}
+    .button_payment{width: 50%; float: right;}
+    #city, #state, #zip{width:112px;}
+    .total_txt{text-align: right; font-weight: bold;}
+    .total_amt{font-weight: bold;}
+    .emailed_on{float: left; background-color: #999999; font-weight: bold; font-size: 12px; padding: 2px 5px; margin-right: 2px;}
+    .notmailed{background-color: red;}
+</style>
+
+<script type="text/javascript">
+
+	$(document).on('ready', function(){
+		var admin = <?php echo $isAdmin;?>;
+
+		if (admin != 1){
+		
+		}
+	});
+
+    $(window).bind('load', function(){
+        $("input.text, select").addClass('desable').prop('disabled', true);
+        $(document).on('click', 'a#exportaspdf', show_invoice_functions.export_as_pdf)
+        $(document).on('click', 'button#pay_online', show_invoice_functions.pay_online)
+        $(document).on('click', 'button#pay_online_bottom', show_invoice_functions.pay_online)
+        $(document).on('click', 'button#send_check', show_invoice_functions.send_check)
+        $(document).on('click', 'button#send_check_bottom', show_invoice_functions.send_check)
+    });
+
+    show_invoice_functions={
+        export_as_pdf : function(e){
+            //            console.log($('a#exportaspdf').attr("rel"));
+            $("a#exportaspdf").attr("target","_blank");
+            $("a#exportaspdf").attr("href", site_url+"/vendor/invoice/export-as-pdf/inv_id/"+$(this).attr("rel"));
+        },
+        pay_online : function(){
+            var $url = site_url+"/vendor/invoice/online-payment/inv_id/"+$("a#exportaspdf").attr("rel");
+            loadPopupView($url, 650, 410);
+        },
+        send_check : function(){
+            var $url = site_url+"/vendor/invoice/check-payment/inv_id/"+$("a#exportaspdf").attr("rel");
+            loadPopupView($url, 650, 410);
+        }
+    }
+
+    function loadPopupView(url, w, h){
+        $.fancybox({
+            'width'                 : w,
+            'height'                : h,
+            'href'                  : url,
+            'transitionIn'          : 'none',
+            'transitionOut'         : 'none',
+            'padding'               : 20,
+            'speedIn'               : 0,
+            'type'                  : 'iframe',
+            'changeSpeed'           : 0,
+            'changeFade'            : 0,
+            'speedOut'              : 0,
+            'overlayColor'          : '#FFF'
+        });
+        return false;
+    }
+
+    function close_popup(){
+        $.fancybox.close();
+    }
+
+    function execute_refresh(message){
+        close_popup();
+        $.jGrowl(message);
+        setTimeout(function() {
+            window.location.href = site_url+'/vendor/invoice';
+        }, 2000);
+    }
+</script>
+
+
+
+
+
+
