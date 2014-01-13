@@ -92,6 +92,11 @@ class InvoiceLineItems {
      */
     private $client_id;
     
+    /**
+     * @Column(name="license_status", type="integer", length=5, nullable=true)
+     */
+    private $license_status;
+    
 
     public function __construct() {
         $this->created_at = new \DateTime(date("Y-m-d H:i:s"));

@@ -16,6 +16,7 @@
 		}
 		elseif(true){
 			$set[$i]=array('Client_id'=>$item->client_id->organization_name,
+					'Description'=>$item->description,
 					'Check#'=>$item->check_number,
 					'Status'=>$item->payment_status,
 					'Due'=>$currency->toCurrency($item->amount_due-$item->amount_paid),
@@ -50,12 +51,18 @@
                     <td width="24%" border="1">
                         <?php echo $set[$count]['Client_id']; ?>
                     </td>
-                    <td width="12%" style="border:1px solid black;">
+                    <td width="24%" style="border:1px solid black;">
+                    
+					<?php
+					if (strpos($this->invoice->invoice_type, "Royalty") !== false)
+						echo "Q".$this->invoice->quarter." ".$this->invoice->fiscal_year;
+					else
+						echo $set[$count]['Description']; ?>
                     </td>
-                    <td width="16%" align="right" style="border:1px solid black;">
+                    <td width="12%" align="right" style="border:1px solid black;">
                         <?php echo $set[$count]['Due']; ?>&nbsp;&nbsp;
                     </td>
-                    <td width="24%" align="right" style="border:1px solid black;">
+                    <td width="12%" align="right" style="border:1px solid black;">
                         <?php
                                 echo $set[$count]['Paid'];
                         ?>&nbsp;&nbsp;

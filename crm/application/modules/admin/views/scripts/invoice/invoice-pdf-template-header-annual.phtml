@@ -46,11 +46,11 @@
                         <tr>
                         <?php
                         $currency = new Zend_Currency('en_US');
-                        if($this->invoice->invoice_term=="Net 15 days")
+                        if($this->invoice->invoice_term=="Net 15 Days")
                                 $date_due=15;
-                        elseif($this->invoice->invoice_term=="Net 30 days")
+                        elseif($this->invoice->invoice_term=="Net 30 Days")
                                 $date_due=30;
-                        elseif($this->invoice->invoice_term=="Net 60 days")
+                        elseif($this->invoice->invoice_term=="Net 60 Days")
                                 $date_due=60;
                         else
                                 $date_due=0;
@@ -61,7 +61,7 @@
 			<tr><td></td></tr>
                         <tr>
                         	<td style="border:1px solid black;">
-					&nbsp;Amt Due:</td><td align="right" style="border:1px solid black;"><?php echo $currency->toCurrency($this->invoice->amount_due);?>&nbsp;&nbsp;</td>
+					&nbsp;Amt Due:</td><td align="right" style="border:1px solid black;"><?php echo $currency->toCurrency($this->invoice->amount_due-$this->invoice->amount_paid);?>&nbsp;&nbsp;</td>
                         </tr>
                         <tr>
                                  <td style="border:1px solid black;">&nbsp;Amt. Enclosed:</td><td style="border:1px solid black;"></td>

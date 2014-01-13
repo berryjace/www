@@ -5,14 +5,14 @@
 <div class="one">
     <form name="online_payment" action="" method="POST">
         <div class="leftalign">
-            <?php echo $this->form->payment_amount; ?>
         </div>
         <div class="leftalign" id="amount_div">
-            <div class="leftalign" id="owed_div"><b><?php echo $this->BUtils()->getCurrency($this->amount_due); ?></b><?php //echo $this->form->amount_owed;  ?></div>
+            <div class="leftalign" id="owed_div">Total Invoice to be Paid :<b><?php echo $this->BUtils()->getCurrency($this->amount_due); ?></b><?php //echo $this->form->amount_owed;  ?></div>
             <div class="clear"></div>
-            <div class="leftalign" id="other_div"><?php echo $this->form->amount_other; ?></div>
         </div>
         <div class="spacer clear"></div>
+        
+		<?php if ($this->acct != null || $this->routing != null) echo $this->form->bankinfo;?>
         
         <div class="clear"></div>
 
@@ -28,6 +28,9 @@
         </div>
         <div class="spacer clear"></div>
         
+	<input type="hidden" name="acc_no_hidden" id="acc_no_hidden" value="<?php echo isset($this->acct) ? $this->acct : ''; ?>" />
+        <input type="hidden" name="route_no_hidden" id="route_no_hidden" value="<?php echo isset($this->routing) ? $this->routing : ''; ?>" />
+
         <?php echo $this->form->memo; ?>
         
         <div class="leftalign">

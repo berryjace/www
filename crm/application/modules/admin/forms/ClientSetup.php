@@ -111,7 +111,13 @@ class Admin_Form_ClientSetup extends Zend_Form {
                 ->addFilter('StripTags')->addFilter('StringTrim');
 
         $email = new Zend_Form_Element_Text('email');
-        $email->setLabel('Portal Contact Email')
+        $email->setLabel('Product Design Approval & General Communication Email')
+                ->setDisableLoadDefaultDecorators(true)
+                ->setAttribs(array('size' => '50', 'class' => 'text'))->setRequired(false)
+                ->addFilter('StripTags')->addFilter('StringTrim');
+
+        $agree_note_email = new Zend_Form_Element_Text('agreement_notification_email');
+        $agree_note_email->setLabel('Agreement Notification Email')
                 ->setDisableLoadDefaultDecorators(true)
                 ->setAttribs(array('size' => '50', 'class' => 'text'))->setRequired(false)
                 ->addFilter('StripTags')->addFilter('StringTrim');
@@ -221,10 +227,15 @@ class Admin_Form_ClientSetup extends Zend_Form {
         $Submit = new Zend_Form_Element_Submit('Submit');
         $Submit->setAttrib('id', 'submit')
                 ->setAttrib('class', 'button button_black detail_button');
+        
+        $user_code = new Zend_Form_Element_Text('user_code');
+        $user_code->setLabel('Client Number')
+		        ->setDisableLoadDefaultDecorators(true)
+		        ->setAttribs(array('size' => '50', 'class' => 'text'))->setRequired(false)
+		        ->addFilter('StripTags')->addFilter('StringTrim');
 
         $this->addElements(array(
-            //$username,
-            //$password,
+        	$user_code,
             $clientName,
             $description,
             $address1,
@@ -235,6 +246,7 @@ class Admin_Form_ClientSetup extends Zend_Form {
             $approvedContact,
             $phone,
             $email,
+        	$agree_note_email,
             $url,
             $fax,
             $greekLetters,

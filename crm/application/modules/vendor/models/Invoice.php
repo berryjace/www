@@ -52,6 +52,7 @@ class Vendor_Model_Invoice {
         foreach ($AllRecords['records'] as $v) {
             $prec[] = array(
                 '<a href="javascript:;" class="invoice_link" rel="' . $v['id'] . '">' . $v['invoice_number'] . '</a>',
+                //$v['invoice_number'],
                 (( (is_null($v['fiscal_year']) || $v['fiscal_year'] == '' ) && $v['quarter'] == 0 ) ? 'N/A' : ((is_null($v['fiscal_year']) || $v['fiscal_year'] == '') ? 'N/A' : $v['fiscal_year']) . ' - ' . (($v['quarter'] == 0) ? 'N/A' : 'Q' . $v['quarter']) ),
                 ( (!is_null($v['invoice_date'])) ? date("M d, Y", strtotime($v['invoice_date'])) : "N/A" ),
                 $v['invoice_type'],
@@ -59,7 +60,8 @@ class Vendor_Model_Invoice {
                 $v['payment_status'],
                 $currency->toCurrency($v['amount_due']),
                 $currency->toCurrency($v['amount_paid']),
-                '<a href="javascript:;" class="invoices_link" rel="' . $v['id'] . '">View</a>&nbsp; <a href="javascript:;" class="delete_invoices" rel="d-' . $v['id'] . '">Delete</a>'
+            	$currency->toCurrency((floatval($v['amount_due']) ))
+                //'<a href="javascript:;" class="invoices_link" rel="' . $v['id'] . '">View</a>&nbsp; <a href="javascript:;" class="delete_invoices" rel="d-' . $v['id'] . '">Delete</a>'
             );
         }
         $json .= Zend_Json::encode($prec);
@@ -191,10 +193,28 @@ class Vendor_Model_Invoice {
         $frontControllerDir = $this->ct->getFrontController()->getControllerDirectory('admin'); // retrieve controller dir of the mentioned MODULE
         $this->ct->view->addBasePath(realpath($frontControllerDir . '/../views')); // do NOT add the "scripts" dir as it will be added automatically so do NOT do this: '/../views/scripts'
 //        print_r($this->ct->view->getScriptPaths()) ;
+
         $this->ct->view->invoice = $invoice;
         $this->ct->view->lineitems = $lineitems;
+
         $html = $this->ct->view->render('invoice/invoice-pdf-template.phtml');
-//        print_r($html);
+
+if($this->ct->view->invoice->invoice_type=="Annual")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-annual.phtml');
+                elseif($this->ct->view->invoice->invoice_type=="Misc.")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-misc.phtml');
+                elseif($this->ct->view->invoice->invoice_type=="Refund")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-refund.phtml');
+                elseif($this->ct->view->invoice->invoice_type=="Quarterly Report")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-Qreport.phtml');
+                elseif($this->ct->view->invoice->invoice_type=="Late Fee")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-LateFee.phtml');
+                 elseif($this->ct->view->invoice->invoice_type=="First Time Advance"){
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-ApplicationFee.phtml');
+                        $html = $this->ct->view->render('invoice/invoice-pdf-template-ApplicationFee.phtml');
+                }
+                elseif(true)
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-misc.phtml');
         $params = array(
             'author' => $invoice->vendor_id->organization_name,
             'title' => 'Export invoice',
@@ -202,9 +222,13 @@ class Vendor_Model_Invoice {
             'pdf_content' => $html,
             'file_name' => $invoice->invoice_number,
             'file_path' => APPLICATION_PATH . '/../tmp/',
-            'output_type' => 'I'
+            'output_type' => 'I',
+            'header' => $header
         );
-        $this->ct->view->BUtils()->getPDF($params);
+	if($this->ct->view->invoice->invoice_type=="Annual")
+                        $this->ct->view->BUtils()->getMulticolumnPDF($params);
+                elseif(true)
+                        $this->ct->view->BUtils()->getPDF2($params);
     }
 
     /**
@@ -222,7 +246,14 @@ class Vendor_Model_Invoice {
 //        $this->ct->view->BUtils()->doctrine_dump($invoice);
 //        die('---------------------');
         if (sizeof($bank_info)) {
-            $this->ct->view->bank_info = $bank_info;
+       //     $this->ct->view->bank_info = $bank_info;
+
+        	$acct = "*************" . substr($bank_info->account_number, 13);
+        	$routing = "*****" . substr($bank_info->routing_number, 5);
+        	
+        	$this->ct->view->acct = $acct;
+        	$this->ct->view->routing = $routing;
+        	
         }
         $this->ct->view->amount_due = $invoice->amount_due;
         $form = new Vendor_Form_OnlinePayment();
@@ -234,37 +265,123 @@ class Vendor_Model_Invoice {
                 $form = new Vendor_Form_OnlinePayment(true);
                 $this->ct->view->form = $form;
             }
-            if ($form->isValid($formData)) {
+            if (true) {
                 $api_params = array();
-                $api_params['account_number'] = $form->getValue('account_number');
-                $api_params['routing_number'] = $form->getValue('routing_number');
-                if ($form->getValue('payment_amount') == 'other') {
-                    $api_params['amount'] = $form->getValue('amount_other');
-                } else {
-                    $api_params['amount'] = $invoice->amount_due;
-                }
-//                print_r($api_params);
-//                die('--------');
+                $api_params['account_number'] = $formData['account_number'];
+                $api_params['routing_number'] = $formData['routing_number'];
+                $api_params['amount'] = $invoice->amount_due;
 
+                if (isset($formData['bankinfo'])){
+                	error_log("\naccount: " . strlen($bank_info->account_number) . " routing: " . strlen($bank_info->routing_number), 3, "./errorLog.log");
+                	$api_params['account_number'] = $bank_info->account_number;
+                	$api_params['routing_number'] = $bank_info->routing_number;
+                } else {
+                	error_log("\nbankinfo not set", 3, "./errorLog.log");
+                }
+                
                 /**
                  * Bill highway api call for online payment
                  */
-//                $response = $this->ct->getHelper('BUtilities')->bill_highway_api($api_params);
+                $response = $this->ct->getHelper('BUtilities')->bill_highway_api($api_params);
 //                print_r($response);
+		$arr = (array) $response;
 
                 /**
                  * save online payment information
                  */
-                $op = new \BL\Entity\OnlinePayment();
-                $op->amount = $api_params['amount'];
-                $op->bank_account = $api_params['account_number'];
-                $op->bank_routing = $api_params['routing_number'];
-                $op->vendor = $invoice->vendor_id;
-                $op->invoice = $invoice;
-//                $this->ct->em->persist($op);
-//                $this->ct->em->flush();
-//                $this->ct->view->result = array('success' => true, 'message' => 'Online payment performed successfully!');
-                $this->ct->view->result = array('success' => true, 'message' => 'This feature is currently unavailable!');
+		if($arr['eCheckPaymentByGroupResult']->anyType[3]=="00")
+		{
+			$op = new \BL\Entity\OnlinePayment();
+			$op->amount = $api_params['amount'];
+			$op->bank_account = $api_params['account_number'];
+			$op->bank_routing = $api_params['routing_number'];
+			$op->vendor = $invoice->vendor_id;
+			$op->invoice = $invoice;
+			$this->ct->em->persist($op);
+			$this->ct->em->flush();
+
+			$invoice->invoice_status = 'Closed';
+			$invoice->payment_status = 'Received EFT';
+			$invoice->amount_paid=$api_params['amount'];
+			$invoice->amount_due=0;
+			$this->ct->em->persist($invoice);
+			$this->ct->em->flush();
+			
+			$inv_lineitems = $this->ct->em->getRepository('BL\Entity\InvoiceLineItems')->findBy(array('invoice_id' => (int) $invoice->id));
+			$payment_ref = 'Bill Highway '.$arr['eCheckPaymentByGroupResult']->anyType[1].' '.$formData['memo'];
+
+			foreach ($inv_lineitems as $inv_l) {
+			    $inv_l->check_number = $payment_ref;
+			    $inv_l->payment_status = 'Paid-Online';
+			    $inv_l->amount_paid = $inv_l->amount_due;
+			    $inv_l->invoice_status = 'Closed';
+			    $this->ct->em->persist($inv_l);
+        		}
+			$this->ct->em->flush();
+			$payment = new \BL\Entity\Payment();
+			$payment->amount_paid = $invoice->amount_paid;
+			$payment->amount_remaining = $invoice->amount_due;
+			$payment->record_date = new \DateTime(date("Y-m-d H:i:s"));
+		//        $payment->last_modified_date = new \DateTime(date("Y-m-d H:i:s"));
+			$payment->payment_year = $invoice->fiscal_year;
+			$payment->payment_quarter = $invoice->quarter;
+			$payment->payment_month = date('m');
+			$payment->check_num = 'Bill Highway '.$arr['eCheckPaymentByGroupResult']->anyType[1].' '.$formData['memo'];
+			$payment->kp_payment = '';
+			$payment->vendor = $invoice->vendor_id;
+			$payment->invoice = $invoice;
+			$this->ct->em->persist($payment);
+			$this->ct->em->flush();
+
+			$inv_lineitems = $this->ct->em->getRepository('BL\Entity\InvoiceLineItems')->findBy(array('invoice_id'=>(int)$invoice->id));
+				
+			foreach ($inv_lineitems as $item){
+				$client = $item->client_id;
+			
+				$payItem = new BL\Entity\PaymentLineItems();
+			
+				$payItem->payment_id = $payment->id;
+				$payItem->pmt_id = $payment;
+				$payItem->client = $client;
+			
+				$payItem->recordDate = new DateTime(date('Y-m-d H:i:s'));
+				$payItem->last_modified_date = new DateTime(date('Y-m-d H:i:s'));
+				$payItem->payment_year = BL_AMC::getCurrentFiscalYear();
+				$payItem->payment_quarter = BL_AMC::getCurrentQarter();
+				$payItem->payment_month = date('m');
+				$payItem->amount_paid = $item->amount_due - $item->amount_paid;
+			
+				$sharing = '1';
+				$percent = '0.0';
+			
+				$operation = $this->ct->em->getRepository('BL\Entity\ClientOperation')->findOneBy(array('user_id'=>$client));
+			
+				if ($operation != NULL){
+					if ($operation->sharing == '1' || $operation->sharing == '' || $operation->sharing == NULL){
+						$sharing = '1';
+					} else {
+						$sharing = '0';
+					}
+				}
+			
+				if ($sharing){
+					if ($operation->commission_per = '' && $operation->commission_per != NULL) $percent = $operation->commission_per;
+					else $percent = '0.30';
+				}
+			
+				$payItem->sharing = $sharing;
+				$payItem->percent_amc = $percent;
+			
+				$this->ct->em->persist($payItem);
+				$this->ct->em->flush();
+			}
+			
+			$this->ct->view->result = array('success' => true, 'message' => 'Online payment performed successfully!');
+			
+		}
+		else{
+                $this->ct->view->result = array('success' => true, 'message' => 'Error '. $arr['eCheckPaymentByGroupResult']->anyType[4]);
+		}
             } else {
                 $form->populate($formData);
             }
@@ -393,6 +510,15 @@ class Vendor_Model_Invoice {
     public function bankInfo() {
         $bank_info = $this->ct->em->getRepository("BL\Entity\BankInfo")->findOneBy(array('vendor' => (int) $this->ct->getHelper('BUtilities')->getLoggedInUser()));
         $this->ct->view->is_bank_info = sizeof($bank_info) ? true : false;
+        
+        if (sizeof($bank_info) > 0){
+			$acct = "*************" . substr($bank_info->account_number, 13);
+			$this->ct->view->acct = $acct;
+			
+			$routing = "*****" . substr($bank_info->routing_number, 5);
+			$this->ct->view->routing = $routing;
+        }
+        
         $this->ct->view->bank_info = $bank_info;
     }
 

@@ -1,27 +1,55 @@
-<div class="one">
-    <div class="one_fourth"><h2 class="grid_cap">Royalty Report Detail</h2></div>
+<div>
+        <table>
+        <tr style="color:red;font-size:180%">
+        <td>CONFIDENTIAL</td><td align="right">CONFIDENTIAL</td>
+        </tr>
+        <tr style="font-size:200%"><td colspan="2" align="center">
+    <?php echo $this->clientDetail->organization_name; ?> Quarter Ending
+<?php
+        switch($this->quarter) {
+                case 2:
+                        echo "12/31/".$this->year;
+                break;
+                case 3:
+                        echo "03/31/".$this->year;
+                break;
+                case 4:
+                        echo "06/30/".$this->year;
+                break;
+                case 1:
+                        echo "09/30/".$this->year;
+                break;
+}
+?>
+        </td>
+        </tr>
+        </table>
 </div>
-<div class="spacer"></div>
-<table cellpadding="2" cellspacing="2" border="0" class="dyntable sTable2" id="reports-data-table" width="100%">
+<table border="1" class="dyntable sTable2" id="reports-data-table" width="100%">
     <thead>
         <tr>
             <th class="head0" width="20%" align="left">Company Name</th>
             <th class="head1" width="10%" align="center">Date</th>
-            <th class="head0" width="10%" align="center">Pmt Type</th>
-            <th class="head1" width="10%" align="center">Ref#</th>
-            <th class="head0" width="10%" align="center">Total Amount</th>
-            <th class="head1" width="10%" align="center">Affinity</th>
-            <th class="head0" width="10%" align="center"><?php echo $this->clientDetail?$this->clientDetail->organization_name:''; ?></th>
-            <th class="head1" width="10%" align="center">Sharing</th>
-        </tr>            
+            <th class="head0" width="12%" align="center">Pmt Status</th>
+            <th class="head1" width="15%" align="center">Ref#</th>
+            <th class="head0" width="12%" align="center">Total Amount</th>
+            <th class="head1" width="12%" align="center">Affinity</th>
+            <th class="head0" width="12%" align="center"><?php echo $this->clientDetail?$this->clientDetail->organization_name:''; ?></th>
+            <th class="head1" width="7%" align="center">Sharing</th>
+        </tr>
     </thead>
-    <?php 
+    <?php
     $totalClientAmount=0;
+    $totalAffintyAmount=0;
     foreach($this->reportDetail as $item) { ?>
-    <?php 
+    <?php
                     $amcAmount=0;
                     $clientAmount=0;
-                if (($item->amount_paid) && $item->pmt_id->invoice->invoice_type!='Refund')
+                    $lineItem = $this->invoiceItemsRepository->findOneBy(array("invoice_id"=>$item->pmt_id->invoice, "client_id"=>$item->client));
+                    
+                    $status = $lineItem->payment_status;
+                    
+                if (($item->amount_paid))
                  {
                     $totalAmount=$item->amount_paid;
                     if($item->sharing==1)
@@ -57,21 +85,31 @@
     <tr>
         <td width="20%" align="left" ><?php echo $item->pmt_id->vendor->organization_name; ?></td>
         <td width="10%" align="center" ><?php echo $item->last_modified_date->format("m/d/Y"); ?></td>
-        <td width="10%" align="center" ><?php echo $item->pmt_id->invoice ? str_replace('Received','',$item->pmt_id->invoice->payment_status): "N/A"; ?></td>
-        <td width="10%" align="center" ><?php echo $item->pmt_id->check_num; ?></td>
-        <td width="10%" align="left" ><?php echo $this->currency->toCurrency($totalAmount); ?></td>
-        <td width="10%" align="left" ><?php echo $this->currency->toCurrency($amcAmount); ?></td>
-        <td width="10%" align="left"><?php echo $this->currency->toCurrency($clientAmount); ?></td>
-        <td width="10%" align="center"><?php echo $item->sharing ? 'Yes' : 'No'; ?></td>
+        <td width="12%" align="center" ><?php echo $status; ?></td>
+        <td width="15%" align="center" ><?php echo $lineItem->check_number; ?></td>
+        <td width="12%" align="right" ><?php echo $this->currency->toCurrency($totalAmount); ?> &nbsp;</td>
+        <td width="12%" align="right" ><?php echo $this->currency->toCurrency($amcAmount); ?> &nbsp;</td>
+        <td width="12%" align="right"><?php echo $this->currency->toCurrency($clientAmount); ?> &nbsp;</td>
+        <td width="7%" align="center"><?php echo $item->sharing ? 'Yes' : 'No'; ?> </td>
     </tr>
-    <?php 
+    <?php
         $totalClientAmount = $totalClientAmount + $clientAmount;
+        $totalAffintyAmount = $totalAffintyAmount + $amcAmount;
     } ?>
+    <?php if ($this->isAdminReport == true){?>
+    <tr>
+    	<td colspan="5" align="right"><strong>Total Amount for AMC:</strong></td>
+    	<td align="left"><?php echo $this->currency->toCurrency($totalAffintyAmount); ?></td>
+    	<td></td>
+    	<td></td>
+  	</tr>
+    <?php } else {?>
     <tr >
         <td valign="middle" colspan="6" align="right" ><strong>Total Amount for Quarter:</strong></td>
         <td align="left"><?php echo $this->currency->toCurrency($totalClientAmount); ?></td>
         <td></td>
     </tr>
+    <?php }?>
 </table>
 
 
@@ -98,16 +136,16 @@
     .leftalign{float: left;}
     .rightalign{float: right;}
     .Pending {
-        color: #FF6600;       
+        color: #FF6600;
     }
     .Approved {
-        color: #078000;       
+        color: #078000;
     }
     .Rejected {
-        color: #FF0000;       
+        color: #FF0000;
     }
     .Past {
-        color: #FF0000;       
+        color: #FF0000;
     }
 
-</style>  
+</style>

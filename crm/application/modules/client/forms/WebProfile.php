@@ -271,6 +271,12 @@ class Client_Form_WebProfile extends Zend_Form {
                 ->addFilter('StripTags')
                 ->addFilter('StringTrim');
 
+	$foundingYear = new Zend_Form_Element_Text('foundingYear');
+        $foundingYear->setLabel('Founded')
+                ->setDisableLoadDefaultDecorators(true)
+                ->setAttribs(array('size' => '50', 'class' => 'text'))->setRequired(false)
+                ->addFilter('StripTags')->addFilter('StringTrim');
+
         $submit = new Zend_Form_Element_Submit('submit');
         $submit->setAttrib('id', 'submit')
                 ->setAttrib('class', 'large awesome');
@@ -302,7 +308,8 @@ class Client_Form_WebProfile extends Zend_Form {
                     $greek_number_of_alumni,
                     $greek_number_of_undergrads,
                     $headquarters_city,
-                    $headquarters_state
+                    $headquarters_state,
+		    $foundingYear
                 )
         );
     }

@@ -44,11 +44,13 @@ $this->placeholder('main_side_bar')->captureEnd();
         
         <?php echo $this->form->approved_contact; ?>
         <?php echo $this->form->email; ?>
+        <?php echo $this->form->agreement_notification_email; ?>
         <?php echo $this->form->url; ?>
         <?php echo $this->form->phone; ?>
         <?php echo $this->form->fax; ?>
     </div>
     <div class="form_container_right">
+    	<?php echo $this->form->user_code;?>
     	<!--<?php echo $this->form->password; ?>-->
         <?php echo $this->form->def_ren_fee; ?>
         <?php echo $this->form->def_late_fee; ?>

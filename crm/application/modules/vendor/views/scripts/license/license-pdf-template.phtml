@@ -1,98 +1,99 @@
 <table>
-<tr>
-      <td width="50%">
-      Affinity Consultants <br>
-      3231-C Business Park Drive <br>
-      #300 <br>
-      Vista,CA 92081 <br>
-      accounting@affinity-consultants.com <br>
-      </td>
-      <td width="50%" align="right" font>
-        <font size="18">
-          <b>
-            INVOICE
-          </b>
-        </font>
-      </td>
+    <tr>
+        <td width="50%">
+        	<table style="font-size:12pt">
+			<tr>
+                	<td></td>
+			</tr>
+
+        		<tr>
+        		        <td style="font-size:16pt;font-weight:bold;">Affinity Consultants</td>
+        		</tr>
+        		<tr>
+       			        <td>3231-C Business Park Drive</td>
+        		</tr>
+        		<tr>
+                		<td>#300</td>
+        		</tr>
+        		<tr>
+                		<td>Vista, CA 92081</td>
+        		</tr>
+        		<tr>
+                		<td><u>accounting@affinity-consultants.com</u></td>
+        		</tr>
+			<tr>
+                        <td>
+                                <div style="border:1px solid black;padding-left:5px;font-size:14pt">
+                                        <?php echo "Bill To:<br>"; ?>
+                                        <?php echo "  ".$this->organization_name."<br>"; ?>
+                                        <?php echo "  ".$this->address1."<br>"; ?>
+                                        <?php echo "  ".$this->city.", ".$this->state." ".$this->zip; ?>
+                                </div>
+                        </td>
+                </tr>
+        	</table>
+        </td>
+        <td width="10%" ></td>
+        <td width="40%" align="left">
+		<table style="padding-bottom:10px;" height="80%">
+			<tr>
+        			<td align="center" style="font-size:18pt">Application Fees<br>Invoice</td>
+    			</tr>
+                        <tr>
+                                <td width="30%" style="border:1px solid black;"><?php  echo " " ?>Date:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_date->format('m/d/Y'); ?></td>
+                                <td width="70%" style="border:1px solid black;">&nbsp;Invoice #:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_number; ?></td>
+                        </tr>
+                        <tr>
+                        <?php
+                        $currency = new Zend_Currency('en_US');
+                        if(strtolower($this->invoice->invoice_term)=="net 15 days")
+                                $date_due=15;
+                        elseif(strtolower($this->invoice->invoice_term)=="net 30 days")
+                                $date_due=30;
+                        elseif(strtolower($this->invoice->invoice_term)=="net 60 days")
+                                $date_due=60;
+                        else
+                                $date_due=0;
+                        ?>
+                                <td style="border:1px solid black;">&nbsp;Term:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_term; ?></td>
+                                <td style="border:1px solid black;">&nbsp;Due Date:<br>&nbsp;<?php  echo " ".$this->invoice->invoice_date->add(new DateInterval('P'.$date_due.'D'))->format('m/d/Y'); ?></td>
+                        </tr>
+			<tr><td></td></tr>
+                        <tr>
+                        	<td style="border:1px solid black;">
+					&nbsp;Amt Due:</td><td align="right" style="border:1px solid black;"><?php echo $currency->toCurrency($this->invoice->amount_due);?>&nbsp;&nbsp;</td>
+                        </tr>
+                        <tr>
+                                 <td style="border:1px solid black;">&nbsp;Amt. &nbsp;&nbsp;Enclosed:</td><td style="border:1px solid black;"></td>
+                        </tr>
+                </table>
+	</td>
     </tr>
 </table>
-<body>
-<table width= "500px">
-<tr>
-      <td width="50%" style="border:1px solid black">
-Bill To: <br><br>
-  <?php echo $this->organization_name; ?><br>
-  <?php echo $this->address1; ?><br>
-  <?php echo $this->city.", ".$this->state." ".$this->zip; ?><br>
-      </td>
-<td></td>
-      <td width="50%">
-<table cellpadding="0" cellspacing="0">
-<tr>
-<td width="50%" style="border:1px solid black">
-Date:<br>
-<?php
-echo date("m/d/Y");
-?>
-</td>
-<td width="50%" style="border:1px solid black">
-Invoice #:
-</td>
-</tr>
-<tr>
-<td width="50%" style="border:1px solid black">
-Term: <br>
-Net 15 days
-</td>
-<td width="50%" style="border:1px solid black">
-Due Date:<br>
-<?php
-$due_date = mktime(0,0,0,date("m"),date("d")+15,date("Y"));
-echo date("m/d/Y",$due_date)
-?>
-</td>
-</tr>
-<tr>
-<td><br></td>
-</tr>
-<tr>
-<td width="50%" style="border:1px solid black">
-Amt Due:
-</td>
-<td width="50%" style="border:1px solid black">
-<?php echo $this->BUtils()->getCurrency(count($this->organizations)*$this->vendorFee); ?>
-</td>
-</tr>
-<tr>
-<td width="50%" style="border:1px solid black">
-Amt. Enclosed:
-</td>
-<td width="50%" style="border:1px solid black">
-
-</td>
-</tr>
+<br/>
+<table cellpadding="0" cellspacing="0" border="1" width="100%" style="padding-top;10px">
+			<tr align="center">
+				<th width="25%">Organization</th>
+				<th width="20%">Amount Due</th>
+                <th width="25%">Amount Paid</th>
+				<th width="15%">Payment #</th>
+				<th width="19%">Status</th>
+			</tr>
+			<?php foreach($this->organizations as $organization){?>
+			<tr>
+				<td width="25%"><?php echo $organization; ?></td>
+				<td width="20%" style="text-align:right"><?php echo $this->BUtils()->getCurrency($this->vendorFee); ?></td>
+				<td width="25%" style="text-align:right">$0.00</td>
+				<td width="15%"></td>
+				<td width="19%">Due</td>
+			</tr>
+			<?php }?>
+			<tr>
+				<td width="25%"><b>Total</b></td>
+				<td width="20%" style="text-align:right"><b><?php echo $this->Butils()->getCurrency(count($this->organizations)*$this->vendorFee); ?></b></td>
+				<td width="25%"></td>
+				<td width="15%"></td>
+				<td width="19%"></td>
+			</tr>
 </table>
 
-      </td>
-    </tr>
-</table>
-<table width="100%">
-    <tr width="100%">
-        <td><b>Greek Organization</b></td>
-<!--        <td><b>Symbol</b></td>-->
-        <td><b>Amount</b></td>
-    </tr>    
-    <?php $count = 1; ?>
-    <?php foreach ($this->organizations as $organization): ?>
-        <tr width="100%">
-            <td><?php echo $organization; ?></td>
-<!--            <td><?php //echo $this->greek_org[$i]; ?></td>-->
-            <td><?php echo $this->BUtils()->getCurrency($this->vendorFee); ?></td>
-        </tr>        
-    <?php endforeach; ?>
-    <tr width="100%">
-<!--        <td>&nbsp;</td>-->
-        <td><b>Total</b></td>
-        <td><b><?php echo $this->BUtils()->getCurrency(count($this->organizations)*$this->vendorFee); ?></b></td>
-    </tr>   
-</table>

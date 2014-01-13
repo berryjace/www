@@ -150,6 +150,12 @@ class VendorProfile {
      * @Column(name="vendor_licensed", type="string", length=50 , nullable=true)
      */
     private $vendor_licensed;
+   
+    /**
+     * @var string $services
+     * @Column(name="services", type="string", length=20 , nullable=true)
+     */
+    private $services;
 
     public function __construct() {
         $this->update_date = new \DateTime(date("Y-m-d H:i:s"));

@@ -62,6 +62,8 @@ class Admin_ReportsController extends Zend_Controller_Action {
 
 	    $this->view->summaryReports = $summaryReportRecords;
 	    $this->view->detailReports = $detailReportRecords;
+	    
+	    $this->view->submission_hash = $submission_hash;
 	}
 
 	if(($report->vendor instanceof \BL\Entity\User)) {
@@ -135,16 +137,15 @@ class Admin_ReportsController extends Zend_Controller_Action {
 	$this->_helper->JSLibs->load_tinymce_assets();
 	//        print_r($this->_getAllParams());
 
-
 	$report = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->findOneBy(array('id' => $this->_getParam('rid')));
 
-	$rtype = $this->_getParam('rtype');
-	if (empty($rtype)) {
+	$sub_hash = $this->_getParam('submission_hash');
+	if (empty($sub_hash)) {
 	    $reports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")
 		    ->findBy(array('vendor' => (int) $report->vendor->id, "year" => $report->year, "quarter" => $report->quarter, "submission_type" => $report->submission_type));
 	} else {
 	    $reports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")
-		    ->findBy(array('submission_hash' => $this->_getParam('rid')));
+		    ->findBy(array('submission_hash' => $sub_hash));
 	}
 
 	$report = $reports[0];
@@ -157,7 +158,8 @@ class Admin_ReportsController extends Zend_Controller_Action {
 	    }
 	    $this->em->flush();
 
-	    $admin = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $this->_helper->BUtilities->getLoggedInUser(), 'account_type' => ACC_TYPE_ADMIN));
+	    $admin = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $this->_helper->BUtilities->getLoggedInUser()));
+	    
 	    $form_email = preg_split('/[;,]/', $admin->email);
 	    $params = array(
 		'to' => preg_split('/[;,]/', $report->vendor->email),
@@ -170,89 +172,94 @@ class Admin_ReportsController extends Zend_Controller_Action {
 
 	    $this->view->success = "";
 	    if (trim($this->_getParam('type') === "Approved")) {
-		/**
-		 * TODO: create invoice
-		 */
-		$amount_due = 0;
-		foreach ($reports as $r) {
-		    $amount_due += $r->royalty_after_adv;
-		}
-		$invoice = new \BL\Entity\Invoice();
-		$invoice->invoice_date = new DateTime();
-		$invoice->created_at = new DateTime();
-		//                $invoice->updated_at = '';
-		//                $invoice->due_date = '';
-		$invoice->invoice_number = $this->view->BUtils()->getInvoiceNumber($report->vendor->id);
-		$invoice->invoice_type = 'Quarterly Report';
-		$invoice->fiscal_year = $report->year;
-		$invoice->quarter = $report->quarter;
-		$invoice->company_name = $report->vendor->organization_name;
-		$invoice->webpage = '';
-		$invoice->invoice_term = 'Due Now';
-		$invoice->address_line1 = $report->vendor->address_line1;
-		$invoice->address_line2 = $report->vendor->address_line2;
-		$invoice->city = $report->vendor->city;
-		$invoice->state = $report->vendor->state;
-		$invoice->zip = $report->vendor->zipcode;
-		$invoice->phone1 = $report->vendor->phone;
-		$invoice->phone2 = $report->vendor->phone2;
-		$invoice->email = $report->vendor->email;
-		$invoice->fax = $report->vendor->fax;
-		$invoice->invoice_status = 'Open';
-		$invoice->payment_status = 'Due';
-		$invoice->display_record = '';
-		$invoice->amount_due = $amount_due;
-		$invoice->amount_paid = '';
-		$invoice->vendor_id = $report->vendor;
-		$this->em->persist($invoice);
-		$this->em->flush();
-
-		$this->view->invoice_id = $invoice->id;
-		/**
-		 * TODO: Save invoice lineitems
-		 */
-		foreach ($reports as $r) {
-		    $lineItems = new \BL\Entity\InvoiceLineItems();
-		    $lineItems->lineitems_number = $this->view->BUtils()->getInvoiceNumber($r->client->id);
-		    $lineItems->invoice_number_li = $invoice->invoice_number;
-		    $lineItems->amount_due = is_null($r->royalty_after_adv) ? (float) 0 : (float) $r->royalty_after_adv;
-		    $lineItems->amount_paid = '';
-		    $lineItems->check_number = '';
-		    $lineItems->payment_status = 'Due';
-		    $lineItems->invoice_status = 'Open';
-		    $lineItems->fiscal_year = $r->year;
-		    $lineItems->description = '';
-		    $lineItems->quarter = $r->quarter;
-		    $lineItems->invoice_id = $invoice;
-		    $lineItems->client_id = $r->client;
-		    $this->em->persist($lineItems);
-		}
-		$this->em->flush();
-
-		/**
-		 * TODO: create invoice pdf
-		 */
-		$lineitems = $this->em->getRepository("BL\Entity\InvoiceLineItems")->getLineItemsForPDF($invoice->id);
-		$this->view->invoice = $invoice;
-		$this->view->lineitems = $lineitems;
-		$html = $this->view->render('reports/invoice-pdf-template.phtml');
-		//                print_r($html);
-		//                die('---------');
-		$pdf_params = array(
-		    'author' => $invoice->vendor_id->organization_name,
-		    'title' => 'Create invoice',
-		    'subject' => 'Invoice',
-		    'pdf_content' => $html,
-		    'file_name' => $invoice->invoice_number,
-		    'file_path' => APPLICATION_PATH . '/../tmp/',
-		    'output_type' => 'F'
-		);
-		$save_to = $this->view->BUtils()->getPDF($pdf_params);
-		$params['file'] = $save_to;
-		/**
-		 * end pdf create
-		 */
-		$this->view->success = "Quarterly royalty report approved successfully!";
+	    	$invoice = $this->em->getRepository("BL\Entity\Invoice")->findOneBy(array("invoice_number" => $report->invoice_num));
+	    	
+	    	if ($invoice == null){
+	    		$amount_due = 0;
+	    		foreach ($reports as $r) {
+	    			$amount_due += $r->royalty_after_adv;
+	    		}
+	    	
+	    		$invoice = new \BL\Entity\Invoice();
+	    		$invoice->invoice_date = new DateTime();
+	    		$invoice->created_at = new DateTime();
+	    		$invoice->invoice_number = $this->view->BUtils()->getInvoiceNumber($report->vendor->id);
+	    		$invoice->invoice_type = 'Royalty Payments';
+	    		$invoice->fiscal_year = $report->year;
+	    		$invoice->quarter = $report->quarter;
+	    		$invoice->company_name = $report->vendor->organization_name;
+	    		$invoice->webpage = '';
+	    		$invoice->invoice_term = 'Due Now';
+	    		$invoice->address_line1 = $report->vendor->address_line1;
+	    		$invoice->address_line2 = $report->vendor->address_line2;
+	    		$invoice->city = $report->vendor->city;
+	    		$invoice->state = $report->vendor->state;
+	    		$invoice->zip = $report->vendor->zipcode;
+	    		$invoice->phone1 = $report->vendor->phone;
+	    		$invoice->phone2 = $report->vendor->phone2;
+	    		$invoice->email = $report->vendor->email;
+	    		$invoice->fax = $report->vendor->fax;
+	    		$invoice->invoice_status = 'Open';
+	    		$invoice->payment_status = 'Due';
+	    		$invoice->display_record = '';
+	    		$invoice->amount_due = $amount_due;
+	    		$invoice->amount_paid = '';
+	    		$invoice->vendor_id = $report->vendor;
+	    		$invoice->invoice_term = "Net 15 days";
+	    	
+	    		$date = new DateTime();
+	    		$date->add(new DateInterval("P15D"));
+	    	
+	    		$invoice->due_date = $date;
+	    	
+	    		$this->em->persist($invoice);
+	    		$this->em->flush();
+	    	
+	    		$this->view->invoice_id = $invoice->id;
+	    	
+	    		foreach ($reports as $r) {
+	    			$lineItems = new \BL\Entity\InvoiceLineItems();
+	    			$lineItems->lineitems_number = $this->view->BUtils()->getInvoiceNumber($r->client->id);
+	    			$lineItems->invoice_number_li = $invoice->invoice_number;
+	    			$lineItems->amount_due = is_null($r->royalty_after_adv) ? (float) 0 : (float) $r->royalty_after_adv;
+	    			$lineItems->amount_paid = '';
+	    			$lineItems->check_number = '';
+	    			$lineItems->payment_status = 'Due';
+	    			$lineItems->invoice_status = 'Open';
+	    			$lineItems->fiscal_year = $r->year;
+	    			$lineItems->description = '';
+	    			$lineItems->quarter = $r->quarter;
+	    			$lineItems->invoice_id = $invoice;
+	    			$lineItems->client_id = $r->client;
+	    			$this->em->persist($lineItems);
+	    		}
+	    		$this->em->flush();
+	    	}
+	    	
+	    	$this->view->invoice_id = $invoice->id;
+	    	
+			$lineitems = $this->em->getRepository("BL\Entity\InvoiceLineItems")->getLineItemsForPDF($invoice->id);
+			$this->view->invoice = $invoice;
+			$this->view->lineitems = $lineitems;
+			$html = $this->view->render('reports/invoice-pdf-template.phtml');
+			//                print_r($html);
+			//                die('---------');
+			$pdf_params = array(
+			    'author' => $invoice->vendor_id->organization_name,
+			    'title' => 'Create invoice',
+			    'subject' => 'Invoice',
+			    'pdf_content' => $html,
+			    'file_name' => $invoice->invoice_number,
+			    'file_path' => APPLICATION_PATH . '/../tmp/',
+			    'output_type' => 'F'
+			);
+			$save_to = $this->view->BUtils()->getPDF($pdf_params);
+			$params['file'] = $save_to;
+			/**
+			 * end pdf create
+			 */
+			$this->view->success = "Quarterly royalty report approved successfully!";
+	    	$invoice->email_date .= date('m-d-Y') . ',';
 	    }
 	    if (trim($this->_getParam('type')) === "Rejected") {
 		$this->view->success = "Quarterly royalty report declined successfully!";
@@ -261,7 +268,6 @@ class Admin_ReportsController extends Zend_Controller_Action {
 	    if (APPLICATION_ENV != 'local') {
 		$this->_helper->BUtilities->send_mail($params);
 	    }
-	    $invoice->email_date .= date('m-d-Y') . ',';
 
 	    foreach ($reports as $r) {
 		$r->email_date = new DateTime(date('Y-m-d'));
@@ -273,6 +279,7 @@ class Admin_ReportsController extends Zend_Controller_Action {
 	    $this->view->title = 'Your quarterly royalty report has been accepted';
 	    $this->view->subject = 'Your quarterly royalty report has been accepted';
 	    $this->view->email_body = "Dear " . $report->vendor->first_name . ",<br /><br />";
+	    $this->view->type = $this->_getParam('type');
 	    if (trim($this->_getParam('type')) === 'Approved') {
 		$this->view->report = $report;
 		$this->view->reports = $reports;
@@ -283,8 +290,8 @@ class Admin_ReportsController extends Zend_Controller_Action {
 		$this->view->vendor_reporting_type = $vendorOperation->vendor_reporting_type;
 
 		$this->view->title = 'Write the email to let the vendor know that their royalty report was accepted';
-		$this->view->subject = 'Your quarterly royalty report has been accepted';
-		$this->view->email_body .="The royalty report that you recently submitted has been accepted by Affinity Consultants.<br /><br />";
+		$this->view->subject = 'Greeklicensing.com :: Quarterly Report Accepted';
+		$this->view->email_body .="The following royalty report has been submitted and accepted. If you have already submitted payment, please ignore the amount due.<br /><br />";
 		$this->view->email_body .= $this->view->render('/reports/report-email-body.phtml');
 	    } else if (trim($this->_getParam('type')) === 'Rejected') {
 		$this->view->title = 'Please state the reason for declining the report in the emailed to the vendor';
@@ -428,63 +435,63 @@ class Admin_ReportsController extends Zend_Controller_Action {
      */
     public function ajaxGetReportsListAction() {
 
-	$this->_helper->BUtilities->setNoLayout();
-	$params = array(
-	    'search' => $this->_getParam('sSearch', ''),
-	    'page_start' => $this->_getParam('iDisplayStart', 1),
-	    'draw_count' => $this->_getParam('sEcho', 1),
-	    'per_page' => $this->_getParam('iDisplayLength', 10),
-	    'year_status' => $this->_getParam('year', ''),
-	    'quarter_status' => $this->_getParam('quarter', 0),
-	    'report_status' => $this->_getParam('report', ''),
-	);
-	
-	error_log("\nreport status: {$this->_getParam('report', 'none')}", 3, "./errorLog.log");
-	
-	/**
-	 * Let's take care of the sorting column to be passed to doctrine.
-	 * DataTable sends params like iSortCol_0.
-	 */
-	$sorting_cols = array(
-	    '0' => 'v.organization_name',
-	    '1' => 'r.status',
-	    '2' => 'r.year',
-	    '3' => 'r.quarter',
-	    '4' => 'r.uploaded_on'
-	);
+        $this->_helper->BUtilities->setNoLayout();
+        $params = array(
+            'search' => $this->_getParam('sSearch', ''),
+            'page_start' => $this->_getParam('iDisplayStart', 1),
+            'draw_count' => $this->_getParam('sEcho', 1),
+            'per_page' => $this->_getParam('iDisplayLength', 10),
+            'year_status' => $this->_getParam('year', ''),
+            'quarter_status' => $this->_getParam('quarter', 0),
+            'report_status' => $this->_getParam('report', ''),
+        );
 
-	$params['sort_key'] = $sorting_cols[$this->_getParam('iSortCol_4', 4)];
-	$params['sort_dir'] = $this->_getParam('sSortDir_4', 'asc');
-	$records = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->getRoyaltyReports($params)->getResult();
-	$params['show_total'] = true;
-	$records_total = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->getRoyaltyReports($params);
+        /**
+         * Let's take care of the sorting column to be passed to doctrine.
+         * DataTable sends params like iSortCol_0.
+         */
+        $sorting_cols = array(
+            '0' => 'v.organization_name',
+            '1' => 'r.status',
+            '2' => 'r.year',
+            '3' => 'r.quarter',
+            '4' => 'r.uploaded_on'
+        );
 
-	$json = '{"iTotalRecords":' . $records_total . ',
-			"iTotalDisplayRecords": ' . $records_total . ',
-					"aaData":[';
-	$first = 0;
-	foreach ($records as $v) {
-	    if ($first++) {
-		$json .= ',';
-	    }
-	    //$json .= '["<a href=\"javascript:;\" class=\"report_link\" rel=\"y:' . $v->year . ',s:' . $v->status . ',v:' . $v->vendor->id . ',r:' . $v->id . '\">' . str_replace(chr(13), "", str_replace(chr(10), "", $v->vendor->organization_name)) . '</a>",
-	    $json .= '["<a href=\"'.$this->view->baseUrl('/admin/vendors/contact/id/'.$v->vendor->id).'\">' . str_replace(chr(13), "", str_replace(chr(10), "", $v->vendor->organization_name)) . '</a>",'.
-		    '"' . (!is_null($v->status) ? '<span class=\'\'>' . '<a href=\"javascript:;\" class=\"fancy_link\" rel=\"/admin/reports/report-details/submission_hash/'.$v->submission_hash.'\">' .  $v->status . '</a></span>' : "<span>N/A</span>") . '",
-						"' . (!is_null($v->year) ? $v->year : "N/A") . '",
+        $params['sort_key'] = $sorting_cols[$this->_getParam('iSortCol_4', 4)];
+        $params['sort_dir'] = $this->_getParam('sSortDir_4', 'asc');
+        $records = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->getRoyaltyReports($params)->getResult();
+        $params['show_total'] = true;
+        $records_total = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->getRoyaltyReports($params);
 
-								"' . (!is_null($v->quarter) ? 'Q' . $v->quarter : "-") . '",
-								"' . (!is_null($v->uploaded_on) ?  $v->uploaded_on->format('m-d-Y h:i:s') : "") . '",
-										"' . '<a href=\"' . $this->view->url(array('module' => 'admin', 'controller' => 'reports', 'action' => 'get-reports', 'vendor_id' => $v->vendor->id), null, true) . '\">View All Reports of this Vendor</a>  ' . '"]';
-	}
-	$json .= ']}';
+        $json = '';
 
-	echo $json;
+        $json = '{"iTotalRecords":' . $records_total . ',
+                        "iTotalDisplayRecords": ' . $records_total . ',
+                                        "aaData":[';
+        $first = 0;
+        foreach ($records as $v) {
+            if ($first++) {
+                $json .= ',';
+            }
+            //$json .= '["<a href=\"javascript:;\" class=\"report_link\" rel=\"y:' . $v->year . ',s:' . $v->status . ',v:' . $v->vendor->id . ',r:' . $v->id . '\">' . str_replace(chr(13), "", str_replace(chr(10), "", $v->vendor->organization_name)) . '</a>",
+            $json .= '["<a href=\"'.$this->view->baseUrl('/admin/vendors/contact/id/'.$v->vendor->id).'\">' . str_replace(chr(13), "", str_replace(chr(10), "", $v->vendor->organization_name)) . '</a>",'.
+                    '"' . (!is_null($v->status) ? '<span class=\'\'>' . '<a href=\"javascript:;\" class=\"fancy_link\" rel=\"/admin/reports/report-details/submission_hash/'.$v->submission_hash.'\">' .  $v->status . '</a></span>' : "<span>N/A</span>") . '",
+                                                "' . (!is_null($v->year) ? $v->year : "N/A") . '",
+
+                                                                "' . (!is_null($v->quarter) ? 'Q' . $v->quarter : "-") . '",
+                                                                "' . (!is_null($v->uploaded_on) ?  $v->uploaded_on->format('m-d-Y h:i:s') : "") . '",
+                                                                                "' . '<a href=\"' . $this->view->url(array('module' => 'admin', 'controller' => 'reports', 'action' => 'get-reports', 'vendor_id' => $v->vendor->id), null, true) . '\">View All Reports of this Vendor</a>  ' . '"]';
+        }
+        $json .= ']}';
+
+        echo $json;
     }
 
     public function revenueUploadAction() {
-	$this->_helper->JSLibs->do_call(array('load_jqui_assets', 'load_fancy_assets', 'load_dataTable_assets'));
-	$this->_helper->BUtilities->setEmptyLayout();
-	//        print_r($this->_getAllParams());
+        $this->_helper->JSLibs->do_call(array('load_jqui_assets', 'load_fancy_assets', 'load_dataTable_assets'));
+        $this->_helper->BUtilities->setEmptyLayout();
+        //        print_r($this->_getAllParams());
     }
 
 }

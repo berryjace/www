@@ -1,0 +1,2 @@
+[19-Feb-2013 16:00:52] PHP Warning:  require_once(Zend/Loader.php): failed to open stream: No such file or directory in /var/www/vhosts/greeklicensing.com/httpdocs/crm/library/Zend/Controller/Front.php on line 24
+[19-Feb-2013 16:00:52] PHP Fatal error:  require_once(): Failed opening required 'Zend/Loader.php' (include_path='./library') in /var/www/vhosts/greeklicensing.com/httpdocs/crm/library/Zend/Controller/Front.php on line 24

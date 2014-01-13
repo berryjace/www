@@ -35,7 +35,7 @@ class SignupController extends Zend_Controller_Action {
                     ->addErrorMessage("Recovery email already exists: Please select a different email or contact Registration@greeklicensing.com so that we may assist you.");
 
             $form->getElement('username')->addValidator(new Zend_Validate_Db_NoRecordExists(array('table' => 'users', 'field' => 'username')), true)
-                    ->addErrorMessage("Username already exists. Please enter a different username.");
+                    ->addErrorMessage("Username already exists or contains a special character (spaces, %, etc). Please enter a different username.");
 
             if ($form->isValid($formData)) {
                 $user = new \BL\Entity\User();
@@ -112,19 +112,23 @@ class SignupController extends Zend_Controller_Action {
     	if ($this->getRequest()->isPost()) {
     		$formData = $this->getRequest()->getPost();
     	
-    		$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array("id"=>$formData["number"], "email"=>$formData["email"]));
+    		$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array("user_code"=>$formData["number"], "email"=>$formData["email"]));
     		
-    		error_log("\nusername " . $vendor->username, 3, "./errorLog.log");
     		if ($vendor == null){
     			$this->_helper->flashMessenger("Sorry, but our records don't match the data you provided, please try again or contact the admin to correct the issue", "Info");
-    			$this->view->error .= "<br />Sorry, but our records don't match the data you provided, please ty again or contact the admin to correct the information";
-    		} else if (!empty($vendor->username) || $vendor->username != '' || $vendor->username != null){
+    			$this->view->error .= "<br />Sorry, but our records don't match the data you provided.<br/> Please try again or contact the admin to correct the information";
+    		} else if (!empty($vendor->username) || $vendor->username != '' || $vendor->username != null || $vendor->password != null){
     			$this->view->error .= "<br/><b style='color:red'>This account already has a username and password, please log in using those credentials.</b><br /> If you cannot remember your account information then <a href='".$this->view->baseUrl("forgot/")."'>click here</a> to recover it.";
     		} else {
     			$key = uniqid();
     			
-    			$this->session->key = $key;
-    			$this->session->vendor_number = $formData["number"];
+    			$vendor->activation_key = $key;
+    			$this->em->persist($vendor);
+    			$this->em->flush();
+    			
+    			$subject = "Greek licensing Existing Vendor";
+    			
+    			if ($vendor->account_type == ACC_TYPE_CLIENT) $subject = "Greek licensing Existing Client";
     			
     			$this->view->key = $key;
     			$this->view->organization_name = $vendor->organization_name;
@@ -133,14 +137,14 @@ class SignupController extends Zend_Controller_Action {
     				'to_name'=>$vendor->organization_name,
     				'from'=>'registration@greeklicensing.com',
     				'from_name'=>'Greek Licensing Registration',
-    				'subject'=>'Greek licensing Existing Vendor',
+    				'subject'=>$subject,
     				'body'=>$this->view->render('emails/existing-users.phtml')
     			);
     			
     			$send = $this->_helper->BUtilities->send_mail($params);
     			
     			if (!$send){
-    				
+    				error_log("\nerror in sending new user email", 3, "./errorLog.log");
     			}
     			
                 $this->_helper->flashMessenger("An email has been sent to your recovery address contianing a unique key and a link to the next step.", "Info");
@@ -161,17 +165,16 @@ class SignupController extends Zend_Controller_Action {
     	 
     	$this->view->form = $form;
     	
-    	error_log("\nsession: " . $this->session->key . " number " . $this->session->vendor_number, 3, "./errorLog.log");
-    	
     	if ($this->getRequest()->isPost()) {
     		$formData = $this->getRequest()->getPost();
     		
-    		error_log("\nformdata: " . $formData["key"] . " number " . $formData["number"], 3, "./errorLog.log");
+    		$user = $this->em->getRepository("BL\Entity\User")->findOneBy(array("activation_key"=>$formData["key"], "user_code"=>$formData["number"]));
     		
-    		if ($formData["key"] == $this->session->key && $formData["number"] == $this->session->vendor_number){
-    			$this->_redirect('signup/register-user/id/' . $formData["number"]);
+    		if ($user != null){
+    			$this->_redirect('signup/register-user/id/' . $user->id);
     		} else {
     			$this->_helper->flashMessenger("I'm sorry, but the information you have provided is not correct, please try again.", "Info");
+    			$this->view->error = ("*I'm sorry, but the information you have provided is not correct, please try again");
     		}
     	}
     }
@@ -182,7 +185,7 @@ class SignupController extends Zend_Controller_Action {
     	
     	$id = $this->_getParam("id");
     	 
-    	$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$id));
+    	$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id' => $id));
     	
     	$this->view->form = $form;
     	
@@ -190,28 +193,41 @@ class SignupController extends Zend_Controller_Action {
     		$formData = $this->getRequest()->getPost();
     		
     		if ($form->isValid($formData)){
-    			
-    			$vendorTest = $this->em->getRepository('BL\Entity\User')->findOneBy(array('username'=>$formData['username']));
-    			
-    			$bIsSame = false;
-    			
-    			if ($vendorTest != null){
-    				if ($vendorTest->id == $id) $bIsSame = true;
-    			}
-    			
-    			if (empty($vendorTest) || count($vendorTest) <= 0 || $bIsSame){
-    				$vendor->username = $formData["username"];
-    				$vendor->password = md5($formData["password"]);
-    				
-    				$this->em->persist($vendor);
-    				$this->em->flush();
-    				
-    				$this->_redirect('signup/registered');
+
+    			if (!ctype_alnum($formData['username'])){
+    				$this->view->error = "<span style='color:red;'>Please enter a username that consists only of letters and numbers (no spaces, or special characters)</span>";
+    			} else if ($formData['password'] != $formData['confirm_password']){
+    				$this->view->error = "<span style='color:red'>Please enter the same information in both password fields</span>";
     			} else {
-    				$this->_helper->flashMessenger("I'm sorry, but the username you have provided is already taken, please try again.", "Info");
-    				$this->view->error = "<span style='color:red'>Username has been taken</span>";
+	    			$vendorTest = $this->em->getRepository('BL\Entity\User')->findOneBy(array('username'=>$formData['username']));
+	    			
+	    			$bIsSame = false;
+	    			
+	    			if ($vendorTest != null){
+	    				if ($vendorTest->id == $id) $bIsSame = true;
+	    			}
+	    			
+	    			if (empty($vendorTest) || count($vendorTest) <= 0 || $bIsSame){
+	    				$vendor->username = $formData["username"];
+	    				$vendor->password = md5($formData["password"]);
+	    				$vendor->activation_key = null;
+	    				$vendor->reg_status = "activated";
+	    				
+	    				$role = $this->em->getRepository("BL\Entity\Role")->findOneBy(array('role_name' => 'vendor'));
+	    				
+	    				if ($vendor->account_type == 3) $role = $this->em->getRepository("BL\Entity\Role")->findOneBy(array('role_name'=>'client'));
+	    				if(!isset($vendor->roles))//added if statment	
+	    					$vendor->roles->add($role);
+	    				
+	    				$this->em->persist($vendor);
+	    				$this->em->flush();
+	    				
+	    				$this->_redirect('signup/registered');
+	    			} else {
+	    				$this->_helper->flashMessenger("I'm sorry, but the username you have provided is already taken, please try again.", "Info");
+	    				$this->view->error = "<span style='color:red'>Username has been taken</span>";
+	    			}
     			}
-    			
     		} else {
     		}
     		

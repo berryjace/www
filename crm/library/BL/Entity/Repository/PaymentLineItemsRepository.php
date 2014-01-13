@@ -33,6 +33,31 @@ class PaymentLineItemsRepository extends EntityRepository {
 //	\Zend_Debug::dump($query->getArrayResult());	exit();
         return $query->getResult();
     }
+    public function getLineItemsByVendor($year) {
+        /*
+        $q = $this->_em->createQuery("select t from BL\Entity\PaymentLineItems t where t.pmt_id='{$payment_id}'");  //ex- payment_id
+        return $q->getResult();
+         *
+         */
+	 $whereclause = "";
+	if($year!="0")
+		$whereclause ='where p.payment_year =\''.$year.'\'';
+	else
+		$whereclause="";
+         $query = '
+            SELECT t, c,p,i
+            FROM BL\Entity\PaymentLineItems t
+            LEFT JOIN t.client c
+            LEFT JOIN t.pmt_id p
+            LEFT JOIN p.invoice i
+	    '.$whereclause.'
+	    order BY i.vendor_id,p.payment_quarter,p.payment_year
+            ';
+
+        $query = $this->_em->createQuery($query);
+//      \Zend_Debug::dump($query->getArrayResult());    exit();
+        return $query->getResult();
+    }
     public function getRowsBySaveId($payment_id) {
         $q = $this->_em->createQuery("SELECT t from BL\Entity\PaymentLineItems t where t.pmt_id='{$payment_id}'");
         return $q->getResult();

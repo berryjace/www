@@ -380,7 +380,7 @@ $(document).ready(function() {
                     type: 'POST',
                     beforeSend: function() { $('#product_add_loader').show(); },
                     complete: function() { $('#product_add_loader').hide(); },
-                    url:  '<?php echo $this->url(array('controller' => 'license', 'action' => 'other-check')); ?>?otherid='+otherid+'&productName='+$('#other_product').val(),
+                    url:  '<?php echo $this->url(array('controller' => 'vendors', 'action' => 'other-check')); ?>?otherid='+otherid+'&productName='+$('#other_product').val(),
                     cache: false,
                     success: function(html)
                         {

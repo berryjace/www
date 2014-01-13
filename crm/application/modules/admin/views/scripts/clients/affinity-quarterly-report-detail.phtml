@@ -1,0 +1,165 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('reports/reports-sidebar-menus.phtml');
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<div class="one">
+    <div style="float: right;"><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'affinity-report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>View Affinity Report</span></a></div>
+<div style="float: right;"><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'quarterly-report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>View Client Yearly Report</span></a></div>
+    <div style="float: right;"><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'affinity-quarterly-report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>View Affinity Yearly Report</span></a></div>
+    <div class="one_fourth"><h2 class="grid_cap">Royalty Report Detail</h2></div>
+</div>
+<div class="spacer"></div>
+<table cellpadding="0" cellspacing="0" border="0" class="dyntable sTable2" id="reports-data-table">
+    <thead>
+        <tr>
+            <th class="head0" width="30%">Company Name</th>
+            <th class="head1">Quarter 1</th>
+            <th class="head0">Quarter 2</th>
+            <th class="head1">Quarter 3</th>
+            <th class="head0">Quarter 4</th>
+            <th class="head1">Total Amount</th>
+        </tr>
+
+    </thead>
+    <?php
+    $totalClientAmount = 0;
+    $arr = array();
+    foreach ($this->reportDetail as $item) {
+	?>
+	<?php
+	$amcAmount = 0;
+	$clientAmount = 0;
+
+	if(isset($arr[$item->pmt_id->vendor->organization_name]))
+	{
+		$arr[$item->pmt_id->vendor->organization_name][4] = 1+$arr[$item->pmt_id->vendor->organization_name][4];
+	}
+	else
+	{
+		$arr[$item->pmt_id->vendor->organization_name] = array(0,0,0,0,1,$item->pmt_id->vendor->organization_name);
+	}
+
+	if (isset($item->pmt_id->invoice)) 
+	{
+	    if (($item->amount_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+		$totalAmount = $item->amount_paid;
+		if ($item->sharing == 1) {
+		    $amcAmount = ($item->amount_paid * $item->percent_amc);
+		}
+		$clientAmount = $item->amount_paid - $amcAmount;
+	    } elseif (($item->late_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+		$totalAmount = $item->late_paid;
+		if ($item->sharing == 1) {
+		    $amcAmount = ($item->late_paid * $item->percent_amc);
+		}
+		$clientAmount = $item->late_paid - $amcAmount;
+	    } elseif (($item->adv_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+		$totalAmount = $item->adv_paid;
+		if ($item->sharing == 1) {
+		    $amcAmount = ($item->adv_paid * $item->percent_amc);
+		}
+		$clientAmount = $item->adv_paid - $amcAmount;
+	    } else {
+		$amcAmount = 0;
+		$clientAmount = 0;
+		$totalAmount = 0;
+	    }
+	} 
+	
+	else 
+	{
+	    if (($item->amount_paid)) {
+		$totalAmount = $item->amount_paid;
+		if ($item->sharing == 1) {
+		    $amcAmount = ($item->amount_paid * $item->percent_amc);
+		}
+		$clientAmount = $item->amount_paid - $amcAmount;
+	    } elseif (($item->late_paid)) {
+		$totalAmount = $item->late_paid;
+		if ($item->sharing == 1) {
+		    $amcAmount = ($item->late_paid * $item->percent_amc);
+		}
+		$clientAmount = $item->late_paid - $amcAmount;
+	    } elseif (($item->adv_paid)) {
+		$totalAmount = $item->adv_paid;
+		if ($item->sharing == 1) {
+		    $amcAmount = ($item->adv_paid * $item->percent_amc);
+		}
+		$clientAmount = $item->adv_paid - $amcAmount;
+	    } else {
+		$amcAmount = 0;
+		$clientAmount = 0;
+		$totalAmount = 0;
+	    }
+	}
+	$arr[$item->pmt_id->vendor->organization_name][$item->payment_quarter] = $arr[$item->pmt_id->vendor->organization_name][$item->payment_quarter]+$amcAmount;
+}
+	ksort ($arr);
+	$totals = array(0,0,0,0,0,0);
+	
+	foreach($arr as $item)
+	{
+	?>
+        <tr>
+    	<td><?php echo $item[5]; ?></td>
+    	<td><?php echo $item[0]; ?></td>
+	<td><?php echo $item[1]; ?></td>
+	<td><?php echo $item[2]; ?></td>
+	<td><?php echo $item[3]; ?></td>
+    	<td><?php echo $item[0]+$item[1]+$item[2]+$item[3]; ?></td>
+        </tr>
+	<?php
+	$totals[1] += $item[0];
+	$totals[2] += $item[1];
+	$totals[3] += $item[2];
+	$totals[4] += $item[3];
+	$totals[5] += $item[0]+$item[1]+$item[2]+$item[3];
+	
+    }
+    ?>
+    <tr>
+        <td align="right"><strong>Totals:</strong></td>
+        <td><?php echo $totals[1]; ?></td>
+	<td><?php echo $totals[2]; ?></td>
+	<td><?php echo $totals[3]; ?></td>
+	<td><?php echo $totals[4]; ?></td>
+	<td><?php echo $totals[5]; ?></td>
+    </tr>
+</table>
+<br>
+<style type="text/css">
+    .dataTables_processing {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100px;
+        margin-left: -125px;
+        background-color: #E30;
+        text-align: center;
+        color: #FFF;
+        padding: 2px 0;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+    }
+    .sTable2 tbody tr.selected td{
+        background-color: #FFFFCC;
+    }
+    .fancybox-title-inside{
+        text-align: left;
+    }
+    .leftalign{float: left;}
+    .rightalign{float: right;}
+    .Pending {
+        color: #FF6600;
+    }
+    .Approved {
+        color: #078000;
+    }
+    .Rejected {
+        color: #FF0000;
+    }
+    .Past {
+        color: #FF0000;
+    }
+
+</style>

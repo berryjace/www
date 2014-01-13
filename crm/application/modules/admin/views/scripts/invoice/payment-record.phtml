@@ -3,6 +3,14 @@ $this->placeholder('main_side_bar')->captureStart();
 echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'invoices', 'id' => $this->invoice->vendor_id->id));
 $this->placeholder('main_side_bar')->captureEnd();
 if (!is_null($this->form->vendorName)) error_log("\nform is set on view", 3, "./errorLog.log");
+
+$day = date('z') + 1;
+
+$quarter = 1;
+
+if ($day > 310 || $day <= 37) $quarter = 2;
+if ($day > 37 && $day <= 127) $quarter = 3;
+if ($day > 127 && $day <= 218) $quarter = 4;
 ?>
 
 <div class="left_div">
@@ -43,7 +51,7 @@ if (!is_null($this->form->vendorName)) error_log("\nform is set on view", 3, "./
                 <?php $i = $total_due = $total_paid = 0; ?>
                 <?php 
                 	$totalAMC = $totalORG = 0;
-                	error_log("\nthis licenses: " . count($this->licenses), 3, "./errorLog.log");
+                	error_log("\nthis items: " . count($this->items), 3, "./errorLog.log");
                 	
                 foreach ($this->items as $item): ?>
                     <?php
@@ -53,20 +61,52 @@ if (!is_null($this->form->vendorName)) error_log("\nform is set on view", 3, "./
 		    		
 		    		$amtToAMC = "0";
 		    		$amtToOrg = $this->paymentData[$i]['paid'];
+		    		$percent = "0.30";
+		    		
+		    		$sharing = '1';
+		    		
+		    		if (!is_null($this->operation[$i])){
+		    			if ($this->operation[$i]->sharing == '1' || $this->operation[$i]->sharing == null) $sharing = '1';
+		    			else $sharing = '0';
+		    		}
 		    		
 		    		if (!is_null($this->licenses[$i])){
-				    	if (strtolower($this->licenses[$i]->sharing) == "yes" && !is_null($this->operation[$i])){
-							$percent = floatval($this->operation[$i]->commission_per);
+						error_log("\n license is not null: " . $this->licenses[$i]->sharing, 3, "./errorLog.log");
+		    			if (strtolower($this->licenses[$i]->sharing) == "yes"  || $this->licenses[$i]->sharing == null){
+							error_log(" setting sharing to value", 3, "./errorLog.log");
+		    				$sharing = '1';
+		    			} else {
+							error_log(" setting sharing to 0", 3, "./errorLog.log");
+		    				$sharing = '0';
+		    			}
+		    		}
+		    		
+			    	if ($sharing == '1'){
+						if (!is_null($this->operation[$i])){
+							$percent = $this->operation[$i]->commission_per;
 							
-							error_log("\nPercent: " . $percent, 3, "./errorLog.log");
+							if ($percent == null) $percent = '0.30';
+						} else {
+							$percent = '0.30';
+						}
+					} else {
+						$percent = '0.00';
+					}
+					
+					if ($sharing == null){
+						$sharing = '1';
+						if (!is_null($this->operation[$i])){
+							$percent = $this->operation[$i]->commission_per;
 							
-							if ($percent > 0){
-							
-								$amtToAMC = (floatval($this->paymentData[$i]['paid'])*$percent);
-								$amtToOrg = $this->paymentData[$i]['paid'] - $amtToAMC;
-							}
-				    	}
-			    	}
+							if ($percent == null) $percent = '0.30';
+						} else {
+							$percent = '0.30';
+						}
+					}
+		    		
+		    		$amtToAMC = (floatval($this->paymentData[$i]['paid'])*$percent);
+		    		$amtToOrg = $this->paymentData[$i]['paid'] - $amtToAMC;
+		    		
 			    	$totalAMC += $amtToAMC;
 			    	$totalORG += $amtToOrg;
 			    	
@@ -74,9 +114,8 @@ if (!is_null($this->form->vendorName)) error_log("\nform is set on view", 3, "./
                     <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
                         <td><?php echo $orgnizationName ?></td>
                         <td class = "money"><?php echo ($this->paymentData[$i]['paid'] != '')? $currency->toCurrency($this->paymentData[$i]['paid']): "0"; ?></td>
-                        <td><?php echo (!is_null($this->licenses[$i]))? $this->licenses[$i]->sharing : "no"; ?></td>
-                        <td><?php echo (!is_null($this->licenses[$i]))? (strtolower($this->licenses[$i]->sharing) == "yes")? (!is_null($this->operation[$i]))? (!is_null($this->operation[$i]->commission_per))? $this->operation[$i]->commission_per: '0' : '0' : '0' :'0'; ?></td>
-                        <?php error_log("\nAmtToAmc: " . $amtToAMC, 3, "./errorLog.log");?>
+                        <td><?php echo ($sharing == '1')? "yes" : "no"; ?></td>
+                        <td><?php echo $percent . "%"; ?></td>
                         <td class = "money"><?php echo $currency->toCurrency($amtToAMC); ?></td>
                         <td class = "money"><?php echo $currency->toCurrency($amtToOrg); ?></td>
                     </tr>
@@ -170,6 +209,8 @@ if (!is_null($this->form->vendorName)) error_log("\nform is set on view", 3, "./
 
  		    console.log("due " + due + " payment " + payment + " paid " + paid + " totalPaid " + totalPaid + " totalRemains ");
             });
+        
+    	$('#quarter>[value="<?php echo $quarter; ?>"').attr("selected", "selected");
 
         $('#continue').on('click', function(){
             

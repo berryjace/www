@@ -42,7 +42,9 @@ class Client_ArtworksController extends Zend_Controller_Action {
                     $artwork = new $class();
                     $artwork->title = $titles[$key];
                     $artwork->file_url = $pic;
-                    $artwork->file_extension = end(explode('.', $pic));
+		    $parts = explode('.',$pic);
+                    $ext = end($parts);
+                    $artwork->file_extension = $ext;
                     $artwork->User = $client;
                     $artwork->upload_date = new DateTime();
                     $this->em->persist($artwork);
@@ -95,8 +97,10 @@ class Client_ArtworksController extends Zend_Controller_Action {
             $artwork = $this->em->getRepository("BL\Entity\ClientArtwork")->findOneBy(array('id' => $this->_getParam('id', ''), 'User' => $this->_helper->BUtilities->getLoggedInUser()));
             if (sizeof($artwork)) {
                 $targetDir = APPLICATION_PATH . '/../assets/files/artworks/';
-                @unlink($targetDir . $artwork->file_url);
-                @unlink($targetDir . 'thumbs/_thumb' . $artwork->file_url);
+		if(file_exists($targetDir . $artwork->file_url))
+                        @unlink($targetDir . $artwork->file_url);
+                if(file_exists($targetDir . 'thumbs/_thumb' . $artwork->file_url))
+                        @unlink($targetDir . 'thumbs/_thumb' . $artwork->file_url);
                 $this->em->remove($artwork);
                 $this->em->flush();
                 $this->em->clear();

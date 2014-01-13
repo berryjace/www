@@ -27,9 +27,9 @@ class Admin_Form_WhiteLabel extends Zend_Form {
                 ->addValidators(array(
                     array('Count', false, 1),
                     array('Size', false, 2097152),
-                    array('Extension', false, 'gif,jpg,png'),
+                    array('Extension', false, 'gif,jpg,jpeg,png'),
                     array('ImageSize', false, array('minwidth' => 100,
-                            'minheight' => 100,
+                            'minheight' => 85,
                             'maxwidth' => 3500,
                             'maxheight' => 3500))
                 ))

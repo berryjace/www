@@ -114,13 +114,25 @@ $this->headTitle('Create New Notification');
                 <div class="one_third">
                     Filter Clients: <br>
                     <div style="float:left"><input type="text" size="22" id="box5Filter" /></div>
-                    <div style="float:left">&nbsp;&nbsp;<button id="box5Clear" type="button" class="button button_black" style="height:30px; margin-top: -2px;">Clear</button></div>
+                    <div style="float:left">&nbsp;&nbsp;<button id="box5Clear" type="button" class="button button_black" style="height:30px; margin-top: -2px;">Clear</button>
+                    </div>
+                    <br/>
+                    <div class="clear"></div>
+                    <div style="float:left;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status:</div><br/>
+                   	<div style="float:left;">&nbsp;&nbsp;<select id="box1Statuses">
+                   	<option value="all">All Status Types</option>
+                   	<?php foreach($this->client_groups as $cat=>$v){?>
+                   	<option value="<?php echo $cat;?>"><?php echo $cat;?></option>
+                   	<?php }?>
+                   	</select>
+                   	</div>
                     <div class="one_fifth" style="margin-left:10px;display: none" id="client_wait">
                         <img style="margin-top:8px;" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif">
                     </div>
                 </div>
                 <div class="clear"></div>
                 <div class="one_fifth" style="width:auto; margin-right:10px">
+                	<br/>
                     <?php echo $this->form->left_client; ?>
                 </div>
                 <div style="height:175px; width: 48px; float:left">
@@ -134,6 +146,7 @@ $this->headTitle('Create New Notification');
                     </div>
                 </div>
                 <div class="one_fifth" style="width:auto; margin-left:10px">
+                	Recipient List:<br/>
                     <?php echo $this->form->right_client; ?>
                 </div>
             </div>
@@ -167,8 +180,12 @@ $this->headTitle('Create New Notification');
                 <div class="one_half">
                     Filter Vendors: <br>
                     <div style="float:left"><input type="text" size="22" id="box3Filter" /></div>
-                    <div style="float:left">&nbsp;&nbsp;<button id="box3Clear" type="button" class="button button_black" style="height:30px; margin-top: -2px;">Clear</button></div>
+                    <div style="float:left">&nbsp;&nbsp;<button id="box3Clear" type="button" class="button button_black" style="height:30px; margin-top: -2px;">Clear</button>
+                    </div>
+                    <br/>
+                    <div class="clear"></div>
                    	<div style="float:left;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status:</div>
+                   	<br/>
                    	<div style="float:left;">&nbsp;&nbsp;<select id="box3Statuses">
                    	<option value="all">All Status Types</option>
                    	<?php foreach($this->vendor_groups as $cat=>$v){?>
@@ -182,6 +199,7 @@ $this->headTitle('Create New Notification');
                 </div>
                 <div class="spacer clear"></div>
                 <div class="one_fifth" style="width:auto; margin-right:10px">
+                	<br/>
                     <?php echo $this->form->left_vendor; ?>
                 </div>
                 <div style="height:175px; width: 48px; float:left">
@@ -195,6 +213,7 @@ $this->headTitle('Create New Notification');
                     </div>
                 </div>
                 <div class="one_fifth" style="width:auto; margin-left:10px">
+                	Recipient List:<br/>
                     <?php echo $this->form->right_vendor; ?>
                 </div>               
             </div>            
@@ -244,6 +263,20 @@ $this->headTitle('Create New Notification');
 		
 	<?php }?>
 </div>
+<div class="clientCatHolder">
+	<div id="jqResultShower2">
+	</div>
+	<?php 
+	foreach($this->client_groups as $id=>$grp){
+	?><div class='jqFindClientGroup' title='<?php echo $id;?>'>
+		<?php foreach($grp as $i=>$cli){?>
+			<div class='jqClientItem' title='<?php echo $i;?>'>
+				<p><?php echo $cli;?></p>
+			</div>
+			<?php }?>
+	</div>	
+	<?php } ?>
+</div>
 <!-- -->
 
 <link href="<?php echo $this->baseUrl("assets"); ?>/css/960_12_fluid.css" rel="stylesheet" type="text/css" media="all">
@@ -261,6 +294,7 @@ $this->headTitle('Create New Notification');
         background: white url('<?php echo $this->baseUrl("assets"); ?>/images/loading.gif') right center no-repeat;
     }
     .vendorCatHolder{ display: none;}
+    .clientCatHolder{ display: none;}
     #left_vendor,#right_vendor,#left_client,#right_client{width:250px;}
 </style>
 
@@ -716,15 +750,67 @@ $this->headTitle('Create New Notification');
 		console.log("got here: " + $('#box3Filter').attr('size'));
 		
 		$('#box3Filter').keyup(function(){
-				filter($('#box3Filter').val(), $('#box3Statuses').attr('value'));
-			});
+			filterVendor($('#box3Filter').val(), $('#box3Statuses').attr('value'));
+		});
 
-		$('#box3Statuses').change(function(){
-					filter($('#box3Filter').val(), $('#box3Statuses').attr('value'));
-			});
-    });
+	$('#box3Statuses').change(function(){
+				filterVendor($('#box3Filter').val(), $('#box3Statuses').attr('value'));
+		});
 
-   function filter(text, status){
+	$('#box5Filter').keyup(function(){
+		filterClient($('#box5Filter').val(), $('#box1Statuses').attr('value'));
+	});
+
+	$('#box1Statuses').change(function(){
+		filterClient($('#box5Filter').val(), $('#box1Statuses').attr('value'));
+	});
+		
+});
+
+function filterClient(text, status){
+   console.log("filtering: " + text + " " + status);
+   var html="";
+	var checker = [];
+
+
+	$('#right_client>option').each(function(){
+		checker.push($.trim($(this).attr('value')));
+	});
+	
+	if (status == "all"){
+		$('.jqFindClientGroup>.jqClientItem').each(function(){
+			var index = $.trim($(this).attr('title'));
+	 			var bFound = false;
+
+			checker.forEach(function(val){
+				if (val == index) bFound = true;
+			});
+			
+			if ($(this).text().toLowerCase().indexOf(text.toLowerCase()) >= 0 && bFound == false){
+				html += "<option value=\"" + $.trim($(this).attr('title')) + "\" label=\"" + $.trim($(this).text()) + "\">" + $.trim($(this).text()) + "</option>";
+			}
+		});
+	} else {
+		var selector = '.jqFindClientGroup[title="' + status + '"]>.jqClientItem';
+		$(selector).each(function(){
+			
+			var index = $.trim($(this).attr('title'));
+	 			var bFound = false;
+
+			checker.forEach(function(val){
+				if (val == index) bFound = true;
+			});
+			
+			if ($(this).text().toLowerCase().indexOf(text.toLowerCase()) >= 0 && bFound == false){
+				html += "<option value=\"" + $.trim($(this).attr('title')) + "\" label=\"" + $.trim($(this).text()) + "\">" + $.trim($(this).text()) + "</option>";
+			}
+		});
+	}
+
+	$('#left_client').html(html);
+}
+
+function filterVendor(text, status){
 	   console.log("filtering: " + text + " " + status);
 	   var html="";
 		var checker = [];

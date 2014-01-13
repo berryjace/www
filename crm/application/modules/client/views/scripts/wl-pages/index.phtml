@@ -13,14 +13,14 @@
 			if ($count > 0){
 				$id = rand(0, $count-1);
 			?>
-			<a href="<?php echo $bans[$id]->link;?>">
+			<a href="<?php echo $bans[$id]->link;?>" target="_blank"> <!-- MODIFIED -->
 				<img src="<?php echo $this->baseUrl('assets');?>/files/banners/<?php echo $bans[$id]->image;?>" />
 			</a>
 			
 		<?php } else {}?>
 	</div>
-    <h1 class="h1"><?php echo $this->clientProfile->user_id->organization_name; ?></h1>
-    <div class="" style="background-color: #FFF;padding:20px; border:1px solid #ddd;box-shadow:inset 0 0 20px #eee; overflow: auto;"><h2 style="font-size:20px;margin-bottom: 10px;">Narrow Result</h2>
+    <!-- <h1 class="h1" style="background-color: #FFF; margin:0px"><?php echo $this->clientProfile->user_id->organization_name; ?></h1>  HIDDEN-->
+    <div class="" style="background-color: #FFF;padding:20px; border:1px solid #ddd;box-shadow:inset 0 0 20px #eee; overflow: auto;"><h2 style="font-size: 16px;margin-bottom: 10px;">Search for Products</h2>
         <form action="" method="GET" id="<?php echo $this->searchForm->getName(); ?>">
         <div class="left" style="width:20%">
             <?php echo $this->searchForm->service; ?>
@@ -54,28 +54,21 @@
     </div>
 
     <div style="background-color: white; border:1px solid #eee; padding:18px; padding-right:0px;">
-        <div id="paging_container3" class="">
+        <div id="paging_container3" class="" style="display: none;">
             <ul class="alt_content">
         <?php while ($row = mysql_fetch_assoc($this->vendors)) { ?>
                 <div class="outer_b">
                         <div class="logo_b">
                             <ul>
-                                <li>
+                                <!-- Start of changes -->
+                                <li style="height: 150px; overflow: hidden;">	
                                     <a href="<?php echo $this->baseUrl('client/wl-pages/vendor-profile/c/'.$this->slug.'/vid/'.$row['id']) ?>">
-                                        <?php
-                                        if (trim($row['logo_url']) != '') {
-                                            ?>
-                                            <img class="resized_img" src="<?php echo $this->baseUrl("assets"); ?>/files/vendor_profile/thumbs/<?php echo $row['logo_url']; ?>" />
-                                            <?php
-                                        } else {
-                                            ?>
-                                            <img src="<?php echo $this->baseUrl("assets"); ?>/images/OLP_Logo_GRAY_150.jpg" />
-                                            <?php
-                                        }
-                                        ?>
-
+                                    	<div class="img_container" style="background: url('<?php if (trim($row['logo_url']) != '') { echo $this->baseUrl("assets"); ?>/files/vendor_profile/<?php echo $row['logo_url'];
+                                        } else { echo $this->baseUrl("assets"); ?>/images/OLP_Logo_GRAY_150.jpg<?php } ?>') center no-repeat; background-size: contain;">
+                                    	</div>
                                     </a>
                                 </li>
+                                <!-- End of changes -->
                             </ul>
                         </div>
                         <div class="info_b">
@@ -104,6 +97,23 @@
     	max-height: 100px;
     	overflow: hidden;
     }	
+	.btn{
+	background: <?php echo $this->whiteLabel->button_color; ?>;
+
+	}
+	.btn:hover{
+	background: <?php echo $this->whiteLabel->button_color; ?>;
+	}
+	.page_navigation a, .alt_page_navigation a {
+	background: <?php echo $this->whiteLabel->button_color; ?>;
+    }
+    .resized_img{
+    	max-width : 150px;
+    	max-height: 150px;
+    }
+    .img_container{
+		height : 150px;
+	}
 </style>
 <script type="text/javascript">
 
@@ -113,8 +123,9 @@
                 items_per_page: 15,
                 item_container_id: '.alt_content',
                 nav_panel_id: '.alt_page_navigation'
-
             });
+
+			$('#paging_container3').show();
 
             $('#view_previous').on('click', function() {
 			
@@ -128,21 +139,25 @@
 		$('#zip').attr("value", "<?php echo (!empty($this->zip_code))? $this->zip_code:"Zip Code"?>");
 		$('#city').attr("value", "<?php echo (!empty($this->city))? $this->city:"City or State" ?>");
 
-        $(".resized_img").each(function(){
+		//*   
+     	$(".resized_img").each(function(){
 
-            var dim = $(this).width()/$(this).height();
+			var height = $(this).height();
 
-            var bWide = $(this).width() > $(this).height();
+			console.log("height: " + height + " src: " + $(this).attr("src"));
 
-            if (bWide){
- 				$(this).width("150px");
- 				$(this).height(dim*150 + "px");
+			$(this).css("margin-top", (75 - (height/2)) + "px");
+        });//*/
 
-            } else {
- 				$(this).width(dim*150 + "px");
- 				$(this).height("150px");
-            }
-     	   
+        $("a.next_link,a.last_link,a.page_link,a.first_link,a.previous_link").on("click", function(){
+            $(".resized_img").each(function(){
+
+				var height = $(this).height();
+	
+				console.log("height: " + height + " src: " + $(this).attr("src"));
+	
+				$(this).css("margin-top", (75 - (height/2)) + "px");
+	        });
         });
         
 		<?php 

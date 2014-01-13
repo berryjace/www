@@ -46,7 +46,17 @@ class Banner {
      * @Column(type="datetime")
      */
     private $added_on;
+    
+    /**
+     * @Column(type="datetime",nullable=true)
+     */
+    private $start_date;
 
+    /**
+     * @Column(type="datetime",nullable=true)
+     */
+    private $end_date;
+    
     /**
      * @ManyToOne(targetEntity="User")
      * @JoinColumn(name="added_by", referencedColumnName="id", nullable=true)

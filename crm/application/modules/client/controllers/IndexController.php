@@ -20,6 +20,11 @@ class Client_IndexController extends Zend_Controller_Action {
         $this->_redirect('/client/license/index');
     }
     
+    public function helpAction(){
+        $this->_helper->JSLibs->load_jqui_assets();
+    	$this->view->isHelp = true;
+    }
+    
     /**
      * Function to Validate on the form using AJAX
      * @author Rashed
@@ -46,12 +51,13 @@ class Client_IndexController extends Zend_Controller_Action {
                         'email' => $client->email,
                         'web_address' => $client->website,
                         'phone' => $client->phone,
-                        'fax' => $client->fax
+                        'fax' => $client->fax,
+        				'contact_person' => $client->agreement_notification_email
                         );
         if(count($clientProfile)>0){
             $existing_data['description'] = $clientProfile->greek_royalty_description;
             $existing_data['greek_letters'] = $clientProfile->greek_name;
-            $existing_data['contact_person'] = $clientProfile->greek_approved_contact_person;
+            //$existing_data['contact_person'] = $clientProfile->greek_approved_contact_person;
         }
 
         
@@ -66,7 +72,7 @@ class Client_IndexController extends Zend_Controller_Action {
         $form = new Client_Form_Contact();
         $this->view->form = $form;
 
-
+		$this->view->isHelp = false;
 
         if ($this->getRequest()->isPost()) {
             $formData = $this->getRequest()->getPost();
@@ -80,7 +86,8 @@ class Client_IndexController extends Zend_Controller_Action {
                 $client->email = $form->getValue('email');
                 $client->website = $form->getValue('web_address');
                 $client->phone = $form->getValue('phone');
-                $client->fax = $form->getValue('fax');                
+                $client->fax = $form->getValue('fax');     
+                $client->agreement_notification_email = $form->getValue('contact_person');           
                 $this->em->persist($client);
                 $this->em->flush();
 
@@ -147,7 +154,7 @@ class Client_IndexController extends Zend_Controller_Action {
             $existing_data['greek_number_of_alumni'] = $clientProfile->greek_number_of_alumni;
             $existing_data['greek_number_of_undergrads'] = $clientProfile->greek_number_of_undergrads;
             $existing_data['greek_number_of_alumni_chapters'] = $clientProfile->greek_number_of_alumni_chapters;
-            $existing_data['greek_total_ug_chapters'] = $clientProfile->greek_total_ug_chapters;
+            $existing_data['greek_number_of_colg_chapters'] = $clientProfile->greek_number_of_colg_chapters;
             $existing_data['profile_status_update_time'] = $clientProfile->profile_status_update_time;
             $existing_data['symbol'] = $clientProfile->symbol;
             //$existing_data['founding_address'] = $clientProfile->founding_address;
@@ -189,7 +196,7 @@ class Client_IndexController extends Zend_Controller_Action {
                 $clientProfile->greek_number_of_alumni = $form->getValue('greek_number_of_alumni');
                 $clientProfile->greek_number_of_undergrads = $form->getValue('greek_number_of_undergrads');
                 $clientProfile->greek_number_of_alumni_chapters = $form->getValue('greek_number_of_alumni_chapters');
-                $clientProfile->greek_total_ug_chapters = $form->getValue('greek_total_ug_chapters');
+                $clientProfile->greek_number_of_colg_chapters = $form->getValue('greek_number_of_colg_chapters');
                 $clientProfile->profile_status_update_time = new DateTime();
                 //$clientProfile->symbol = 'N/A';
                 //$clientProfile->founding_address = $form->getValue('founding_address_line1') . $form->getValue('founding_address_line2');

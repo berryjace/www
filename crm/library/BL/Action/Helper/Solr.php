@@ -256,7 +256,7 @@ class BL_Action_Helper_Solr extends Zend_Controller_Action_Helper_Abstract {
      */
     public function get_address($q) {
         $q = rawurlencode($q);
-        $client = new Zend_Http_Client('http://maps.googleapis.com/maps/api/geocode/json?address=' . $q . '&sensor=true', array(
+        $client = new Zend_Http_Client('https://maps.googleapis.com/maps/api/geocode/json?address=' . $q . '&sensor=true', array(
                     'maxredirects' => 0,
                     'timeout' => 30));
         /**

@@ -63,7 +63,7 @@ $this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/
     <div class="one">
         <?php if (sizeof($this->lineitems)): ?>
         <?php $alt = true; ?>
-        <table cellpadding="0" cellspacing="2" border="0" class="" width="100%">
+        <table cellpadding="0" cellspacing="2" border="0" class="data" width="100%">
             <thead>
                 <tr>                    
                     <th class="txt_align" width="40%">Description</th>
@@ -157,11 +157,11 @@ $this->headLink()->appendStylesheet($this->baseUrl("assets/css/ui_themes/Aristo/
         },
         add_lineitem : function(e){   
             $new_row=$(this).parents("tr.invoice_row").clone();
-            $("table").append($new_row);            
             $new_row.find('input').val('');            
             $new_row.find('a.add').hide();
             $new_row.find('a.rem').removeClass('hidden');
-//            $('#lineitem').last().val('');
+	    $("table").append($new_row);
+            //$('#lineitem').last().val('');
         },
         remove_lineitem : function(){ 
 

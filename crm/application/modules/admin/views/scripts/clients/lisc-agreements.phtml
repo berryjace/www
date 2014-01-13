@@ -41,14 +41,11 @@ $this->placeholder('main_side_bar')->captureEnd();
     <span class="status_filters">
         Licensing Status:
         <select name="status" id="licStatus">
-            <option value="0">All</option>
+            <option value="-1">All</option>
             <?php
             if($this->status_array) {
                 foreach($this->status_array as $val=>$status) {
-            ?>
-            <option value="<?= $val?>" <?php echo $val == 3 ? "selected" : ''; ?>><?= $status ?></option>
-            <?php
-                    //echo '<option value="'.$val.'">'.$status.'</option>';
+                    echo '<option value="'.$val.'">'.$status.'</option>';
                 }
             }
             ?>

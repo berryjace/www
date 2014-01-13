@@ -10,7 +10,7 @@ $this->placeholder('sub_menu_bar')->captureEnd();
 
 <div class="notification msginfo">
     <!--<a class="close"></a>-->
-    The following information is used to generate license agreements on behalf of your organization. If you would like to change any of the information, please <a href="http://www.greeklicensing.com/contact" target="_blank">contact</a> Affinity Marketing.
+    The following information is used to generate license agreements on behalf of your organization. If you would like to change any of the information, please email edits to admin@greeklicensing.com and we will make the requested changes on your behalf.
 
 </div>
 
@@ -37,16 +37,20 @@ $this->placeholder('sub_menu_bar')->captureEnd();
   <!--   <button type="submit" id="submitAddClient" class="button button_black detail_button">Save</button>
 </form>
 
+
+
+
 <script type="text/javascript">
     validated=false;
         $(function(){
     
-            $('input, select').attr('disabled', 'disabled')
-                .css({
-                    "color":"#333333",
-                    "background-color":"silver"
-                });
-    
+   $('input, select').attr('disabled', 'disabled')
+            .css({
+                "color"             : "#333333",
+                "border"            : "1px solid #999999",
+                "background-color"  : "silver"
+            });
+ 
             $("#addClient").on('submit',function(){
                 $form=$(this);
                 if(!validated){

@@ -427,7 +427,7 @@ class Admin_Model_Search {
          * Let's take care of the sorting column to be passed to doctrine.
          * DataTable sends params like iSortCol_0.
          */
-        $sorting_cols = array('0' => 'inv.amount_due', '1' => 'inv.invoice_number');
+        $sorting_cols = array('0' => 'inv.amount_due', '1' => 'inv.invoice_number', '2' => 'inv.invoice_date');
         $params['sort_key'] = $sorting_cols[$this->ct->getRequest()->getParam('iSortCol_0', 0)];
         $params['sort_dir'] = $this->ct->getRequest()->getParam('sSortDir_0');
         $params['vendor_id'] = $this->ct->getRequest()->getParam('id');
@@ -455,7 +455,7 @@ class Admin_Model_Search {
                 $v['payment_status'],
                 $currency->toCurrency($v['amount_due']),
                 $currency->toCurrency($v['amount_paid']),
-                '<a href="javascript:;" class="invoices_link" rel="' . $v['id'] . '">View</a>&nbsp; <a href="javascript:;" class="delete_invoices" rel="d-' . $v['id'] . '">Delete</a>'
+                '<a href="javascript:;" class="invoices_link" rel="' . $v['id'] . '">View</a>&nbsp; <a href="javascript:;" class="delete_invoices" rel="' . $v['id'] . '">Delete</a>'
             );
         }
         $json .= Zend_Json::encode($prec);

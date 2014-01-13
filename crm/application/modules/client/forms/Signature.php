@@ -106,7 +106,7 @@ class Client_Form_Signature extends Zend_Form {
         $vendor_products = new Zend_Form_Element_Textarea('vendor_products');
         $vendor_products->setLabel('Vendor Products')
                 ->setDisableLoadDefaultDecorators(true)
-                ->setAttribs(array('cols' => '135', 'rows' => '4', 'class' => 'textarea', 'readonly' => 'readonly'))->setRequired(true)
+                ->setAttribs(array('cols' => '135', 'rows' => '4', 'class' => 'textarea'))->setRequired(true)
                 //->setDecorators(array('ViewHelper'))
                 ->setValidators(array(array('NotEmpty', true, array('messages' => 'Please enter Vendor Products'))))
                 ->addFilter('StripTags')->addFilter('StringTrim');

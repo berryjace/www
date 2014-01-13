@@ -59,7 +59,7 @@ class Admin_Form_ProductInfo extends Zend_Form
                 ->setDisableLoadDefaultDecorators(true)
                 ->setDecorators(array('ViewHelper'))
                 ->setValidators(array(array('NotEmpty', true, array('messages' => 'Please enter supplier name'))))
-                ->setRequired(true)
+                ->setRequired(false)
                 ->addFilter('StripTags')
                 ->addFilter('StringTrim');
 

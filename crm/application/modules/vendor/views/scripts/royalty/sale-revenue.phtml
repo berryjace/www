@@ -1,4 +1,9 @@
 <?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+<?php $user = Zend_Auth::getInstance()->getIdentity();
+$isAdmin = ($user->account_type == 1) ? 1 : 0;
+$isEmployee = ($user->account_type == 4) ? 1 : 0;
+
+?>
 <div class="leftalign">
     <a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>" class="iconlink<?php echo ($action === "history") ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "history" ? 'white' : 'black'; ?>/settings.png" class="mgright5" alt="" /><span>Royalty Report History</span></a> &nbsp;
     <!-- <a href="<?php echo $this->baseUrl("vendor/royalty/sale-revenue"); ?>" class="iconlink<?php echo ($action === "sale-revenue") ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "sale-revenue" ? 'white' : 'black'; ?>/plus.png" class="mgright5" alt="" /><span>Add Sale Revenue</span></a>-->
@@ -31,6 +36,36 @@
 	?></span>)
 	</h3>
 	<br />
+	<table id="report_submit_table_hidden">
+    	<tr class="sales_row">
+    		<td>
+    			<select name="greek_org[]" class="select">
+     	            <?php foreach ($this->clients as $client): ?>
+     	           		<option value="<?php echo $client->id; ?>"><?php echo $client->organization_name; ?></option>
+                    <?php endforeach; ?>
+                </select>&nbsp;&nbsp;
+    		</td>
+    		<td>
+          		<span>$</span><input value="" class="subTotalGrossSales money" type="text" name="gross_sales[]"/>
+            </td>
+            <td>
+              	<span>$</span><input class="returnsDeclared money" type="text" name="returnsDeclared[]" class="money"/>
+            </td>
+        	<td class="totalColumn" >
+               	<span class = "childSpan">$<span class="money"></span></span>
+            </td>
+                <?php if ($isAdmin || $isEmployee){?>
+                <td>
+                	<b>Or&nbsp;&nbsp;&nbsp;$</b><input class="royaltiesOnly money" type="text" name="royaltiesDeclared[]"/>&nbsp;&nbsp;&nbsp;
+                </td>
+                <?php }?>
+            <td>
+            <?php if ($this->wasSubmit != true){?>
+                <a href="javascript:;" class="iconlink rem"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+            <?php }?>
+            </td>
+  		</tr>
+  	</table>
 <form name="sale_revenue_form" id="sale_revenue_form" action="" method="POST">
     <div class="one">
         <!--<?php
@@ -79,45 +114,63 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;</th>
                 <th>Actual Returns Declared&nbsp;&nbsp;&nbsp;&nbsp;</th>
                 <th>Total Gross Sales&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                <?php if ($isAdmin || $isEmployee){?>
+                <th>Royalties Only</th>
+                <?php }?>
                 <th align="left">&nbsp;</th>
             </tr>
         </thead>
         <tbody>
      		<?php if (isset($this->submission_info)){ 
      			$second = 0;
-     		foreach($this->submission_info as $clientID => $sales){
+     		foreach($this->submission_info as $clientID => $data){
      			?>
      		<tr class = "sales_row">
      			<td>
                     <select name="greek_org[]" class="select">
                         <?php foreach ($this->clients as $client): ?>
                             <option value="<?php echo $client->id; ?>"  <?php if ($client->id == $clientID) echo "selected";?>><?php echo $client->organization_name; ?></option>
-<!--                                <option value="<?php //echo $client->client_id->id; ?>"><?php //echo $client->client_id->organization_name; ?></option>-->
-                        <?php endforeach; ?>
+						<?php endforeach; ?>
                     </select>&nbsp;&nbsp;
      			</td>
      			<td>
-                	<span>$</span><input value="<?php echo $sales ?>" class="subTotalGrossSales money" type="text" name="gross_sales[]"/>
+                	<span>$</span><input value="<?php echo $data["sales"]; ?>" class="subTotalGrossSales money" type="text" name="gross_sales[]"/>
                 </td>
                 <td>
-                	<span>$</span><input class="returnsDeclared" type="text" name="returnsDeclared[]" class="money"/>
+                	<span>$</span><input class="returnsDeclared money" type="text" name="returnsDeclared[]"/>
                 </td>
                 <td class="totalColumn" >
-                	<span class = "childSpan">$<span class="money"><?php echo $sales ?></span></span>
+                	<span class = "childSpan">$<span class="money"><?php echo $data["sales"]; ?></span></span>
                 </td>
+                <?php if ($isAdmin || $isEmployee){?>
                 <td>
-                    <a href="javascript:;" class="iconlink add"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
-                    <a href="javascript:;" class="iconlink rem <?php if(!$second) echo "hidden";?>"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+                	<b>Or&nbsp;&nbsp;&nbsp;$</b><input class="royaltiesOnly money" type="text" name="royaltiesDeclared[]"/>&nbsp;&nbsp;&nbsp;
                 </td>
+                <?php }?>
+                <td>
+               	<?php if ($this->wasSubmit != true){?>
+                    <a href="javascript:;" class="iconlink rem"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+               <?php }?>
+                </td>
+                <?php if ($this->wasSubmit){?>
+                <td style="display:none;">
+                	<input type="hidden" name="product_sold_to[]" value="<?php echo $data["product_sold_to"]; ?>" />
+                	<input type="hidden" name="price[]" value="<?php echo $data["price"];?>" />
+                	<input type="hidden" name="qty[]" value="<?php echo $data["qty"];?>" />
+                	<input type="hidden" name="invoice_num[]" value="<?php echo $data["inv_num"];?>" />
+                	<input type="hidden" name="invoice_date[]" value="<?php echo $data["inv_date"]->format("Y-m-d");?>" />
+                	<input type="hidden" name="product_description[]" value="<?php echo $data["description"];?>" />
+                </td>
+                <?php }?>
      		</tr>
-     		<?php $second++;} } else if (isset($this->summary_data)){
+     		<?php $second++;} } else if (isset($this->summary_data['gross_sales'])){
      			$second = 0;
      			for ($i = 0; $i < count($this->summary_data['gross_sales']); $i ++){
 
      			?>
      			<tr class="sales_row">
      				<td>
-     					<select name="greek_org[]" class="select>
+     					<select name="greek_org[]" class="select">
      					<?php foreach($this->clients as $client):?>
      						<option value="<?php echo $client->id;?>" <?php if ($client->id == $this->summary_data['clients_id'][$i]) echo "selected";?>><?php  echo $client->organization_name;?></option>
      						
@@ -133,9 +186,15 @@
      				<td class="totalColumn">
      				<span class="childSpan">$<?php echo $this->summary_data['gross_sales'][$i] - $this->summary_data['returns'][$i];?></span>
      				</td>
+	                <?php if ($isAdmin || $isEmployee){?>
+	                <td>
+	                	<b>Or&nbsp;&nbsp;&nbsp;$</b><input class="royaltiesOnly money" type="text" name="royaltiesDeclared[]"/>&nbsp;&nbsp;&nbsp;
+	                </td>
+	                <?php }?>
      				<td>
-     					<a href="javascript:;" class="iconlink add"><img src="<?php echo $this->baseUrl("assets");?>/images/icons/small/white/plus.png" alt="" ></a>
-     					<a href="javascript:;" class="iconlink rem <?php if (!$second) echo "hidden";?>"><img src="<?php echo $this->baseUrl("assets");?>/images/icons/small/white/minus.png" alt="" ></a>
+               		 <?php if ($this->wasSubmit != true){?>
+     					<a href="javascript:;" class="iconlink rem"><img src="<?php echo $this->baseUrl("assets");?>/images/icons/small/white/minus.png" alt="" ></a>
+     				<?php }?>
      				</td>
      			</tr>
      		
@@ -166,9 +225,15 @@
                 <td class="totalColumn" >
                 	<span class = "childSpan money">$</span>
                 </td>
+                <?php if ($isAdmin || $isEmployee){?>
                 <td>
-                    <a href="javascript:;" class="iconlink add"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/plus.png" alt=""  ></a>
-                    <a href="javascript:;" class="iconlink rem hidden"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+                	<b>Or&nbsp;&nbsp;&nbsp;$</b><input class="royaltiesOnly money" type="text" name="royaltiesDeclared[]"/>&nbsp;&nbsp;&nbsp;
+                </td>
+                <?php }?>
+                <td>
+               		 <?php if ($this->wasSubmit != true){?>
+                   	<a href="javascript:;" class="iconlink rem"><img src="<?php echo $this->baseUrl("assets"); ?>/images/icons/small/white/minus.png" alt=""  ></a>
+               <?php }?> 
                 </td>
             </tr>
             <?php } ?>
@@ -176,7 +241,7 @@
     </table>
     </div>
     <div class="spacer clear"></div>
-    <button type="button" id="go-back" class="button button_black">Back</button>&nbsp;&nbsp;<button type="submit" id="submit-revenue" class="button button_black">Calculate Royalties</button>&nbsp;
+    <?php if ($this->wasSubmit != true ){?><button type="button" id="add" class = "button button_black add">Add Additional Organization</button>&nbsp;&nbsp;<?php }?><button type="button" id="go-back" class="button button_black">Back</button>&nbsp;&nbsp;<button type="submit" id="submit-revenue" class="button button_black">Calculate Royalties</button>&nbsp;
 </form>
 
 <style type="text/css">
@@ -187,6 +252,7 @@
     }
     label{font-weight: bold;}
     .money{text-align: right;}
+    #report_submit_table_hidden{display: none;}
 </style>
 
 <script type="text/javascript">
@@ -194,153 +260,45 @@
     function refreshItem(row){
     	$(this).change(function(){
 
-			var subtotal = ($(this).parent().parent().find("td > .subTotalGrossSales").val() != '')? $(this).parent().parent().find("td > .subTotalGrossSales").val().replace(",", ""):0;
-			var returns = ($(this).parent().parent().find("td>.returnsDeclared").val() != '')? $(this).parent().parent().find("td > .returnsDeclared").val().replace(",", ""):0;
-			
-			var total = subtotal - returns;
+		var subtotal = stripNonNumeric($(this).parent().parent().find("td > .subTotalGrossSales").val());
+                                        var returns = stripNonNumeric($(this).parent().parent().find("td > .returnsDeclared").val());
 
-			if (parseInt(total) >= 1000){
-				var partA = total % 1000;
-
-				partA = partA.toFixed(2);
-
-				if (partA < 100){
-						if (partA < 10){
-								partA = "0" + partA;
-							}
-						partA = "0" + partA;
-					}					
-				var partB = parseInt(total / 1000);
-
-				total = "$" + partB + "," + partA;
-			} else {
-				total = "$" + total.toFixed(2);
-			}
-			
-			$(this).parent().parent().find(".totalColumn > .childSpan").text(total);
+                                        var total = subtotal - returns;
+                                                $(this).parent().parent().find(".totalColumn > .childSpan").text(addCommas(total.toFixed(2)));
     	});
     }
 
 	$(document).ready(function(){
 
-		$(".money").each(function(){
-			var amnt = parseFloat(($(this).val() != '')? $(this).val():0);
-		
-			if (amnt >= 1000){
-				var partA = amnt %1000;
-				var partB = parseInt(amnt/1000);
-	
-				partA = partA.toFixed(2);
-	
-				if (partA < 100){
-					if (partA < 10){
-						partA = "0" + partA;
-					}
-					partA = "0" + partA;
-				}
-	
-				amnt = partB + "," + partA;	
-			} else {
-				amnt = amnt.toFixed(2);
+		$(".subTotalGrossSales").keyup(function(){
+			if (parseFloat($(this).val()) != 0.0 && $(this).val() != '') $(this).parents("tr").find(".royaltiesOnly").prop('disabled', true);
+			else $(this).parents("tr").find(".royaltiesOnly").prop('disabled', false);
+		});
+
+		$(".royaltiesOnly").keyup(function(){
+			if (parseFloat($(this).val()) != 0.0 && $(this).val() != '') {
+				 $(this).parents("tr").find(".subTotalGrossSales").prop('disabled', true);
+				 $(this).parents("tr").find(".returnsDeclared").prop('disabled', true);
 			}
-	
-			$(this).val(amnt);
+			else {
+				 $(this).parents("tr").find(".subTotalGrossSales").prop('disabled', false);
+				 $(this).parents("tr").find(".returnsDeclared").prop('disabled', false);
+			}
 		});
 		
 		$(".subTotalGrossSales").each(function(){
 			
-			var subtotal = ($(this).parent().parent().find("td > .subTotalGrossSales").val() != '')? $(this).parent().parent().find("td > .subTotalGrossSales").val().replace(",", ""):0;
-			var returns = ($(this).parent().parent().find("td>.returnsDeclared").val() != '')? $(this).parent().parent().find("td > .returnsDeclared").val().replace(",", ""):0;
-			
-			var total = subtotal - returns;
+		var subtotal = stripNonNumeric($(this).parent().parent().find("td > .subTotalGrossSales").val());
+                                        var returns = stripNonNumeric($(this).parent().parent().find("td > .returnsDeclared").val());
 
-			if (parseInt(total) >= 1000){
-				var partA = total % 1000;
-
-				partA = partA.toFixed(2);
-
-				if (partA < 100){
-						if (partA < 10){
-								partA = "0" + partA;
-							}
-						partA = "0" + partA;
-					}					
-				var partB = parseInt(total / 1000);
-
-				total = "$" + partB + "," + partA;
-			} else {
-				total = "$" + total.toFixed(2);
-			}
-
-			$(this).parent().parent().find(".totalColumn > .childSpan").text(total);
+                                        var total = subtotal - returns;
+                                                $(this).parent().parent().find(".totalColumn > .childSpan").text(addCommas(total.toFixed(2)));
 	
 		});
 	
 		event_functions.setupRows();
 		
 		
-		$(".subTotalGrossSales").each(function(){
-				$(this).change(function(){
-					console.log("gross changed");
-
-					var subtotal = ($(this).parent().parent().find("td > .subTotalGrossSales").val() != '')? $(this).parent().parent().find("td > .subTotalGrossSales").val().replace(",", ""):0;
-					var returns = ($(this).parent().parent().find("td>.returnsDeclared").val() != '')? $(this).parent().parent().find("td > .returnsDeclared").val().replace(",", ""):0;
-					
-						var total = subtotal - returns;
-
-						if (parseInt(total) >= 1000){
-							var partA = total % 1000;
-
-							partA = partA.toFixed(2);
-
-							if (partA < 100){
-									if (partA < 10){
-											partA = "0" + partA;
-										}
-									partA = "0" + partA;
-								}					
-							var partB = parseInt(total / 1000);
-
-							total = "$" + partB + "," + partA;
-						} else {
-							total = "$" + total.toFixed(2);
-						}
-
-						$(this).parent().parent().find(".totalColumn > .childSpan").text(total);
-					});
-			});
-		
-		$(".returnsDeclared").each(function(){
-			$(this).change(function(){
-
-					console.log("return changed");
-
-					var subtotal = ($(this).parent().parent().find("td > .subTotalGrossSales").val() != '')? $(this).parent().parent().find("td > .subTotalGrossSales").val().replace(",", ""):0;
-					var returns = ($(this).parent().parent().find("td>.returnsDeclared").val() != '')? $(this).parent().parent().find("td > .returnsDeclared").val().replace(",", ""):0;
-					
-					var total = subtotal - returns;
-
-					if (parseInt(total) >= 1000){
-						var partA = total % 1000;
-
-						partA = partA.toFixed(2);
-
-						if (partA < 100){
-								if (partA < 10){
-										partA = "0" + partA;
-									}
-								partA = "0" + partA;
-							}					
-						var partB = parseInt(total / 1000);
-
-						total = "$" + partB + "," + partA;
-					} else {
-						total = "$" + total.toFixed(2);
-					}
-					
-					$(this).parent().parent().find(".totalColumn > .childSpan").text(total);
-				});
-		});
 		
 			
 	});
@@ -353,13 +311,22 @@
 				$(this).val($(this).val().replace(",", ""));
 			});
 
+			$('.money').each(function(){
+				$(this).prop('disabled', false);
+			});
+
+			$('.royaltiesOnly').each(function(){
+				if ($(this).val() == '' || parseFloat($(this).val()) == 0.0) $(this).val('None');
+				$(this).prop('disabled', false);
+			});
+
 			$('.totalColumn>.childSpan').each(function(){
 				$(this).text($(this).text().replace(",", ""));
 			});
 			var data = $(this).serialize();
 			var qdata = '<?php echo http_build_query(Zend_Controller_Front::getInstance()->getRequest()->getParams())?>'
 			if(qdata!='') {
-				data = data + '&' + qdata;
+				data = data + '&' + qdata + '&submission_hash=<?php echo $this->submission_hash;?>';
 			}
 			$.ajax({
 				'url'	:	site_url+'/vendor/royalty/ajax-submit-report',
@@ -388,7 +355,7 @@
     $(window).bind('load', function(){
         event_functions._initialize();
 
-        $(document).on('click', 'a.add', event_functions.add_sale_revenue);
+        $(document).on('click', 'button.add', event_functions.add_sale_revenue);
         $(document).on('click', 'a.rem', event_functions.remove_sale_revenue);
         $(document).on('click', 'button#go-back', event_functions.go_back);
 
@@ -406,154 +373,98 @@
 			console.log("setting up rows");
             
         	$(".money").each(function(){
+            	$(this).unbind("change");
     			$(this).change(function(){
-    				var amnt = parseFloat($(this).val());
 
-					console.log("changed");
-    				
-    				if (amnt >= 1000){
-    					var partA = amnt %1000;
-    					var partB = parseInt(amnt/1000);
-
-    					partA = partA.toFixed(2);
-
-    					if (partA < 100){
-    						if (partA < 10){
-    							partA = "0" + partA;
-    						}
-    						partA = "0" + partA;
-    					}
-
-    					amnt = partB + "," + partA;	
-    				} else {
-    					amnt = amnt.toFixed(2);
-    				}
-
+				var amnt = addCommas(stripNonNumeric($(this).val()));	
     				$(this).val(amnt);
+
     			});
     			
     		});
+	        	$(".subTotalGrossSales").each(function(){
+					$(this).change(function(){
+	
+						var subtotal = stripNonNumeric($(this).parent().parent().find("td > .subTotalGrossSales").val());
+                                        var returns = stripNonNumeric($(this).parent().parent().find("td > .returnsDeclared").val());
+
+                                        var total = subtotal - returns;
+                                                $(this).parent().parent().find(".totalColumn > .childSpan").text('$'+addCommas(total.toFixed(2)));
+						});
+				});
+			
+			$(".returnsDeclared").each(function(){
+				$(this).change(function(){
+	
+					var subtotal = stripNonNumeric($(this).parent().parent().find("td > .subTotalGrossSales").val());
+                                        var returns = stripNonNumeric($(this).parent().parent().find("td > .returnsDeclared").val());
+
+                                        var total = subtotal - returns;
+                                                $(this).parent().parent().find(".totalColumn > .childSpan").text('$'+addCommas(total.toFixed(2)));
+					});
+			});
         },
         add_sale_revenue : function(){
-        	event_functions.setupRows();
-            $new_row=$(this).parents("tr.sales_row").clone();
+            $new_row=$("#report_submit_table_hidden").find("tr.sales_row").clone();
 
-			var count = $(this).parents("table").find('tr.sales_row').length;
-
-			console.log(count);
-
-			if (count > 0){
-				 $(this).parents("tr.sales_row").find('a.rem').removeClass('hidden');
-
-				 console.log("removing hidden class");
-			}
-            
-            $(this).parents("table").append($new_row);
+            $(".report_submit_table").append($new_row);
             $new_row.find('input').val('');
             $new_row.find('.childSpan').text('$');
             $new_row.find('a.add').hide();
             $new_row.find('a.rem').removeClass('hidden');
-            $new_row.find('.money').each(function(){
-                $(this).change(function(){
-                	var amnt = parseFloat($(this).val());
+	    event_functions.setupRows();
 
-					console.log("changed");
-    				
-    				if (amnt >= 1000){
-    					var partA = amnt %1000;
-    					var partB = parseInt(amnt/1000);
 
-    					partA = partA.toFixed(2);
+    		$new_row.find(".subTotalGrossSales").keyup(function(){
+    			if (parseFloat($(this).val()) != 0.0 && $(this).val() != '') $(this).parents("tr").find(".royaltiesOnly").prop('disabled', true);
+    			else $(this).parents("tr").find(".royaltiesOnly").prop('disabled', false);
+    		});
 
-    					if (partA < 100){
-    						if (partA < 10){
-    							partA = "0" + partA;
-    						}
-    						partA = "0" + partA;
-    					}
+    		$new_row.find(".royaltiesOnly").keyup(function(){
+    			if (parseFloat($(this).val()) != 0.0 && $(this).val() != '') {
+    				 $(this).parents("tr").find(".subTotalGrossSales").prop('disabled', true);
+    				 $(this).parents("tr").find(".returnsDeclared").prop('disabled', true);
+    			}
+    			else {
+    				 $(this).parents("tr").find(".subTotalGrossSales").prop('disabled', false);
+    				 $(this).parents("tr").find(".returnsDeclared").prop('disabled', false);
+    			}
+    		});
 
-    					amnt = partB + "," + partA;	
-    				} else {
-    					amnt = amnt.toFixed(2);
-    				}
-
-    				$(this).val(amnt);
-                });
-            });
-            $new_row.find('.subTotalGrossSales').change(function(){
-
-				var subtotal = ($(this).parent().parent().find("td > .subTotalGrossSales").val() != '')? $(this).parent().parent().find("td > .subTotalGrossSales").val().replace(",", ""):0;
-				var returns = ($(this).parent().parent().find("td>.returnsDeclared").val() != '')? $(this).parent().parent().find("td > .returnsDeclared").val().replace(",", ""):0;
-				
-				var total = subtotal - returns;
-
-				if (parseInt(total) >= 1000){
-					var partA = total % 1000;
-
-					partA = partA.toFixed(2);
-
-					if (partA < 100){
-							if (partA < 10){
-									partA = "0" + partA;
-								}
-							partA = "0" + partA;
-						}					
-					var partB = parseInt(total / 1000);
-
-					total = "$" + partB + "," + partA;
-				} else {
-					total = "$" + total.toFixed(2);
-				}
-				
-				$(this).parent().parent().find(".totalColumn > .childSpan").text(total);
-			});
-			$new_row.find('.returnsDeclared').change(function(){
-
-				var subtotal = ($(this).parent().parent().find("td > .subTotalGrossSales").val() != '')? $(this).parent().parent().find("td > .subTotalGrossSales").val().replace(",", ""):0;
-				var returns = ($(this).parent().parent().find("td>.returnsDeclared").val() != '')? $(this).parent().parent().find("td > .returnsDeclared").val().replace(",", ""):0;
-				
-				var total = subtotal - returns;
-
-				if (parseInt(total) >= 1000){
-					var partA = total % 1000;
-
-					partA = partA.toFixed(2);
-
-					if (partA < 100){
-							if (partA < 10){
-									partA = "0" + partA;
-								}
-							partA = "0" + partA;
-						}					
-					var partB = parseInt(total / 1000);
-
-					total = "$" + partB + "," + partA;
-				} else {
-					total = "$" + total.toFixed(2);
-				}
-				
-				$(this).parent().parent().find(".totalColumn > .childSpan").text(total);
-			});
         },
         remove_sale_revenue : function(){
 
-			var index = $(this).parents('tr.sales_row').prevAll().length;
-
-			if (index == 0){
-
-					console.log("first item being removed");
-					$(this).parents('tr.sales_row').next('tr.sales_row').find('a.add').show();
-				}
-
-			var count = $(this).parents("table").find('tr.sales_row').length;
-
-			if (count < 3){
-					$(this).parents("table").find('tr.sales_row:nth-child(2)').find('a.rem').addClass('hidden');
-				}
-
-            
             $(this).parents('tr.sales_row').remove();
 			
         }
     }
+function stripNonNumeric( str )
+{
+  str += '';
+  var rgx = /^\d|\.|-$/;
+  var out = '';
+  for( var i = 0; i < str.length; i++ )
+  {
+    if( rgx.test( str.charAt(i) ) ){
+      if( !( ( str.charAt(i) == '.' && out.indexOf( '.' ) != -1 ) ||
+             ( str.charAt(i) == '-' && out.length != 0 ) ) ){
+        out += str.charAt(i);
+      }
+    }
+  }
+  return out;
+}
+function addCommas(nStr)
+{
+  nStr += '';
+  x = nStr.split('.');
+  x1 = x[0];
+  x2 = x.length > 1 ? '.' + x[1] : '';
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+  }
+  return x1 + x2;
+}
+
 </script>

@@ -196,7 +196,7 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     		 
     		foreach($items as $item){
     			if ($item->amount_due - $item->amount_paid > 0){
-    				error_log("item->amount_due: " . $item->amount_due . " id: " . $item->id,3, "./errorLog.log");
+    				//error_log("item->amount_due: " . $item->amount_due . " id: " . $item->id,3, "./errorLog.log");
     				 
     				$trimmedItems[] = $item;
     			}
@@ -208,7 +208,7 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     	$this->view->invoice = $invoice;
     	$this->view->items = $trimmedItems;
     
-    	error_log("\npaymentTotal: " . $this->session->reviewData['amount'], 3, "./errorLog.log");
+    	//error_log("\npaymentTotal: " . $this->session->reviewData['amount'], 3, "./errorLog.log");
     
     	$this->view->paymentTotal = $this->session->reviewData['amount'];
     	$this->view->reference_number = $this->session->reviewData['ref'];
@@ -235,7 +235,8 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     			'ref_number'=>$this->session->reviewData['ref'],
     			'fiscal_year'=>Date("Y") . "-" . substr((Date("Y")+1), 2),
     			'quarter'=>Date("M")/3,
-    			'total'=>$this->session->reviewData['amount']
+    			'total'=>$this->session->reviewData['amount'],
+    			'inv_date'=>$invoice->invoice_date->format('M d, Y H:i a')
     	);
     	 
     	$form->populate($existingData);
@@ -246,31 +247,40 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     	$numItems = count($this->session->paymentData);
     	 
     	for($i = 0; $i < $numItems; $i++){
-    		$licenses[] = $this->em->getRepository('BL\Entity\License')->findOneBy(array('vendor_id'=>$vendor, 'client_id'=>$this->session->paymentData[$i]['client_id']));
+    		$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$this->session->paymentData[$i]['client_id']));
+    		$licenses[] = $this->em->getRepository('BL\Entity\License')->findOneBy(array('vendor_id'=>$vendor, 'client_id'=>$client));
     		$operations[] = $this->em->getRepository('BL\Entity\ClientOperation')->findOneBy(array('user_id'=>$this->session->paymentData[$i]['client_id']));
     	}
-    	 
-    	error_log("\nlicense: " . count($licenses), 3, "./errorLog.log");
-    	 
     	$this->view->licenses = $licenses;
     	$this->view->operation = $operations;
     	 
-    	if (is_null($form->vendorName))error_log("\nForm is null", 3, "./errorLog.log");
-    	else error_log("\nForm is NOT null", 3, "./errorLog.log");
+    	//if (is_null($form->vendorName))error_log("\nForm is null", 3, "./errorLog.log");
+    	//else error_log("\nForm is NOT null", 3, "./errorLog.log");
     	
     	$trimmedItems = $items;
+    	
+    	error_log("\nNumber of items before trim: " . count($items), 3, "./errorLog.log");
     	
     	if ($invoice->invoice_type != "Royalty Payments"){
     		$trimmedItems = array();
     		 
     		foreach($items as $item){
+    			//error_log("\namount due: " . $item->amount_due . " amount paid: " . $item->amount_paid, 3, "./errorLog.log");
+    			
     			if ($item->amount_due - $item->amount_paid > 0){
-    				error_log("item->amount_due: " . $item->amount_due . " id: " . $item->id,3, "./errorLog.log");
-    				 
-    				$trimmedItems[] = $item;
+    				foreach($this->session->paymentData as $payment){
+    					if ($payment['client_id'] == $item->client_id->id){	
+    						$trimmedItems[] = $item;
+    						break;
+    					}
+    				} 
     			}
     		}
     	}
+
+    
+
+    	error_log("\nNumber of trimmed items: " . count($trimmedItems), 3, "./errorLog.log");
     	
     	
     	$this->view->form = $form;
@@ -285,21 +295,23 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     }
     
     public function ajaxSetPaymentDataAction(){
-    	error_log("\najaxSetPaymentDataAction()", 3, "./errorLog.log");
     	 
     	$params = $this->_getAllParams();
     	 
     	$totalPaid = $this->_getParam('total_paid');
     	$totalDue = $this->_getParam('total_remaining');
+    	$type = urldecode($this->_getParam('type'));
     	 
-    	$this->session->reviewData['amount'] = $totalPaid;
+    	$this->session->reviewData['amount'] = str_replace(",", "", str_replace("$", "", $totalPaid));
     	$this->session->reviewData['due'] = $totalDue;
     	 
     	$numRows = sizeof($params['client_id']);
     	 
     	$paymentData = array();
     	 
-    	error_log("\nNumber of rows " . $numRows, 3, "./errorLog.log");
+    	//error_log("\ntype " . $type, 3, "./errorLog.log");
+    	
+    	error_log("\nnum rows: " . $numRows, 3, "./errorLog.log");
     	 
     	for ($i = 0; $i < $numRows; $i++){
     		$ref = $params['ref_number'][$i];
@@ -308,12 +320,14 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     
     		$amt = (!is_null($amt))? (($amt != ''))? $amt : '0' : '0';
     
-    		$paymentData[] = array('ref'=>$ref, 'paid'=>$amt, 'client_id'=>$cli);
+    		if ($amt > 0 || $type == "Royalty Payments"){
+    			$paymentData[] = array('ref'=>$ref, 'paid'=>$amt, 'client_id'=>$cli);
+    		}
     	}
     	 
     	$this->session->paymentData = $paymentData;
     	 
-    	error_log("\n end of function", 3, "./errorLog.log");
+    	//error_log("\n end of function", 3, "./errorLog.log");
     	 
     	echo Zend_Json::encode(array('success'=>true));
     	exit;
@@ -329,9 +343,7 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     	$invoice_id = $this->_getParam('inv_id');
     	 
     	$sessionData = array('type'=>$type, 'ref'=>$ref, 'amount'=>$amount, 'date'=>$date, 'vendor_id'=>$vendor_id, 'invoice_id'=>$invoice_id);
-    	 
-    	error_log("\nsession data count: " . count($sessionData) . "\ntype " . $type . "\nref " . $ref . "\namount " . $amount . "\ndate " . $date . "\nid " . $vendor_id . "\ninv_id " . $invoice_id, 3, "./errorLog.log");
-    	 
+    	
     	$this->session->reviewData = $sessionData;
     	 
     	echo Zend_Json::encode(array('success' => true));
@@ -350,12 +362,22 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     	 
     	$paymentData = $this->session->paymentData;
     	$reviewData = $this->session->reviewData;
-    	 
-    	$invoice->amount_paid = $reviewData['amount'] + $invoice->amount_paid;
-    	 
+    	    	
+    	$invoice->amount_paid = floatval(str_replace("$", "", str_replace(",", "", $reviewData['amount']))) + $invoice->amount_paid;
+		if($invoice->amount_paid==$invoice->amount_due)
+			$invoice->invoice_status = 'Closed';
+
+		$status = $this->session->reviewData['type'];
+		
+		if($invoice->amount_paid < $invoice->amount_due){
+			$status = 'Partially Paid';
+		}
+		
+		$invoice->payment_status = $status;
     	 
     	$this->em->persist($invoice);
     	$this->em->flush();
+    	$remains = $invoice->amount_due - $invoice->amount_paid;
     	 
     	foreach($items as $item){
     		$payment = null;
@@ -367,7 +389,7 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     		}
     
     		if (!is_null($payment)){
-    			error_log("\npayment is not null" , 3, "./errorLog.log");
+    			//error_log("\npayment is not null" , 3, "./errorLog.log");
     			 
     			$item->amount_paid = $payment['paid'] + $item->amount_paid;
     			if (strlen($payment['ref']) > 0){
@@ -377,15 +399,37 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     					$item->check_number .= ",".$payment['ref'];
     				}
     			}
+    			
+   				$item->payment_status = 'Received Check';
+    			
+    			if ($remains <= 0){
+    				//error_log("\npaying off invoice lineitem " . $item->id, 3, "./errorLog.log");
+    				$item->invoice_status = "Closed";
+    			}
     		}
     
     		$this->em->persist($item);
     		$this->em->flush();
     	}
     	 
-    	$remains = $invoice->amount_due - $invoice->amount_paid;
+    	
+    	if ($remains <= 0){
+    		if ($invoice->invoice_type == "Application Fees" || $invoice->invoice_type == 'First Time Advance'){
+    			foreach($items as $item){
+    				$license = $this->em->getRepository('BL\Entity\License')->findOneBy(array('client_id'=>$item->client_id, 'vendor_id'=>$invoice->vendor_id));
+    				
+    				
+    				
+    				$license->payment_status = "paid";
+    				$this->em->persist($license);
+    				$this->em->flush();
+    			}
+    		}
+    	}
     	 
-    	$pay = new BL\Entity\Payment();
+	$pay = $this->em->getRepository('BL\Entity\Payment')->findOneBy(array('invoice'=>$invoice));
+        if(!$pay)
+    		$pay = new BL\Entity\Payment();
     	 
     	 
     	$pay->vendor = $invoice->vendor_id;
@@ -397,16 +441,22 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     	$pay->payment_month = date('m');
     	$pay->amount_remaining = $remains;
     	$pay->invoice = $invoice;
+		if (strlen($pay->check_num) <= 0){
+                $pay->check_num = $reviewData['ref'];
+        }else {
+                $pay->check_num .= ",".$reviewData['ref'];
+        }
     	 
     	$this->em->persist($pay);
     	$this->em->flush();
     	 
     	foreach ($paymentData as $data){
     		$license = $this->em->getRepository('BL\Entity\License')->findOneBy(array('client_id'=>$data['client_id'], 'vendor_id'=>$invoice->vendor_id->id));
+    		
+    		$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$data['client_id']));
+    		
     		$operation = $this->em->getRepository('BL\Entity\ClientOperation')->findOneBy(array('user_id'=>$data['client_id']));
     		$payItem = new BL\Entity\PaymentLineItems();
-    
-    		error_log("\nlicense " . ((!is_null($license))? "is not null" : "is null"), 3, "./errorLog.log");
     
     		$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$data['client_id']));
     
@@ -416,8 +466,34 @@ class Admin_InvoiceController extends Zend_Controller_Action {
     		$payItem->payment_year = $fiscal_year;
     		$payItem->payment_quarter = $quarter;
     		$payItem->payment_month = date('m');
-    		$payItem->sharing = (!is_null($license))? ($license->sharing == 'yes')? '1': '0' : '0';
-    		$payItem->percent_amc = (!is_null($license))? ($license->sharing == 'yes')? $operation->commission_per: '0': '0';
+
+    		$sharing = '1';
+    		
+    		if (!is_null($operation)){
+    			if ($operation->sharing == '1'){
+    				$sharing = '1';
+    			} else {
+    				$sharing = '0';
+    			}
+    		}
+    		
+    		if (!is_null($license)){
+    			if (strtolower($license->sharing) == 'yes'){
+    				$sharing = '1';
+    			}
+    			else $sharing = '0';
+    		}
+    		$percent = '0';
+    		
+    		if ($sharing == '1'){
+    			if (!is_null($operation)) $percent = $operation->commission_per;
+    			else $percent = '0.3';
+    		}
+    		
+    		if ($percent == null) $percent = '0';
+    		
+    		$payItem->sharing = $sharing;
+    		$payItem->percent_amc = $percent;
     		$payItem->last_modified_date = new DateTime(date('Y-m-d H:i:s'));
     		$payItem->pmt_id = $pay;
     		$payItem->amount_paid = $data['paid'];

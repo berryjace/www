@@ -103,9 +103,9 @@ class Admin_Model_Vendors {
 	    } else {
 		 $json .= '[
                     "' . (!$v->id ? "N/A" : $v->id) . '",
-                    "' . ( "N/A") . '",
+                    "' . (!$v->invoice->payment_status ? "N/A" : $v->invoice->payment_status) . '",
                     "' . (!$v->check_num ? "N/A" : $v->check_num) . '",
-                    "' . "N/A" . '",
+                    "' . $v->invoice->id . '",
                     "' . $v->record_date->format("m/d/Y") . '",
                     "' . $currency->toCurrency($v->amount_paid) . '",
                     "' . $currency->toCurrency($v->amount_paid - $amc) . '",
@@ -347,7 +347,10 @@ class Admin_Model_Vendors {
 		$vendorOperation->insurance_phone = $form->getValue('insurance_phone');
 		$vendorOperation->vendor_royalty_structure = $form->getValue('vendor_royalty_structure');
 		$vendorOperation->have_late_fee = $form->getValue('have_late_fee');
-		$vendorOperation->vendor_type = implode(",", $form->getValue('vendor_type'));
+		if($form->getValue('vendor_type')!=null)
+                        $vendorOperation->vendor_type = implode(",", $form->getValue('vendor_type'));
+                else
+                        $vendorOperation->vendor_type = "";
 		$vendorOperation->insurance_company = $form->getValue('insurance_company');
 		$vendorOperation->insurance_contact = $form->getValue('insurance_contact');
 		$vendorOperation->insurance_phone = $form->getValue('insurance_phone');
@@ -596,7 +599,10 @@ class Admin_Model_Vendors {
 		$this->ct->em->flush();
 	    }
 	}
-
+	$vendor = $this->ct->em->getRepository("BL\Entity\User")->findOneBy(array('id' => (int)$vendor_id));
+	
+	$old_profiles = $this->ct->em->getRepository('BL\Entity\UserProfile')->findBy(array('user'=>$vendor));
+	
 	$existing_data = array(
 	    'editContact' => "0",
 	    'v_addNew' => "0",
@@ -619,12 +625,35 @@ class Admin_Model_Vendors {
 
 	$this->ct->view->userOperation = $this->ct->em->getRepository('BL\Entity\UserContact')->findBy(array('user_id' => (int) $vendor_id));
 
+	$this->ct->view->old_profiles = $old_profiles;
+	
 	if ($this->ct->getRequest()->isPost()) {
 	    $formData = $this->ct->getRequest()->getPost();
 	    //if ($form->isValid($formData)){
 	    if ($form->isValidPartial($formData)) {
 
 		if ($form->getValue('editContact') == "1") {
+		  	$profile = new BL\Entity\UserProfile();
+			
+			$profile->organization_name = $user->organization_name;
+			$profile->username = $user->username;
+			$profile->address_line1 = $user->address_line1;
+			$profile->address_line2 = $user->address_line2;
+			$profile->city = $user->city;
+			$profile->state = $user->state;
+			$profile->zipcode = $user->zipcode;
+			$profile->email = $user->email;
+			$profile->phone = $user->phone;
+			$profile->phone2 = $user->phone2;
+			$profile->fax = $user->fax;
+			$profile->website = $user->website;
+			$profile->user_code = $user->user_code;
+			$profile->user = $user;
+			$profile->company_email = $user->company_email;
+			
+			$this->ct->em->persist($profile);
+			$this->ct->em->flush();
+			
 		    $user->organization_name = $form->getValue('organization_name');
 		    $user->username = $form->getValue('username');
 		    if ($form->getValue('user_password') != '') {
@@ -765,7 +794,8 @@ class Admin_Model_Vendors {
 		$user->account_type = ACC_TYPE_VENDOR;
 		$user->organization_name = $form->getValue('organization_name');
 		$user->username = $form->getValue('username');
-		$user->password = md5($form->getValue('password'));
+		if($form->getValue('password') != "")
+			$user->password = md5($form->getValue('password'));
 		$user->first_name = $form->getValue('v_first_name');
 		$user->last_name = $form->getValue('v_last_name');
 		$user->address_line1 = $form->getValue('address_line_1');
@@ -783,8 +813,8 @@ class Admin_Model_Vendors {
 		if ($form->getValue('status') == "Current") {
 		    $user->reg_status = "activated";
 		}
-		$role = $this->ct->em->getRepository('BL\Entity\Role')->findOneBy(array('id' => ACC_TYPE_VENDOR));
-		$user->roles->add($role);
+		//$role = $this->ct->em->getRepository('BL\Entity\Role')->findOneBy(array('id' => ACC_TYPE_VENDOR));
+		//$user->roles->add($role);
 		$this->ct->em->persist($user);
 		$this->ct->em->flush();
 
@@ -858,7 +888,7 @@ class Admin_Model_Vendors {
     public function showCreateVendorInvoice() {
 	$form = new Admin_Form_CreateInvoice();
 //        echo $this->ct->getRequest()->getParam('id');
-	$vendor = $this->ct->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $this->ct->getRequest()->getParam('id'), 'user_status' => 'Current'));
+	$vendor = $this->ct->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $this->ct->getRequest()->getParam('id')));
 
 	if ($this->ct->getRequest()->isPost()) {
 	    $this->saveInvoice($form);
@@ -906,6 +936,39 @@ class Admin_Model_Vendors {
 	    $invoice->company_name = $form->getValue('vendor_name');
 	    $invoice->webpage = '';
 	    $invoice->invoice_term = $form->getValue('inv_term');
+	    
+	    $term = $form->getValue('inv_term');
+	    
+	    if (strtolower($term) == "net 15 days"){
+
+	    	$date = new DateTime();
+	    	$date->add(new DateInterval("P15D"));
+	    	 
+	    	$invoice->due_date = $date;
+	    	 
+	    } else if(strtolower($term) == "net 30 days") {
+
+	    	$date = new DateTime();
+	    	$date->add(new DateInterval("P30D"));
+	    	 
+	    	$invoice->due_date = $date;
+	    	
+	    } else if(strtolower($term) == "net 60 days") {
+
+	    	$date = new DateTime();
+	    	$date->add(new DateInterval("P60D"));
+	    	 
+	    	$invoice->due_date = $date;
+	    	
+	    } else {
+
+	    	$date = new DateTime();
+	    	 
+	    	$invoice->due_date = $date;
+	    	
+	    }
+	    
+	    
 	    $invoice->address_line1 = $form->getValue('address_line_1');
 	    $invoice->address_line2 = $form->getValue('address_line_2');
 	    $invoice->city = $form->getValue('city');
@@ -1159,7 +1222,7 @@ class Admin_Model_Vendors {
 	    $this->ct->em->flush();
 	    
 	    $vendorOperation = new \BL\Entity\VendorOperation();
-	    $vendorOperation->user_id = $user->id;
+	    $vendorOperation->user_id = $user;
 	    $this->ct->em->persist($vendorOperation);
 	    $this->ct->em->flush();
 
@@ -1479,12 +1542,18 @@ public function getInvoicesByParams() {
 	    $invoice->fax = $vendor_obj->fax;
 	    $invoice->payment_status = 'Due';
 	    $invoice->display_record = '';
-	   // $invoice->amount_due = 40 * (count($licensed_clients));
+	    
 	    $invoice->amount_paid = '';
 	    $invoice->vendor_id = $vendor_obj;
+        $invoice->invoice_term = "Net 15 days";
+        
+        $date = new DateTime();
+        $date->add(new DateInterval("P15D"));
+        
+        $invoice->due_date = $date;
+	        
 	    $this->ct->em->persist($invoice);
 	    $this->ct->em->flush();
-//            $this->ct->view->BUtils()->doctrine_dump($invoice);
 	    $invoiceID = "INV_";
 	     
 	    $id = $invoice->id . "";
@@ -1694,6 +1763,12 @@ public function getInvoicesByParams() {
 	    			$nInvoice->company_name = $vendor->organization_name;
 	    			$nInvoice->webpage = $vendor->website;
 	    			$nInvoice->invoice_term = 'Net 15 days';
+			        
+			        $date = new DateTime();
+			        $date->add(new DateInterval("P15D"));
+			        
+			        $nInvoice->due_date = $date;
+			        
 	    			$nInvoice->address_line1 = $vendor->address_line1;
 	    			$nInvoice->address_line2 = $vendor->address_line2;
 	    			$nInvoice->city = $vendor->city;

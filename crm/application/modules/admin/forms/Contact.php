@@ -91,7 +91,7 @@ class Admin_Form_Contact extends Zend_Form {
                 ->addFilter('StripTags')->addFilter('StringTrim');
 
         $email = new Zend_Form_Element_Text('email');
-        $email->setLabel('Recovery Email')
+        $email->setLabel('Gateway Main Contact/Recovery Email')
                 ->setDisableLoadDefaultDecorators(true)
                 ->setAttribs(array('size' => '50', 'class' => 'text desable'))->setRequired(false)
                 ->addFilter('StripTags')->addFilter('StringTrim');

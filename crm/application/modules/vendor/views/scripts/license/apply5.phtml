@@ -17,7 +17,6 @@
 
     <div class="one">You have selected to apply for a licensing agreement with [<b><?php echo count($this->clients); ?></b>] organizations.</div>
     <div class="spacer clear"></div>        
-    
     <form id="form5" name="form5" action="<?php echo $this->baseUrl('/vendor/license/apply-pay'); ?>" >
 
         <?php foreach ($this->clients as $client){ ?>
@@ -35,7 +34,13 @@
             <div class="one_sixth textAlign"><b><?php echo $this->BUtils()->getCurrency(count($this->clients)*$this->vendorFee ); //$currency->toCurrency(count($this->clients)*$this->vendorFee); ?></b></div>
         </div>
         <div class="spacer clear"></div>        
-        
+        <?php
+            if(isset ($this->msg)){
+	?>
+	<div style="Background:red;color:white;">&nbsp;<?php echo $this->msg; ?> </div>
+	<?php
+	}
+	?>
         <?php 
             if(isset ($this->message)){
                 echo $this->message;
@@ -144,7 +149,8 @@
         <div class="spacer clear"></div>
     </form>
     </fieldset>
-    </div>    
+    </div> 
+    <span id="hasFee" style="display:none;"><?php echo $this->hasFee;?></span>   
 </div>
 <div id="dialog-confirm" class="notified-class" title="" style="display:none;">
     <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p>
@@ -181,7 +187,6 @@
     color: #1F1F1F;
 }
 </style>
-
 <script type="text/javascript" >
         //jQuery.noConflict();           
     function previousToPart4(uid){
@@ -212,14 +217,39 @@
     }        
     
     $(document).on('click', '#submit_button', function(){              
-        var radio = $('input:radio[name=billing_options]:checked').val();        
-        if(radio == 'check'){                 
+        var radio = $('input:radio[name=billing_options]:checked').val(); 
+
+		var hasFee = parseInt($("#hasFee").text());
+
+		if (!hasFee){
+			var message = "You are about to apply for license agreement(s). Do you wish to continue?";
+			
+            $("#dialog-confirm").text(message);
+            $( "#dialog:ui-dialog" ).dialog( "destroy" );
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                width: 640,
+                height:'auto', 
+                modal: true,
+                title: "Confirmation",
+                buttons: {
+                    "Continue": function() {                                                                           $( this ).dialog( "close" );
+                        submit_form();
+                    },
+                    "Cancel": function() {                    
+                        $( this ).dialog( "close" ); 
+                    }
+                }
+            });
+		} else if(radio == 'check'){
+                             
 //            var bank_acc_no = $("#bank_acc_no").val();
 //            var bank_acc_no_re = $("#bank_acc_no_re").val(); 
 //            var bank_routing = $("#bank_routing").val();
 //            var bank_routing_re = $("#bank_routing_re").val();
 //            if((bank_acc_no != '') && (bank_acc_no_re != '' && (bank_routing != '') && (bank_routing_re != ''))){               
                 var message = "Please be aware that your application will be considered incomplete until your application fee payment is received. Do you wish to continue?";
+
                 $("#dialog-confirm").text(message);
                 $( "#dialog:ui-dialog" ).dialog( "destroy" );
                 $( "#dialog-confirm" ).dialog({
@@ -229,9 +259,9 @@
                     modal: true,
                     title: "Confirmation",
                     buttons: {
-                        "Continue": function() {                                                                      
+                        "Continue": function() { 
+			    $( this ).dialog( "close" );
                             submit_form();
-                            $( this ).dialog( "close" ); 
                         },
                         "Cancel": function() {                    
                             $( this ).dialog( "close" );
@@ -244,7 +274,27 @@
 //            }            
         }    
         else{            
-            submit_form();
+	    var message = "Please be aware that your application will be considered incomplete until your application fee payment is received. Do you wish to continue?";
+
+                $("#dialog-confirm").text(message);
+                $( "#dialog:ui-dialog" ).dialog( "destroy" );
+                $( "#dialog-confirm" ).dialog({
+                    resizable: false,
+                    width: 640,
+                    height:'auto',
+                    modal: true,
+                    title: "Confirmation",
+                    buttons: {
+                        "Continue": function() {
+                            $( this ).dialog( "close" );
+                            submit_form();
+                        },
+                        "Cancel": function() {
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                });
+            //submit_form();
         }        
     });      
     

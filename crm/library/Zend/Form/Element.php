@@ -558,6 +558,7 @@ class Zend_Form_Element implements Zend_Validate_Interface
      */
     public function setValue($value)
     {
+//     	error_log("\nvalue: " . $value, 3, "./errorLog.log");
         $this->_value = $value;
         return $this;
     }

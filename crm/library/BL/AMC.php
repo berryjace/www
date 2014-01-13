@@ -11,10 +11,10 @@ class BL_AMC {
     const GRACE = 37;
 
     public static $quarters = array(
-        '1' => array('start' => 182, 'end' => '273'), // Jul 01 - Sept 30
-        '2' => array('start' => 274, 'end' => '365'), // Oct 01 - Dec 31
-        '3' => array('start' => 0, 'end' => '90'), // Jan 01 - Mar 31
-        '4' => array('start' => 91, 'end' => '181'), // April 01 - Jun 30
+        '1' => array('start' => 219, 'end' => '310'), 
+        '2' => array('start' => 311, 'end' => '37'), 
+        '3' => array('start' => 38, 'end' => '127'),
+        '4' => array('start' => 128, 'end' => '218'),
     );
 
     /**
@@ -32,13 +32,22 @@ class BL_AMC {
     {
 	$date = new Zend_Date();
         $quarter = self::getCurrentQarter($date);
-	if($quarter == 0 || $quarter == 1) {
+	if($quarter == '1' || $quarter == '2') {
 	    return Date('Y') . "-" . (Date('y') + 1);
 	} else {
 	    return (Date('Y') - 1) . "-" . Date('y') ;
 	}
     }
-
+    
+    public static function getNextFiscalYear(){
+    	$date = new Zend_Date();
+    	$quarter = self::getCurrentQarter($date);
+    	if($quarter == '1' || $quarter == '2') {
+    		return (Date('Y') + 1) . "-" . (Date('y') + 2);
+    	} else {
+    		return (Date('Y')) . "-" . (Date('y') + 1) ;
+    	}
+    }
 
     /**
      * Function to get Last Quarter
@@ -67,10 +76,18 @@ class BL_AMC {
          * US fiscal Quarter which works in the following way
          */
         foreach (self::$quarters as $quarter => $val) {
-            if (self::isInRange($day_of_year, $val['start'], $val['end'])) {
-                return $quarter;
-            }
+        	if ($val['start'] < $val['end']){
+        	
+	            if (self::isInRange($day_of_year, $val['start'], $val['end'])) {
+	                return $quarter;
+	            }
+        	} else {
+        		if (self::isInrange($day_of_year, 0, $val['start']) || self::isInRange($day_of_year, $val['end'], 0)){
+        		 return $quarter;
+        		}
+        	}
         }
+	return 2;
     }
 
     /**

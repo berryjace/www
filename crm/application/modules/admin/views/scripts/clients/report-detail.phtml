@@ -4,10 +4,12 @@ echo $this->partial('reports/reports-sidebar-menus.phtml');
 $this->placeholder('main_side_bar')->captureEnd();
 ?>
 <div class="one">
-    <div><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'export-pdf', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/pdf.png" class="mgright5" alt="" /><span>Export to PDF</span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'export-pdf', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter, 'aReport' => 'f')); ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/pdf.png" class="mgright5" alt="" /><span>Export to PDF</span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'export-csv', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>Export to CSV</span></a>
     </div>
     <div style="float: right;"><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'affinity-report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>View Affinity Report</span></a></div>
+    <div style="float: right;"><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'quarterly-report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>View Client Yearly Report</span></a></div>
+    <div style="float: right;"><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'affinity-quarterly-report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $this->clientId, 'quarter' => $this->quarter)); ?>" class="iconlink2"><span>View Affinity Yearly Report</span></a></div>
     <div class="one_fourth"><h2 class="grid_cap">Royalty Report Detail</h2></div>
 </div>
 <div class="spacer"></div>
@@ -16,7 +18,7 @@ $this->placeholder('main_side_bar')->captureEnd();
         <tr>
             <th class="head0" width="30%">Company Name</th>
             <th class="head1">Date</th>
-            <th class="head0">Pmt Type</th>
+            <th class="head0">Pmt Status</th>
             <th class="head1">Ref#</th>
             <th class="head0">Total Amount</th>
             <th class="head1">Affinity</th>
@@ -31,22 +33,30 @@ $this->placeholder('main_side_bar')->captureEnd();
 	<?php
 	$amcAmount = 0;
 	$clientAmount = 0;
+	$chkNmb = "";
+	$status = "";
+	$payment = $this->paymentRepository->findOneBy(array('id'=>$item->payment_id));
 
-	if (isset($item->pmt_id->invoice)) {
+	if ($payment->invoice != null) {
 
-	    if (($item->amount_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+		$lineitem = $this->itemsRepository->findOneBy(array('invoice_id'=>$payment->invoice, 'client_id'=>$item->client));
+		
+		$chkNmb = $lineitem->check_number;
+		$status = $lineitem->payment_status;
+		
+	    if (($item->amount_paid) && $payment->invoice->invoice_type != 'Refund') {
 		$totalAmount = $item->amount_paid;
 		if ($item->sharing == 1) {
 		    $amcAmount = ($item->amount_paid * $item->percent_amc);
 		}
 		$clientAmount = $item->amount_paid - $amcAmount;
-	    } elseif (($item->late_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+	    } elseif (($item->late_paid) && $payment->invoice->invoice_type != 'Refund') {
 		$totalAmount = $item->late_paid;
 		if ($item->sharing == 1) {
 		    $amcAmount = ($item->late_paid * $item->percent_amc);
 		}
 		$clientAmount = $item->late_paid - $amcAmount;
-	    } elseif (($item->adv_paid) && $item->pmt_id->invoice->invoice_type != 'Refund') {
+	    } elseif (($item->adv_paid) && $payment->invoice->invoice_type != 'Refund') {
 		$totalAmount = $item->adv_paid;
 		if ($item->sharing == 1) {
 		    $amcAmount = ($item->adv_paid * $item->percent_amc);
@@ -86,8 +96,8 @@ $this->placeholder('main_side_bar')->captureEnd();
         <tr>
     	<td><?php echo $item->pmt_id->vendor->organization_name; ?></td>
     	<td><?php echo $item->last_modified_date->format("m/d/Y"); ?></td>
-    	<td><?php echo $item->pmt_id->invoice ? str_replace('Received', '', $item->pmt_id->invoice->payment_status) : "N/A"; ?></td>
-    	<td><?php echo $item->pmt_id->check_num; ?></td>
+    	<td><?php echo $status; ?></td>
+    	<td><?php echo $chkNmb; ?></td>
     	<td><?php echo $this->currency->toCurrency($totalAmount); ?></td>
     	<td><?php echo $this->currency->toCurrency($amcAmount); ?></td>
     	<td><?php echo $this->currency->toCurrency($clientAmount); ?></td>
@@ -97,11 +107,6 @@ $this->placeholder('main_side_bar')->captureEnd();
 	$totalClientAmount = $totalClientAmount + $clientAmount;
     }
     ?>
-    <tr>
-        <td colspan="6" align="right"><strong>Total Amount for Quarter:</strong></td>
-        <td><?php echo $this->currency->toCurrency($totalClientAmount); ?></td>
-        <td></td>
-    </tr>
 </table>
 <br>
 <div>
@@ -114,6 +119,48 @@ $this->placeholder('main_side_bar')->captureEnd();
     }
     ?>
 </div>
+<script type="text/javascript">
+	jQuery.extend(jQuery.fn.dataTableExt.oSort,{
+		"currency-pre":function(a){
+			a = (a ==="-")? 0 : a.replace (/[^\d\-\.]/g, "");
+			return parseFloat(a);
+		},
+		"currency-asc":function(a, b){
+			return a-b;
+		},
+		"currency-desc":function(a,b){
+			return b-a;
+		}
+	});
+    
+    $(document).on("ready", function(){
+		oTable=$('#reports-data-table').dataTable( {
+		    "bProcessing": true,
+		    "bServerSide": false,   
+		    "bPaginate": false,
+		    "bFilter": false,
+		          
+		    "aaSorting": [[0,'asc']], // Initial sorting order when page loads
+		    "aoColumnDefs":[
+		        { "sType":"string", "bSortable": true, "aTargets": [ 0 ] },
+		        { "sType":"date", "bSortable": true, "aTargets": [ 1 ] },
+		        { "sType":"string", "bSortable": true, "aTargets": [ 2 ] },
+		        { "sType":"string", "bSortable": true, "aTargets": [ 3 ] },
+		        { "sType":"currency", "bSortable": true, "aTargets": [ 4 ] },
+		        { "sType":"currency", "bSortable": true, "aTargets": [ 5 ] },
+		        { "sType":"currency", "bSortable": true, "aTargets": [ 6 ] },
+		        { "sType":"string", "bSortable": true, "aTargets": [ 7 ] },],  // Turning sorting on/off for cols
+		    "fnInitComplete": function (oSettings, json) {
+		        $('#'+oSettings.sInstance+'_wrapper').find('.dataTables_length label:eq(0)').after($('.aphabetical_filters'));
+		    },
+		    "fnDrawCallback":function(oSettings){
+				$("#reports-data-table>tbody").append("<tr><td colspan='6' align='right'><strong>Total Amount for Quarter:</strong></td><td><?php echo $this->currency->toCurrency($totalClientAmount); ?></td><td></td></tr>");
+
+				$("#reports-data-table_info").css("display", "none");
+			}
+		} ); 
+    });
+</script>
 <style type="text/css">
     .dataTables_processing {
         position: absolute;

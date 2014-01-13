@@ -41,7 +41,7 @@ class Zend_Dojo
     /**
      * Base path to Google CDN
      */
-    const CDN_BASE_GOOGLE = 'http://ajax.googleapis.com/ajax/libs/dojo/';
+    const CDN_BASE_GOOGLE = 'https://ajax.googleapis.com/ajax/libs/dojo/';
 
     /**
      * Path to dojo on Google CDN (following version string)

@@ -312,45 +312,137 @@ class BL_View_Helper_BUtils extends Zend_View_Helper_Abstract {
         require_once('ThirdParty/tcpdf/config/lang/eng.php');
         require_once('ThirdParty/tcpdf/tcpdf.php');
                 
-        // create new PDF document
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
-        // set document information
+
         $pdf->SetCreator(PDF_CREATOR);
         $pdf->SetAuthor($params['author']);
         $pdf->SetTitle($params['title']);
         $pdf->SetSubject($params['subject']);
         $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
-        // set default header data
-//        $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE . ' 065', PDF_HEADER_STRING);
-        // set header and footer fonts
+
         $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
         $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-        // set default monospaced font
+
         $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-        //set margins
+
         $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT, true);
         $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);   //for margin footer and add page number in each page
-        //set auto page breaks
+        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
         $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-        //set image scale factor
+
         $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-        //set some language-dependent strings
+
         $pdf->setLanguageArray($l);
-        // ---------------------------------------------------------
-        // set default font subsetting mode
+
         $pdf->setFontSubsetting(true);
-        // Set font
-//        $pdf->SetFont('helvetica', '', 10);
+
         $pdf->SetFont('dejavusans', '', 8, '', true);
-        // Add a page
-        // This method has several options, check the source code documentation for more information.
+
         $pdf->AddPage();
         
-//        $pdf_html = $licensing_agreement;              
         $pdf->writeHTML($params['pdf_content'], true, 0, true, 0);                
         $save_to = $params['file_path'] . $params['file_name'] . ".pdf";
         $pdf->Output($save_to, $params['output_type']);
         return $save_to;    
+    }
+     /**
+     * Function to generate PDF invoice
+     * @author Masud
+     * @copyright Blueliner Marketing
+     * @version 0.1
+     * @access public
+     * @param <array>
+     * @return String
+     */
+    public function getPDF2($params=array()) {
+        require_once('ThirdParty/tcpdf/config/lang/eng.php');
+        require_once('ThirdParty/tcpdf/tcpdf.php');
+	require_once('genpdf.php');
+
+        $pdf = new AFFPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+
+	$pdf->setHtmlHeader($params['header']);
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor($params['author']);
+        $pdf->SetTitle($params['title']);
+        $pdf->SetSubject($params['subject']);
+        $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+
+        $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+        $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+        $pdf->SetMargins(PDF_MARGIN_LEFT, '83 px', PDF_MARGIN_RIGHT, true);
+        $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        $pdf->setLanguageArray($l);
+
+        $pdf->setFontSubsetting(true);
+
+        $pdf->SetFont('dejavusans', '', 8, '', true);
+
+        $pdf->AddPage();
+
+        $pdf->writeHTML($params['pdf_content'], true, 0, true, 0);
+        $save_to = $params['file_path'] . $params['file_name'] . ".pdf";
+        $pdf->Output($save_to, $params['output_type']);
+        return $save_to;
+    }
+
+    /**
+     * Function to generate multi column PDF invoice
+     * @author Jace
+     * @copyright Blueliner Marketing
+     * @version 0.1
+     * @access public
+     * @param <array>
+     * @return String
+     */
+    public function getMulticolumnPDF($params=array()) {
+        require_once('ThirdParty/tcpdf/config/lang/eng.php');
+        require_once('ThirdParty/tcpdf/tcpdf.php');
+        require_once('genpdf.php');
+
+        $pdf = new AFFPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+
+        $pdf->setHtmlHeader($params['header']);
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor($params['author']);
+        $pdf->SetTitle($params['title']);
+        $pdf->SetSubject($params['subject']);
+        $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+
+        $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+        $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+        $pdf->SetMargins(PDF_MARGIN_LEFT, '80 px', PDF_MARGIN_RIGHT, true);
+        $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        $pdf->setLanguageArray($l);
+
+        $pdf->setFontSubsetting(true);
+
+        $pdf->SetFont('dejavusans', '', 8, '', true);
+
+        $pdf->AddPage();
+	$pdf->setEqualColumns(2, 85);
+        $pdf->writeHTML($params['pdf_content'], true, 0, true, 0);
+        $save_to = $params['file_path'] . $params['file_name'] . ".pdf";
+        $pdf->Output($save_to, $params['output_type']);
+        return $save_to;
     }
 }

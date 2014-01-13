@@ -1,0 +1,60 @@
+<?php
+$this->placeholder('main_side_bar')->captureStart();
+echo $this->partial('vendors/vendor-sidebar-menus.phtml', array('selected' => 'contact', 'id' => $this->vendor->id));
+$this->placeholder('main_side_bar')->captureEnd();
+?>
+<hr size="1" noshade />
+<div class="spacer"></div>
+
+<form action="" method="POST" enctype="multipart/form-data" id="<?php echo $this->form->getName(); ?>">
+    <?php echo $this->form->editContact; ?>
+    <div class="form_container_left">
+        <?php echo $this->form->username; ?>
+        <?php echo $this->form->organization_name; ?>
+        <?php echo $this->form->address_line_1; ?>
+        <?php echo $this->form->address_line_2; ?>
+        <div class="one_third">
+            <?php echo $this->form->city; ?>
+        </div>
+        <div class="one_third">
+            <?php echo $this->form->state; ?>
+        </div>
+        <div class="one_fifth">
+            <?php echo $this->form->zip; ?>
+        </div><div class="clear"></div>
+        	<?php echo $this->form->company_email; ?>
+       <div class="clear"></div>
+    </div>
+    <div class="form_container_right">
+        <?php echo $this->form->email; ?>
+        <?php echo $this->form->vendor_number; ?>
+        <?php echo $this->form->phone_1; ?>
+        <?php echo $this->form->phone_2; ?>
+        <?php echo $this->form->fax; ?>
+        <?php echo $this->form->web_page; ?>
+    </div>
+    <div class="clear"></div>
+
+</form>
+<div class="clear"></div>
+
+<style type="text/css">
+    #city,#state,#zip,#sal{
+        width:110px;
+    }
+    #first_name{
+        width:250px;
+    }
+    #v_phone_ext{
+        width: 30px !important;
+    }
+    #validate_new_contact{font-size: 11px; color: red;}
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+    });
+
+</script>

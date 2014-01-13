@@ -36,6 +36,7 @@ class Client_WlPagesController extends Zend_Controller_Action {
 	$vendor_name = $this->_getParam('vendor');
 	
 	if ($city == "City or State") $city = null;
+	if (strtolower($zip_code) == "zip") $zip_code = null;
 	if ($zip_code == "Zip Code") $zip_code = null;
 	if ($product == "Product Name") $product = null;
 	if ($vendor_name == "Company Name") $vendor_name = null;
@@ -91,12 +92,22 @@ class Client_WlPagesController extends Zend_Controller_Action {
 
 
 	$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$vendor_id));
-	$vendorProfile = $this->em->getRepository('BL\Entity\VendorProfile')->findOneBy(array('user_id' => (int) $vendor_id));
-        $vendorSampleProduct = $this->em->getRepository('BL\Entity\VendorSampleFile')->findBy(array('Vendor' => (int) $vendor_id, 'use_for' => 'web_profile'));
-        $vendorOperation = $this->em->getRepository("BL\Entity\VendorOperation")->findOneBy(array('user_id' => (int) $vendor_id));
-        $vendorService = $this->em->getRepository('BL\Entity\VendorService')->findBy(array('vendor_id' => (int) $vendor_id));
+	$vendorProfiles = $this->em->getRepository('BL\Entity\VendorProfile')->findBy(array('user_id' => $vendor), array('update_date'=>'DESC'), 1);
+	
+	foreach($vendorProfiles as $prof){
+		$vendorProfile = $prof;
+	}
+        $vendorSampleProduct = $this->em->getRepository('BL\Entity\VendorSampleFile')->findBy(array('Vendor' => $vendor, 'use_for' => 'web_profile'));
+        $vendorOperation = $this->em->getRepository("BL\Entity\VendorOperation")->findOneBy(array('user_id' => $vendor));
+        $vendorService = $this->em->getRepository('BL\Entity\VendorService')->findBy(array('vendor_id' => $vendor));
 	$vendorOfferedProduct = $this->em->getRepository('BL\Entity\VendorWebProfileProducts')->getVendorProducts($vendor_id);
 
+	$vendorOfferedProduct = array();
+	$products = explode(",", $vendorProfile->product_offered);
+	foreach($products as $product){
+		$prod = $this->em->getRepository('BL\Entity\Product')->findOneBy(array('id'=>$product));
+		$vendorOfferedProduct[] = array('product_name'=>$prod->product_name);
+	}
 
 	$this->view->vendor = $vendor;
 	$this->view->vendorProfile = $vendorProfile;

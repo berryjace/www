@@ -39,4 +39,23 @@ class Zend_Form_Element_Textarea extends Zend_Form_Element_Xhtml
      * @var string
      */
     public $helper = 'formTextarea';
+    
+    /**
+     * Retrieve filtered element value
+     *
+     * @return mixed
+     */
+    public function getValue()
+    {
+    	/*
+    	 $valueFiltered = $this->_value;
+    
+    	if ($this->isArray() && is_array($valueFiltered)) {
+    		array_walk_recursive($valueFiltered, array($this, '_filterValue'));
+    	} else {
+    		$this->_filterValue($valueFiltered, $valueFiltered);
+    	}//*/
+    
+    	return $this->_value;
+    }
 }

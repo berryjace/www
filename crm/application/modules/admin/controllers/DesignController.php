@@ -210,8 +210,8 @@ class Admin_DesignController extends Zend_Controller_Action {
 	    $params = array(
 		'to' => $vendorUser->email,
 		'to_name' => $vendorUser->first_name.' '.$vendorUser->last_name,
-		'from' => 'admin@greeklicensing.com',
-                'from_name' => 'AMC Admin',
+		'from' => 'designs@greeklicensing.com',
+                'from_name' => 'Greek Licensing Designs',
                 'subject' => 'Greek licensing design notification',
                 'body' => $body,
 		'file'	=>  APPLICATION_PATH.'/../assets/files/design/thumbs/_thumb2' . $design->file_url

@@ -21,10 +21,10 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	$current_year = date("Y");
 	$vendor_id = $this->_helper->BUtilities->getLoggedInUser();
 	//$last_quarter = BL_AMC::getLastQarter();
-	$current_quarter = date("m");
-	$current_year = ($current_quarter < 7) ? $current_year - 1 : $current_year;
+	$current_month = date("m");
+	$current_year = ($current_month < 7) ? $current_year - 1 : $current_year;
 	$fiscal_year = $current_year . "-" . substr(($current_year + 1), 2);
-	$this->view->last_quarter_submissions = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->getReportHistory($vendor_id, $fiscal_year, $current_quarter);
+	$this->view->last_quarter_submissions = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->getReportHistory($vendor_id, $fiscal_year, $current_month);
 
 	$savedReports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSave")->getRowsByVendorId($vendor_id);
 	
@@ -148,7 +148,7 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 		} else {
 		    foreach ($savedReport as $report) {
 			$i = $report->client->id;
-			$arr[$i][] = serialize($report);
+			$arr[$i][] = $report;
 		    }
 		    $this->view->savedRows = $arr;
 		}
@@ -200,291 +200,304 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
      * @access public
      * @return void
      */
-    public function ajaxSubmitReportAction() {
-    	error_log("\najaxSubmitReportAction()", 3, "./errorLog.log");
+	public function ajaxSubmitReportAction() {
 
-	$user = Zend_Auth::getInstance()->getIdentity();
-	$isAdmin = ($user->account_type == 1) ? 1 : 0;
-
-	$this->_helper->BUtilities->setNoLayout();
-
-	$vendor_id = $this->_getParam('vendor_id');
-	$vendor_id = !empty($vendor_id) ? $vendor_id : $this->_helper->BUtilities->getLoggedInUser();
-
-	$vendor = $this->em->find("BL\Entity\User", (int) $vendor_id);
-
-	$vendorOperation = $this->em->getRepository("BL\Entity\VendorOperation")->findOneBy(array('user_id' => $vendor_id));
-
-	/**
-	 * Things to note : Both reports by sales and report by Greek orgs have the same
-	 * structure of request params but presented in a different way in the front-end.
-	 * So the processing will be same here.
-	 */
-	$params = $this->_getAllParams();
-
-	//Zend_Debug::dump($params); exit;
-
-	$params['year'] = isset($params['year']) ? $params['year'] : $params['fiscal_year'];
-
-	$submission_hash = !empty($params['submission_hash']) ? $params['submission_hash'] : sha1(md5(microtime()));
-
-	$summary_data['fiscal_year'] = $params['year'];
-	$summary_data['quarter'] = $params['quarter'];
-	$summary_data['clients'] = array();
-	$summary_data['quantity'] = array();
-	$summary_data['gross_sales'] = array();
-	//$summary_data['sales_revenue'] = array();
-	$summary_data['royalty_commission'] = array();
-	$summary_data['royalty_commission_type'] = array();
-	$summary_data['annual_advance'] = array();
-	$summary_data['royalty_before_adv'] = array();
-	$summary_data['royalty_after_adv'] = array();
-
-	//        $this->session->summaryData = $this->_getAllParams();
-	$num_rows = sizeof($params['greek_org']);
-
-	$totalDue = 0;
-
-	for ($i = 0; $i < $num_rows; $i++) {
-
-	    $client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id' => (int) $params['greek_org'][$i], 'account_type' => (int) ACC_TYPE_CLIENT));
-	    $license = $this->em->getRepository("BL\Entity\License")->findOneBy(array('client_id' => (int) $params['greek_org'][$i], 'vendor_id' => $vendor_id, 'status' => (int) 4));
-		$submissions = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->findBy(array('vendor'=>$vendor_id, 'client'=>(int)$params['greek_org'][$i], 'year'=>$params['year']));
+		$user = Zend_Auth::getInstance()->getIdentity();
+		$isAdmin = ($user->account_type == 1) ? 1 : 0;
+	
+		$this->_helper->BUtilities->setNoLayout();
+	
+		$vendor_id = $this->_getParam('vendor_id');
+		$vendor_id = !empty($vendor_id) ? $vendor_id : $this->_helper->BUtilities->getLoggedInUser();
+	
+		$vendor = $this->em->find("BL\Entity\User", (int) $vendor_id);
+	
+		$vendorOperation = $this->em->getRepository("BL\Entity\VendorOperation")->findOneBy(array('user_id' => $vendor_id));
+	
+		/**
+		 * Things to note : Both reports by sales and report by Greek orgs have the same
+		 * structure of request params but presented in a different way in the front-end.
+		 * So the processing will be same here.
+		 */
+		$params = $this->_getAllParams();
+	
+		//Zend_Debug::dump($params); exit;
+	
+		$params['year'] = isset($params['year']) ? $params['year'] : $params['fiscal_year'];
+	
+		$submission_hash = !empty($params['submission_hash']) ? $params['submission_hash'] : sha1(md5(microtime()));
 		
-	    $clientProfile = $this->em->getRepository('BL\Entity\ClientProfile')->findOneBy(array('user_id' => $client->id));
-
-	    $report_row = new BL\Entity\VendorRoyaltyReportSubmissions();
-	    $report_row->submission_type = "form";
-	    $report_row->submission_hash = $submission_hash;
-	    $report_row->quarter = $params['quarter'];
-	    $report_row->status = "Pending Review";
-	    $report_row->year = $params['year'];
-	    $report_row->product_sold_to = (isset($params['product_sold_to'][$i])) ? $params['product_sold_to'][$i] : '';
-	    //$report_row->invoice_date = new \DateTime(date("Y-m-d", strtotime($params['invoice_date'][$i])));
-	    //$report_row->invoice_num = $params['invoice_number'][$i];
-	    $report_row->unit_price = isset($params['price'][$i]) ? $params['price'][$i] : '';
-
-	if (isset($params['qty'][$i])) {
-			$report_row->quantity = $params['qty'][$i];
-	    }
-
-	    if (isset($params['gross_sales'][$i])) {
-			$report_row->gross_sales = $params['gross_sales'][$i];
-			error_log("\ngorss_sales is set: " . $params['gross_sales'][$i], 3, "./errorLog.log");
-	    }
-	    
-	    $returns = 0;
-	    
-	    if (array_key_exists('returnsDeclared', $params)){
-	    	$returns = $params['returnsDeclared'][$i];
-	    }
-	    
-	    /*
-	      if(isset($params['royalty_due'][$i])){
-	      $report_row->sales_revenue = $params['sales_revenue'][$i];
-	      }
-	     */
+		$summary_data['fiscal_year'] = $params['year'];
+		$summary_data['quarter'] = $params['quarter'];
+		$summary_data['clients'] = array();
+		$summary_data['clients_id'] = array();
+		$summary_data['quantity'] = array();
+		$summary_data['gross_sales'] = array();
+		$summary_data['royalty_commission'] = array();
+		$summary_data['royalty_commission_type'] = array();
+		$summary_data['annual_advance'] = array();
+		$summary_data['royalty_before_adv'] = array();
+		$summary_data['royalty_after_adv'] = array();
+		$summary_data['invoice_num'] = array();
+		$summary_data['sold_to'] = array();
+		$summary_data['invoice_date'] = array();
+		$summary_data['product_desc'] = array();
+		$summary_data['price'] = array();
+		$summary_data['royalties'] = array();
 		
-	    $annual_advance = isset($license) ? $license->default_renewal_fee : 0;
-	    
-	    //$report_row->gross_sales = $params['gross_sales'][$i];
-	    //$report_row->royalty_commission = isset ($license) ? $license->royalty_commission : $clientProfile->royalty_commission_per;
-	    $report_row->annual_advance = $annual_advance;
+		if (!isset($params['royaltiesDeclared'])) unset($summary_data['royalties']);
+		
+		$num_rows = sizeof($params['greek_org']);
+		
+		for ($i =0; $i < $num_rows; $i++){
+			
+			if (isset($summary_data['royalties'])){
+				error_log("\nsetting royalty: " . $i . " declared: " . $params['royaltiesDeclared'][$i], 3, "./errorLog.log");
+				$summary_data['royalties'][] = $params['royaltiesDeclared'][$i];
+			}
+			
+			$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id' => (int) $params['greek_org'][$i], 'account_type' => (int) ACC_TYPE_CLIENT));
+			$license = $this->em->getRepository("BL\Entity\License")->findOneBy(array('client_id' => (int) $params['greek_org'][$i], 'vendor_id' => $vendor_id, 'status' => (int) 4));
+			 
+			$clientProfile = $this->em->getRepository('BL\Entity\ClientProfile')->findOneBy(array('user_id' => $client->id));
+			
+			$quantity = 0;
+			$royalty_commission = "";
+			$commission_type = "";
+			$gross_sales = "";
+			$before_adv = "";
+			$gross_sales = 0;
+			$returns = 0;
+			
+			$summary_data['clients'][] = $client->organization_name;
+			$summary_data['clients_id'][] = $client->id;
+    		$summary_data['invoice_num'][] = (isset($params['invoice_num'][$i])) ? $params['invoice_num'][$i] : '';
+    		$summary_data['sold_to'][] = (isset($params['product_sold_to'][$i])) ? $params['product_sold_to'][$i] : '';
+    		$summary_data['invoice_date'][] = (isset($params['invoice_date'][$i])) ? new \DateTime(date("Y-m-d", strtotime($params['invoice_date'][$i]))) : new \DateTime(date("Y-m-d"));
+    		$summary_data['product_desc'][] = (isset($params['product_description'][$i])) ? $params['product_description'][$i] : '';
+    		$summary_data['price'][] = isset($params['price'][$i]) ? $params['price'][$i] : '';
+			
+    		if (isset($params['gross_sales'][$i])) {
+    			$gross_sales = $params['gross_sales'][$i];
+    		}
+				
+			if (array_key_exists('returnsDeclared', $params)){
+				$returns = $params['returnsDeclared'][$i];
+				$summary_data['gross_sales'][] = $gross_sales - $returns;
+				$summary_data['returns'][] = $returns;
+			}
+			else {
+				$summary_data['returns'][] = 0;
+				
+				$summary_data['gross_sales'][] = $gross_sales;
+			}
 
-	    if(isset($license)) {
 
-		$payment_params = array(
-		    'id'		=>  $client->id,
-		    'fiscal_year'	=>  $params['year']
+			if (isset($params['qty'][$i])) {
+				$quantity = $params['qty'][$i];
+			}
+			
+			$summary_data['quantity'][] = $quantity;
+			
+			if (isset($license) && ($vendorOperation->vendor_reporting_type == 1 || $vendorOperation->vendor_reporting_type == 2 )) {
+				$royalty_commission = $license->royalty_commission;
+				$summary_data['royalty_commission'][] = $royalty_commission;
+				 
+				error_log("\nlicense is set", 3, "./errorLog.log");
+				if ($license->royalty_commission_type == '%') {
+					$before_adv = ($gross_sales - $returns) * $royalty_commission / 100;
+				} else {
+					$before_adv = $quantity * $royalty_commission;
+				}
+			} else {
+				  
+				if ($vendorOperation->vendor_reporting_type == 1) {
+					
+					$royalty_commission = isset($clientProfile->royalty_commission)? $client_profile->royalty_commission: 8.5;
+					
+					$summary_data['royalty_commission'][] = $royalty_commission;
+					
+					$before_adv = ($gross_sales - $returns) * $royalty_commission / 100;
+					
+				} elseif ($vendorOperation->vendor_reporting_type == 2) {
+					
+					$royalty_commission = $clientProfile->royalty_commission_amt;
+					
+					$summary_data['royalty_commission'][] = $royalty_commission;
+					$before_adv = $quantity * $royalty_commission;
+				
+				} elseif ($vendorOperation->vendor_reporting_type == 3) {
+
+						if (!empty($params['royalty_due'][$i])) {
+						$before_adv = $params['royalty_due'][$i];
+					} else {
+
+						$royalty_commission = $clientProfile->royalty_commission;
+						
+						$summary_data['royalty_commission'][] = $royalty_commission;
+						$before_adv = ($gross_sales - $returns) * $royalty_commission / 100;
+					
+					}
+				
+				} else {
+					$summary_data['royalty_commission'][] = 8.5;
+					$before_adv = ($gross_sales - $returns) * (8.5/100);
+				}
+			}
+			
+			$summary_data['royalty_commission_type'][] = (isset($license)) ? $license->royalty_commission_type : ($vendorOperation->vendor_reporting_type == 1) ? '%' : '$';
+			
+			$summary_data['royalty_before_adv'][] = $before_adv;
+			$summary_data['royalty_after_adv'][] = $before_adv;
+		}
+		
+		$this->em->flush();
+		$summary_data['vendor_reporting_type'] = $vendorOperation->vendor_reporting_type;
+		$summary_data['vendor_id'] = $vendor_id;
+		$summary_data['submission_hash'] = $submission_hash;
+		
+		$summary_data['quarter'] = $params['quarter'];
+		$summary_data['year'] = $params['year'];
+		
+		$this->session->summaryData = $summary_data;
+		$this->view->summary_data = $summary_data;
+		$this->view->vendor_reporting_type = $vendorOperation->vendor_reporting_type;
+		$this->view->fiscal_year = $params['year'];
+		$this->view->quarter = $params['quarter'];
+		$this->view->vendor = $vendor;
+		
+		echo Zend_Json::encode(array('success' => true, 'message' => 'Royalty report calculated successfully!', 'submission_hash' => $submission_hash));
+		exit;
+    }
+    
+    public function ajaxCreateReportAction(){
+    	$this->_helper->BUtilities->setNoLayout();
+    	
+    	$submission_hash = $this->session->summaryData['submission_hash'];
+		    	
+    	$reportItems = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->findBy(array("submission_hash"=>$submission_hash));
+    	
+    	foreach($reportItems as $item){
+    		$this->em->remove($item);
+    	}
+    	
+    	$this->em->flush();
+    	
+    	$this->CreateReport();
+    	
+
+    	echo Zend_Json::encode(array('success' => true));
+    }
+    
+    public function CreateReport(){
+
+		$summaryData = $this->session->summaryData;
+		
+		$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$summaryData['vendor_id']));
+		$vendorOperation = $this->em->getRepository("BL\Entity\VendorOperation")->findOneBy(array('user_id' => $vendor->id));
+		
+		/*
+		 * Generate the Summary PDF
+		*/
+		$targetDir = APPLICATION_PATH . '/../assets/files/reports/vendors/submissions/';
+		$url = '/assets/files/reports/vendors/submissions/';
+		$organizationName = str_replace(' ', '_', $vendor->organization_name);
+		$fiscalYear = str_replace('-', '', $summaryData['year']);
+		$quarter = $summaryData['quarter'];
+		$dt = date('m') . '.' . date('d') . '.' . date('Y');
+		$type = 'Summary';
+		$ext = 'pdf';
+		 
+		$arr = compact("organizationName", "fiscalYear", "quarter", "type", "dt");
+		$imp = implode('_', $arr);
+		//$imp .= '.'.$ext;
+		
+		$imp = str_replace('/', '', $imp);
+
+		$this->view->summary_data = $summaryData;
+		$this->view->vendor_reporting_type = $vendorOperation->vendor_reporting_type;
+		$this->view->fiscal_year = $summaryData['year'];
+		$this->view->quarter = $summaryData['quarter'];
+		$this->view->vendor = $vendor;
+		 
+		$html = $this->view->render('royalty/summary-pdf-template.phtml');
+		$pdf_params = array(
+				'author'	    => 'AMC',
+				'title'	    => 'Royalty Summary',
+				'subject'	    => 'Summary',
+				'pdf_content'   => $html,
+				'file_name'	    => $imp,
+				'file_path'	    => $targetDir,
+				'output_type'   => 'F'
 		);
-
-		$payments = $this->em->getRepository('BL\Entity\Payment')
-				->getClientPaymentReports($payment_params);
-		if(count($payments) < 1) {
-		    $report_row->annual_advance = 0;
-		}
-	    }
-	    
-	    /**
-	     * set default royalty commission to 100 if vendor roylalty commission is NULL
-	     * set default annual advance to 0 if vendor annual advance fee is NULL
-	     */
-	    /*
-	      $report_row->royalty_before_adv = ($params['gross_sales'][$i] * ((is_null($report_row->royalty_commission) ? 100 : $report_row->royalty_commission) / 100));
-	      $report_row->royalty_after_adv = ($report_row->royalty_before_adv - (is_null($report_row->annual_advance) ? 0 : $report_row->annual_advance));
-	     */
-
-	    if (isset($license) && ($vendorOperation->vendor_reporting_type == 1 || $vendorOperation->vendor_reporting_type == 2 )) {
-		$report_row->royalty_commission = $license->royalty_commission;
+		$save_to = $this->view->BUtils()->getPDF($pdf_params);
 		
+		$report = new BL\Entity\VendorRoyaltySubmissions();
+		$report->year = $summaryData['year'];
+		$report->quarter = $summaryData['quarter'];
+		$report->uploaded_on = new \DateTime(date("Y-m-d"));
+		$report->submission_hash = $summaryData['submission_hash'];
+		$report->type = 'Summary';
+		$report->file_url = $url . $imp . '.' . $ext;
 		
-		error_log("\nlicense is set", 3, "./errorLog.log");
-		if ($license->royalty_commission_type == '%') {
-		    $report_row->royalty_before_adv = ($report_row->gross_sales - $returns) * $report_row->royalty_commission / 100;
-		} else {
-		    $report_row->royalty_before_adv = $report_row->quantity * $report_row->royalty_commission;
-		}
-	    } else {
-	    	
-	    	error_log("\nlicense is not set",3, "./errorLog.log");
-	    	
-	    	if (isset($clientProfile->royalty_commission)){
-	    		error_log("\nroyalty commission per: " . $clientProfile->royalty_commission, 3, "./errorLog.log");
-	    	} else {
-	    		error_log("\nroyalty commission per not set", 3, "./errorLog.log");
-	    	}
+		$report->vendor = $vendor;
+    	
+		$num_rows = sizeof($summaryData['gross_sales']);
 
-		if ($vendorOperation->vendor_reporting_type == 1) {
-		    	error_log("\nA", 3, "./errorLog.log");
-		    $report_row->royalty_commission = isset($clientProfile->royalty_commission)? $client_profile->royalty_commission: 0;
-		    $report_row->royalty_before_adv = ($report_row->gross_sales - $returns) * $report_row->royalty_commission / 100;
-		} elseif ($vendorOperation->vendor_reporting_type == 2) {
-		    	error_log("\nB", 3, "./errorLog.log");
-		    $report_row->royalty_commission = $clientProfile->royalty_commission_amt;
-		    $report_row->royalty_before_adv = $report_row->quantity * $report_row->royalty_commission;
-		} elseif ($vendorOperation->vendor_reporting_type == 3) {
-		    //$report_row->royalty_commission = $clientProfile->royalty_commission_amt;
-		    	error_log("\nD", 3, "./errorLog.log");
-		    if (!empty($params['royalty_due'][$i])) {
-				$report_row->royalty_before_adv = $params['royalty_due'][$i];
-		    } else {
-			/**
-			 * @todo if the vendor reporting type is 3 and the vendor fills the Form for royalty
-			 * Then use the gross sales method
-			 */
-			$report_row->royalty_commission = $clientProfile->royalty_commission;
-			$report_row->royalty_before_adv = ($report_row->gross_sales - $returns) * $report_row->royalty_commission / 100;
-		    }
-		} else {
-			$report_row->royalty_commission = 8.5;
-			$report_row->royalty_before_adv = ($report_row->gross_sales - $returns) * (8.5/100);
-			error_log("\nF", 3, "./errorLog.log");
-		}
-	    }
-	    $report_row->royalty_after_adv = $report_row->royalty_before_adv; // - $report_row->annual_advance;
+    	for ($i = 0; $i < $num_rows; $i++) {
+    	
+    		$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id' => $summaryData['clients_id'][$i], 'account_type' => (int) ACC_TYPE_CLIENT));
+    		
+    		$report_row = new BL\Entity\VendorRoyaltyReportSubmissions();
+    		
+    		$report_row->submission_type = "form";
+    		$report_row->submission_hash = $summaryData['submission_hash'];
+    		
+    		$report_row->quarter = $summaryData['quarter'];
+    		$report_row->status = "Pending Review";
+    		$report_row->year = $summaryData['year'];
+    		$report_row->product_sold_to = $summaryData['sold_to'][$i];
+    		 
+    		$report_row->invoice_num = $summaryData['invoice_num'][$i];
+    		$report_row->invoice_date = $summaryData['invoice_date'][$i];
+    		$report_row->product_desc = $summaryData['product_desc'][$i];
+    		 
+    		$report_row->unit_price = $summaryData['price'][$i];
 
-	    
-	    $report_row->client = $client; //$license->client_id;
-	    $report_row->vendor = $vendor; //$license->vendor_id;
-	    
-	    error_log("\npersisting row", 3, "./errorLog.log");
-	    
-	    $this->em->persist($report_row);
-
-	    $summary_data['clients'][] = $report_row->client->organization_name;
-	    $summary_data['clients_id'][] = $client->id;
-	    
-	  	if (array_key_exists('returnsDeclared', $params)){
-	    	$summary_data['gross_sales'][] = $report_row->gross_sales - $returns;
-	    	$summary_data['returns'][] = $returns;
-	  	}
-	  	else {
-	  		$summary_data['gross_sales'][] = $report_row->gross_sales;
-	  		$summary_data['returns'][] = 0;
-	  	}
-	    //$summary_data['sales_revenue'][] = $report_row->sales_revenue;
-	  	
-	    $summary_data['quantity'][] = $report_row->quantity;
-	    $summary_data['royalty_commission'][] = $report_row->royalty_commission;
-	    $summary_data['royalty_commission_type'][] = (isset($license)) ? $license->royalty_commission_type : ($vendorOperation->vendor_reporting_type == 1) ? '%' : '$';
-	    $summary_data['annual_advance'][] = $report_row->annual_advance;
-	    $summary_data['royalty_before_adv'][] = $report_row->royalty_before_adv;
-	    $summary_data['royalty_after_adv'][] = $report_row->royalty_after_adv;
-
-	    $totalDue += $report_row->royalty_after_adv;
-	}
-	
-	
-	
-	$this->em->flush();
-
-	//Zend_Debug::dump($summary_data); exit;
-
-
-	//$invoice->amount_due = $totalDue;
-	//$this->em->persist($invoice);
-
-	$this->em->flush();
-	$summary_data['vendor_reporting_type'] = $vendorOperation->vendor_reporting_type;
-	$summary_data['vendor_id'] = $vendor_id;
-	$summary_data['submission_hash'] = $submission_hash;
-
-
-	error_log("\nSetting summary data", 3, "./errorLog.log");
-	
-	$this->session->summaryData = $summary_data;
-	$this->view->summary_data = $summary_data;
-	$this->view->vendor_reporting_type = $vendorOperation->vendor_reporting_type;
-	$this->view->fiscal_year = $params['year'];
-	$this->view->quarter = $params['quarter'];
-	$this->view->vendor = $vendor;
-
-
-
-
-	/*
-	 * Generate the Summary PDF
-	 */
-	$targetDir = APPLICATION_PATH . '/../assets/files/reports/vendors/submissions/';
-	$url = '/assets/files/reports/vendors/submissions/';
-	$organizationName = str_replace(' ', '_', $vendor->organization_name);
-	$fiscalYear = str_replace('-', '', $params['year']);
-	$quarter = $params['quarter'];
-	$dt = date('m') . '.' . date('d') . '.' . date('Y');
-	$type = 'Summary';
-	$ext = 'pdf';
-
-	$arr = compact("organizationName", "fiscalYear", "quarter", "type", "dt");
-	$imp = implode('_', $arr);
-	//$imp .= '.'.$ext;
-
-	$html = $this->view->render('royalty/summary-pdf-template.phtml');
-	$pdf_params = array(
-	    'author'	    => 'AMC',
-	    'title'	    => 'Royalty Summary',
-	    'subject'	    => 'Summary',
-	    'pdf_content'   => $html,
-	    'file_name'	    => $imp,
-	    'file_path'	    => $targetDir,
-	    'output_type'   => 'F'
-	);
-	$save_to = $this->view->BUtils()->getPDF($pdf_params);
-	$params['file'] = $save_to;
-
-	$report = new BL\Entity\VendorRoyaltySubmissions();
-	$report->year = $params['year'];
-	$report->quarter = $params['quarter'];
-	$report->uploaded_on = new \DateTime(date("Y-m-d"));
-	$report->submission_hash = $submission_hash;
-	$report->type = 'Summary';
-	$report->file_url = $url . $imp . '.' . $ext;
-	$report->vendor = $vendor;
-
-	
-	$this->em->persist($report);
-	$this->em->flush();
-
-	
-	error_log("\nflushed report", 3, "./errorLog.log");	
-	/*
-	 * End Summary PDF generation code
-	 */
-
-	$saveId = $this->_getParam('id');
-	if (!empty($saveId)) {
-	    $this->em->getRepository("BL\Entity\VendorRoyaltyReportSave")->deleteBySaveId($saveId);
-	}
-
-	error_log("\n" . Zend_Json::encode(array('success' => true, 'message' => 'Royalty report submitted successfully!', 'submission_hash' => $submission_hash)), 3, "./errorLog.log");
-	
-	echo Zend_Json::encode(array('success' => true, 'message' => 'Royalty report calculated successfully!', 'submission_hash' => $submission_hash));
-	exit;
+    		$report_row->gross_sales = $summaryData['gross_sales'][$i];
+    		$report_row->quantity = $summaryData['quantity'][$i];
+    	
+    		$report_row->royalty_commission = $summaryData['royalty_commission'][$i];
+    		$report_row->royalty_commission_type = $summaryData['royalty_commission_type'][$i];
+    		
+    		$report_row->royalty_before_adv = $summaryData['royalty_before_adv'][$i];
+    		$report_row->royalty_after_adv = $summaryData['royalty_after_adv'][$i];
+    		
+    		if (isset($summaryData['royalties'])){
+    			if ($summaryData['royalties'][$i] != 'None'){
+	    			$report_row->royalty_before_adv = $summaryData['royalties'][$i];
+	    			$report_row->royalty_after_adv = $summaryData['royalties'][$i];
+    			}
+    		}
+    		 
+    		$report_row->client = $client; //$license->client_id;
+    		$report_row->vendor = $vendor; //$license->vendor_id;
+    		 
+    		error_log("\npersisting row", 3, "./errorLog.log");
+    		 
+    		$this->em->persist($report_row);
+    	}
+    	
+    	$this->em->persist($report);
+    	$this->em->flush();
     }
     
     public function ajaxCreateInvoiceAction(){
     	error_log("\najaxCreateInvoiceAction()", 3, "./errorLog.log");
 
     	$this->_helper->BUtilities->setNoLayout();
+    
+    	$this->CreateReport();
     	
     	$vendor_id = $this->_getParam('vendor_id');
     	$vendor_id = !empty($vendor_id) ? $vendor_id : $this->_helper->BUtilities->getLoggedInUser();
@@ -493,8 +506,60 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     	
     	$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$vendor_id));
     	
-    	$reports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->findBy(array('submission_hash'=>$submission_hash));
+    	//$reports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->findBy(array('submission_hash'=>$submission_hash));
+			
+    	$reports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSave")->findBy(array('save_id'=>$submission_hash));
     	
+    	$year = $this->_getParam('year');
+    	$quarter = $this->_getParam('quarter');
+    	 
+    	if ($this->session->wasSubmit){
+    		$fileName = null;
+    	
+    		$list = array();
+    	
+    		$list[] = array("Organization Name", "Product sold to", "Invoice Date", "Invoice Num", "Product Description", "Qty", "Price/Unit", "Gross Sales");
+    	
+    		foreach($reports as $item){
+    			$list[] = array($item->client->organization_name, $item->product_sold_to, ($item->invoice_date != null && $item->invoice_date != "")? $item->invoice_date->format("Y-m-d") : "", $item->invoice_num, $item->product_desc, $item->quantity, $item->unit_price, $item->gross_sales);
+    		}
+    	
+    		$targetDir = APPLICATION_PATH . '/../assets/files/reports/vendors/submissions/';
+    		$file = fopen($targetDir . 'tempReportFill.csv', 'w');
+    	
+    		foreach($list as $item){
+    			fputcsv($file, $item);
+    		}
+    	
+    		$number = 0;
+    	
+    		while (file_exists($vendor->organization_name . "_" . $year . "-" . $quarter . "_" . $number . ".csv")){
+    			$number++;
+    		}
+    	
+    		$fileName = $vendor->organization_name . "_" . $year . "-" . $quarter . "_" . $number . ".csv";
+    	
+    		rename($targetDir . "tempReportFill.csv", $targetDir . $fileName);
+    	
+    		$url = '/assets/files/reports/vendors/submissions/';
+    		if(file_exists($targetDir.$fileName)) {
+    	
+    			$report = new BL\Entity\VendorRoyaltySubmissions();
+    			$report->year = $year;
+    			$report->quarter = $quarter;
+    			$report->status = 'Pending Review';
+    			$report->uploaded_on = new \DateTime(date("Y-m-d"));
+    			$report->submission_hash = $submission_hash;
+    			$report->type = 'Detail';
+    			$report->file_url = $url . $fileName;
+    			$report->vendor = $vendor;
+    			$this->em->persist($report);
+    		}
+    	
+    		error_log("\nMade submission", 3, "./errorLog.log");
+    	}
+    	$reports = $this->em->getRepository("BL\Entity\VendorRoyaltyReportSubmissions")->findBy(array('submission_hash'=>$submission_hash));
+    	 
     	$num_rows = sizeof($reports);
     	
     	error_log("\nnum_rows: " . $num_rows, 3, "./errorLog.log");
@@ -519,13 +584,21 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     		$invoice->zip = $vendor->zipcode;
     		$invoice->phone1 = $vendor->phone;
     		$invoice->phone2 = $vendor->phone2;
-    		$invoice->fiscal_year = $this->_getParam('year');
-    		$invoice->quarter = $this->_getParam('quarter');
-    		$invoice->invoice_status = 'Current';
+    		$invoice->fiscal_year = $year;
+    		$invoice->quarter = $quarter;
+    		$invoice->invoice_status = 'Open';
+    		$invoice->payment_status = 'Due';
     		$invoice->invoice_type = 'Royalty Payments';
     		$invoice->company_name = $vendor->organization_name;
     		$invoice->fax = $vendor->fax;
     		$invoice->amount_due = $totalDue;
+	        $invoice->invoice_term = "Net 15 days";
+	        
+	        $date = new DateTime();
+	        $date->add(new DateInterval("P15D"));
+	        
+	        $invoice->due_date = $date;
+	        
     		$this->em->persist($invoice);
     		$this->em->flush();
     		
@@ -542,6 +615,12 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     		$invoice->invoice_number = $invoiceID;
     		$this->em->persist($invoice);
     		$this->em->flush();
+    		
+	    	foreach($reports as $rep){
+	    		$rep->invoice_num = $invoice->invoice_number;
+	    		$this->em->persist($rep);
+	    		$this->em->flush();
+	    	}
     	}
     	
     	
@@ -566,6 +645,9 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 
     	$invoice_id = 0;
     	if ($invoice->id > 0) $invoice_id = $invoice->id;
+
+    	if (isset($this->session->saveId)) unset($this->session->saveId);
+    	if (isset($this->session->wasSubmit)) unset($this->session->wasSubmit);
     	
     	echo Zend_Json::encode(array('success' => true, 'message' => 'Royalty report submitted successfully!', 'submission_hash' => $submission_hash, 'invoice_id'=>$invoice_id));
     	exit;
@@ -583,7 +665,8 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     	error_log("\najaxSaveReportAction()", 3, "./errorLog.log");
 	$this->_helper->BUtilities->setNoLayout();
 	$vendor = $this->em->find("BL\Entity\User", (int) $this->_helper->BUtilities->getLoggedInUser());
-
+	
+	$this->session->wasSubmit = true;
 
 	/*
 	 * Get default royalty commission %age from the application.inin file
@@ -784,10 +867,12 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     		$submission_info = array();
     	
     		foreach($saves as $save){
-    			$submission_info[] = array('gross_sales'=>$save->gross_sales, 'client_id'=>$save->client->id);
-    				
-    			error_log("\nadding item to array " . $save->gross_sales . " " . $save->client->id, 3, "./errorLog.log");
-    		}
+			$submission_info[] = array('gross_sales'=>$save->gross_sales, 'client_id'=>$save->client->id);
+                                
+                        error_log("\nadding item to array " . $save->gross_sales . " " . $save->client->id, 3, "./errorLog.log");
+                }
+                   
+    	
     	
     		$this->view->submission_info = $submission_info;
     	}
@@ -809,6 +894,8 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	 */
 	
 	$save_id = $this->_getParam('save_id');
+	
+	if ($save_id <> '' && $save_id != null) $submission_hash = $save_id;
 
 	$vendor_id = $this->_getParam('vendor_id');
 	$vendor_id = !empty($vendor_id) ? $vendor_id : $this->_helper->BUtilities->getLoggedInUser();
@@ -824,6 +911,10 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	//$clients = $this->em->getRepository('BL\Entity\User')->findOneBy(array('account_type' => (int) ACC_TYPE_CLIENT, ))
 	
 	$this->view->clients = $this->em->getRepository('BL\Entity\User')->findBy(array('account_type' => (int) ACC_TYPE_CLIENT, 'user_status'=>"Current" ), array('organization_name' => 'asc'));
+	
+	error_log("\nclients: " . count($this->view->clients), 3, "./errorLog.log");
+	error_log("\nclient 1: " . $this->view->clients[0]->organization_name, 3, "./errorLog.log");
+	
 	//$this->view->clients = $clients;
 	
 	/**
@@ -831,16 +922,32 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	 */
 	//        $this->view->clients = $this->em->getRepository("BL\Entity\License")->getClientsForVendorInvoice((int) $this->_helper->BUtilities->getLoggedInUser());
 
+	$this->view->wasSubmit = $this->session->wasSubmit;
+	
 	$this->view->year = $this->_getParam('year');
 	$this->view->quarter = $this->_getParam('quarter');
 	$this->view->vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$vendor_id));
 
 	if (!is_null($this->session->summaryData)) {
+		error_log("\nsession exists",3, "./errorLog.log");
 		if ($submission_hash == $this->session->summaryData['submission_hash']){
 		    $this->view->summary_data = $this->session->summaryData;
 		    //$this->view->submission_info = $this->session->summaryData;
+		} else {
+			$summary_data = array();
+			$this->view->summary_data = $summary_data;
+			
+			if ($this->_hasParam('year')){
+				error_log("\nyear exists", 3, "./errorLog.log");
+				$this->view->summary_data['fiscal_year'] = $this->_getParam('year');
+			}
+			if ($this->_hasParam('quarter')){
+				error_log("\nquater exists", 3, "./errorLog.log");
+				$this->view->summary_data['quarter'] = $this->_getParam('quarter');
+			}
 		}
 	} else {
+		error_log("\nsession doesn't exist", 3, "./errorLog.log");
 		$summary_data = array();
 		$summary_data['fiscal_year'] = $this->_getParam('year');
 		$summary_data['quarter'] = $this->_getParam('quarter');
@@ -864,10 +971,10 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 		foreach($saves as $save){
 			//$submission_info[] = array('gross_sales'=>$save->gross_sales, 'client_id'=>$save->client->id);
 			
-			if (!isset($submission_info[$save->client->id])){
-				$submission_info[$save->client->id] = $save->gross_sales;
+		if (!isset($submission_info[$save->client->id])){
+				$submission_info[$save->client->id] = array("description"=>$save->product_desc, "sales"=>$save->gross_sales, "product_sold_to"=>$save->product_sold_to, "inv_num"=>$save->invoice_num, "inv_date"=>$save->invoice_date, "qty"=>$save->quantity, "price"=>$save->unit_price);
 			} else {
-				$submission_info[$save->client->id] += $save->gross_sales;
+			$submission_info[$save->client->id]['sales'] += $save->gross_sales;
 			}
 			
 			error_log("\nadding item to array " . $save->gross_sales . " " . $save->client->id, 3, "./errorLog.log");
@@ -875,6 +982,8 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 		
 		$this->view->submission_info = $submission_info;
 	}
+	
+	$this->view->submission_hash = $submission_hash;
 
 	if ($this->getRequest()->isPost()) {
 		error_log(" is post", 3, "./errorLog.log");
@@ -929,7 +1038,7 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 			$invoice->phone2 = $vendor->phone2;
 			$invoice->fiscal_year = $params['year'];
 			$invoice->quarter = $params['quarter'];
-			$invoice->invoice_status = 'Current';
+			$invoice->invoice_status = 'Open';
 			$invoice->company_name = $vendor->organization_name;
 			$invoice->fax = $vendor->fax;
 			$this->em->persist($invoice);
@@ -952,7 +1061,8 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 
 	    $totalDue = 0;
 	    
-
+		error_log("\nnumber of rows: " . $num_rows, 3, "./errorLog.log");
+	    
 	    for ($i = 0; $i < $num_rows; $i++) {
 			$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id' => (int) $formData['greek_org'][$i], 'account_type' => (int) ACC_TYPE_CLIENT));
 			$license = $this->em->getRepository("BL\Entity\License")->findOneBy(array('client_id' => (int) $formData['greek_org'][$i], 'vendor_id' => $vendor_id, 'status' => (int) 4));
@@ -985,14 +1095,23 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	
 			$report_row->annual_advance = isset($license) ? $license->default_renewal_fee : $clientProfile->greek_default_renewal_fee;
 	
+			error_log("\nthe client is: " . $client->id, 3, "./errorLog.log");
+			
 			if (isset($license)) {
+				
+				error_log("\nthere IS a license", 3, "./errorLog.log");
+				
 			    $report_row->royalty_commission = $license->royalty_commission;
 			    if ($license->royalty_commission_type == '%') {
+			    	error_log(" with commission type %", 3, "./errorLog.log");
+			    	
 				$report_row->royalty_before_adv = $formData['royalty_due'][$i] * $report_row->royalty_commission / 100;
 			    } else {
+			    	error_log(" with no commission type", 3, "./errorLog.log");
 				$report_row->royalty_before_adv = $formData['royalty_due'][$i] * $report_row->royalty_commission;
 			    }
-			} else {
+			} else {				
+				error_log("\nthere IS NOT a license", 3, "./errorLog.log");
 	
 			    if ($vendorOperation->vendor_reporting_type == 1) {
 				$report_row->royalty_commission = $clientProfile->royalty_commission;
@@ -1018,7 +1137,7 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 			$invoice_li_row->fiscal_year = $report_row->year;
 			$invoice_li_row->quarter = $report_row->quarter;
 			$invoice_li_row->invoice_id = $invoice;
-			$invoice_li_row->invoice_status = 'Current';
+			$invoice_li_row->invoice_status = 'Open';
 			$this->em->persist($invoice_li_row);
 	
 			$summary_data['clients'][] = $report_row->client->organization_name;
@@ -1061,6 +1180,7 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     }
 
     
+    
     public function ajaxSubmitReportType2Action(){
     	error_log("\najaxSubmitReportType2Action()", 3, "./errorLog.log");
 
@@ -1101,7 +1221,7 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
     		$invoice->phone2 = $vendor->phone2;
     		$invoice->fiscal_year = $params['year'];
     		$invoice->quarter = $params['quarter'];
-    		$invoice->invoice_status = 'Current';
+    		$invoice->invoice_status = 'Open';
 			$invoice->invoice_type = 'Royalty Payments';
     		$invoice->company_name = $vendor->organization_name;
     		$invoice->fax = $vendor->fax;
@@ -1163,7 +1283,7 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 			$invoice_li_row->fiscal_year = $report_row->year;
 			$invoice_li_row->quarter = $report_row->quarter;
 			$invoice_li_row->invoice_id = $invoice;
-			$invoice_li_row->invoice_status = 'Current';
+			$invoice_li_row->invoice_status = 'Open';
 			$this->em->persist($invoice_li_row);
 	
 			$summary_data['clients'][] = $report_row->client->organization_name;
@@ -1222,7 +1342,9 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 		$this->view->fiscal_year = $summaryData['fiscal_year'];
 		$this->view->quarter = $summaryData['quarter'];
 	
-		unset($this->session->summaryData);
+		if (isset($this->session->summaryData)) unset($this->session->summaryData);
+		if (isset($this->session->saveId)) unset($this->session->saveId);
+		if (isset($this->session->wasSubmit)) unset($this->session->wasSubmit);
     }
 
     public function saleRevenueReviewAction(){
@@ -1286,6 +1408,8 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 
 	$targetDir = APPLICATION_PATH . '/../assets/files/reports/vendors/submissions/';
 
+	$this->session->wasSubmit = false;
+	
 	$cleanupTargetDir = true; // Remove old files
 	$maxFileAge = 50 * 3600; // Temp file age in seconds
 
@@ -1412,6 +1536,8 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	$vendor_id = $this->_getParam('vendor_id');
 	$this->view->vendor_id = !empty($vendor_id) ? $vendor_id : '';
 	// action body
+	
+	$this->session->wasSubmit = false;
     }
 
     /**
@@ -1446,8 +1572,11 @@ class Vendor_RoyaltyController extends Zend_Controller_Action {
 	$dt = date('m') . '.' . date('d') . '.' . date('Y');
 	$type = 'Detail';
 
+
 	$arr = compact("organizationName", "fiscalYear", "quarter", "type", "dt");
 	$imp = implode('_', $arr);
+	
+	$imp = str_replace('/', '', $imp);
 
 	$vendorRoyalitySubmissions = $this->em->getRepository('BL\Entity\VendorRoyaltySubmissions')
 		->getReportsUploadedByVendor($vendor_id);

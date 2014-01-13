@@ -23,6 +23,8 @@
     jQuery(document).ready( function($) {
         var $form = $('#form1');
 
+        $("#organization_name").attr("readonly", "true").attr("style","background-color: rgb(216, 216, 216)");
+
         $form.submit( function() {
             //alert('Hi'+$form.attr( 'action' ));
             $.ajax({
@@ -56,81 +58,37 @@ $errorsMessages = $this->form->getMessages();
 
         <div class="form_default">
             <fieldset>
-                <legend>1. Company Information</legend>                   		
-                <p>
-                    <!--             <label>Company/Organization Name :</label>-->
-                    <?php
-//                if (isset($errorsMessages['organization_name']['isEmpty']))
-//                    echo '<span style="color:red;">'.$errorsMessages['organization_name']['isEmpty'].'</span><br />';
-                    ?>
-                    <?php echo $this->form->organization_name; ?><!--.'&nbsp;Instructional text associated with this field'-->
-                </p>
-
-                <p>
-                    <!--            <label>Contact First Name :</label>-->
+                <legend>1. Company Information</legend>    
+                <div class="form_container_left">
+                    <?php echo $this->form->organization_name; ?>
                     <?php echo $this->form->firstname; ?>
-                </p>
-                <p>
-                    <!--                    <label>Contact Last Name :</label>-->
                     <?php echo $this->form->lastname; ?>
-                </p>
-                <p>
-                    <!--                    <label>Address :</label>-->
-                    <?php echo $this->form->address_line1; ?>
-                </p>
-                <p>
-                    <!--                    <label>Address 2 :</label>-->
-                    <?php echo $this->form->address_line2; ?>
-                </p>
-                <p>
-                    <!--                    <label>City :</label>-->
-                    <?php echo $this->form->city; ?>
-                </p>
-                <p>
-                    <!--                    <label>State :</label>-->
-                    <?php echo $this->form->state; ?>
-                </p>
-                <p>
-                    <!--                    <label>Zip :</label>-->
-                    <?php echo $this->form->zipcode; ?>
-                </p>
-                <p>
-                    <!--                    <label>Phone :</label>-->
-                    <?php
-//                    if (isset($errorsMessages['phone']['isEmpty']))
-//                        echo '<span style="color:red;">' . $errorsMessages['phone']['isEmpty'] . '<span><br />';
-                    ?>
                     <?php echo $this->form->phone; ?>
-                </p>
-                <p>
-                    <!--                    <label>Alternate Phone :</label>            -->
                     <?php echo $this->form->alternate_phone; ?>
-                </p>
-                <p>
-                    <!--                    <label>Fax :</label>			-->
-                    <?php echo $this->form->fax; ?>
-                </p>
-                <p>
-                    <!--                    <label>Email :</label>            -->
-                    <?php
-//                    if (isset($errorsMessages['email']['isEmpty']))
-//                        echo '<span style="color:red;">' . $errorsMessages['email']['isEmpty'] . '<span><br />';
-                    ?>
-                    <?php echo $this->form->email; ?>
-                </p>
-                <p>
-                    <!--                    <label>Website :</label>            -->
                     <?php echo $this->form->website; ?>
-                </p>
-                <p>
-                    <!--                    <label>Prior Experience with Licensors :</label>            -->
                     <?php echo $this->form->v_past_experience; ?>
-                </p>
-                <p>
-                    <label>&nbsp;</label>
                     <button type="submit" class="button button_black detail_button">Next</button>
+                
+                </div>               		
+                <div class="form_container_right">
+                    <?php echo $this->form->address_line1; ?>
+                    <?php echo $this->form->address_line2; ?>
+                    <?php echo $this->form->city; ?>
+                    <?php echo $this->form->state; ?>
+                    <?php echo $this->form->zipcode; ?>
+                    <?php echo $this->form->fax; ?>
+                    <?php echo $this->form->email; ?>
+                
+                </div>
                 </p>
             </fieldset>
         </div>  
     </form>   
 </div>
+<style type="text/css">
+    @-moz-document url-prefix() {
+    	#v_past_experience {
+    		width: 390px;
+    	}
+    }
+</style>

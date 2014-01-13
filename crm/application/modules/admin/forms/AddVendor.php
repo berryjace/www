@@ -15,7 +15,8 @@ class Admin_Form_AddVendor extends Zend_Form {
                 ->setRequired(false)
                 ->addValidator(new Zend_Validate_Db_NoRecordExists(array('table' => 'users', 'field' => 'username')), true, array('messages' => 'Username already exists.'))
                 ->addFilter('StripTags')
-                ->addFilter('StringTrim');
+                ->addFilter('StringTrim')
+        		->addValidator('alnum', true, array('messages'=>'Usernam can only contain letters and numbers (no spaces, spcial characters, etc.)'));
 
         $password = new Zend_Form_Element_Password('password');
         $password->addDecorator('Label', array('escape' => false))

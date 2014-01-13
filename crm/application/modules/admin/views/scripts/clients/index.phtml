@@ -78,7 +78,7 @@ $this->placeholder('main_side_bar')->captureStart();
         $('a.client_name').on('click',function(){
             $('#client_list a.selected').removeClass('selected');
             $(this).addClass('selected');
-            $('.client_details .detail').html($(this).siblings('.hidden').find('.c_detail'));
+            $('.client_details .detail').html($(this).siblings('.hidden').find('.c_detail').html());
             $('.view_more').removeClass('hidden');
         });
         

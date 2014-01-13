@@ -90,6 +90,8 @@ class Admin_Model_Clients {
             '3' => 'l.status');
         $params['sort_key'] = $sorting_cols[$this->ct->getRequest()->getParam('iSortCol_0', 0)];
         $params['sort_dir'] = $this->ct->getRequest()->getParam('sSortDir_0');
+        
+//         error_log("\nstatus: " . $params['status'], 3 ,"./errorLog.log");
 
         $records = $this->ct->em->getRepository("BL\Entity\License")->getLicensesByClient($params);
         $params['show_total'] = true;

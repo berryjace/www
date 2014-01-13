@@ -32,7 +32,9 @@ class LicenseRepository extends EntityRepository {
 
         $vendor_condition = (false !== $vendor_id) ? ' v.id=?1' : '';
 
-        $search_clause = !empty($searchStr) ? " WHERE c.organization_name like '$searchStr%' OR l.royalty_structure like '$searchStr%' OR l.grant_of_license like '$searchStr%' " : "";
+	$newsearch = str_replace(" ","%",$searchStr); //added by softura to fix bug in search where "ink people" would not expand to "ink to the people"
+
+        $search_clause = !empty($searchStr) ? " WHERE v.organization_name like '%$newsearch%' OR l.royalty_structure like '$searchStr%' OR l.grant_of_license like '$searchStr%' " : "";
 
 
         $search_clause.= ($search_clause == "" AND false !== $vendor_id) ? 'WHERE v.id=' . $vendor_id : '';
@@ -40,7 +42,7 @@ class LicenseRepository extends EntityRepository {
         $order_clause = !empty($sort_by) ? " ORDER BY $sort_by $sort_dir" : "";
 
         $q = $this->_em->createQuery("
-            SELECT partial l.{id,status,applied_date,grant_of_license,license_agree_number,royalty_structure,default_renewal_fee,sharing} , 
+            SELECT partial l.{id,status,applied_date,grant_of_license,license_agree_number,royalty_structure,default_renewal_fee,sharing,royalty_description} , 
                    partial v.{id,organization_name}, 
                    partial c.{id,organization_name, username}
             FROM BL\Entity\License l
@@ -89,6 +91,14 @@ class LicenseRepository extends EntityRepository {
         return $results;
     }
 
+    public function getClientLicensesSortedVendor($client_id = null){
+    	$q = $this->_em->createQuery("SELECT l, client, vendor FROM BL\Entity\License l left join l.client_id as client left join l.vendor_id as vendor where l.client_id='".$client_id."' and l.status='4' ORDER BY vendor.organization_name ASC");
+    	 
+    	$results = $q->getResult();
+    	 
+    	return $results;
+    }
+    
     /**
      * Function to get Vendor license status with clients
      * @author Masud
@@ -108,7 +118,7 @@ class LicenseRepository extends EntityRepository {
         $sort_by = isset($params['sort_key']) ? $params['sort_key'] : '';
         $sort_dir = isset($params['sort_dir']) ? $params['sort_dir'] : '';
 
-        $conditions = "WHERE users.organization_name !='' AND users.account_type=" . ACC_TYPE_CLIENT . " AND users.user_status != 'Cancelled'";
+        $conditions = "WHERE users.organization_name !='' AND users.account_type=" . ACC_TYPE_CLIENT . " AND users.user_status = 'Current'";
         $search_clause = !empty($searchStr) ? " AND users.organization_name like '$searchStr%'" : "";
         $order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir, users.organization_name ASC" : "";
 
@@ -130,7 +140,7 @@ class LicenseRepository extends EntityRepository {
 
         $sql = "SELECT users.id as u_id, users.organization_name, users.username, 
             licenses.id as l_id, licenses.status as l_status, licenses.applied_date as l_applied_date,
-            client_profiles.greek_name
+            client_profiles.greek_name, licenses.grandfathered
           FROM users
           LEFT JOIN licenses ON ( users.id = licenses.client_id
           AND licenses.vendor_id = " . $params['vendor_id'] . ")
@@ -170,8 +180,13 @@ class LicenseRepository extends EntityRepository {
             $json_dbv = '';
             $json_dbc = '';
             $json_dba = '';
+            $json_aps = '';
+            $json_can = '';
+            $json_non = '';
+            $json_ill = '';
+            $json_pot = '';
 
-            $ul_first = $avs_first = $acs_first = $par_first = $l_first = $ot_first = $dbv_first = $dbc_first = $dba_first = 0;
+            $ul_first = $avs_first = $acs_first = $par_first = $l_first = $ot_first = $dbv_first = $dbc_first = $dba_first = $aps_first = $can_first = $non_first = $ill_first = $pot_first = 0;
 
             foreach ($records as $data) {
 
@@ -224,7 +239,7 @@ class LicenseRepository extends EntityRepository {
                         $json_acs .= ',';
                     }
                     $l_status = $status_array[2];
-                    $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
+                    $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\"></a>';
                     $json_acs .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
                 } else if ($data['l_status'] == 3) {
                     if ($par_first++) {
@@ -239,6 +254,11 @@ class LicenseRepository extends EntityRepository {
                     }
                     $l_status = $status_array[4];
                     $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
+                    
+                    if ($data['grandfathered'] == 'T'){
+                    	$action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">Archived</a>';
+                    }
+                    
                     $json_l .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
                 } else if ($data['l_status'] == 5) {
                     if ($ot_first++) {
@@ -268,64 +288,134 @@ class LicenseRepository extends EntityRepository {
                     $l_status = $status_array[8];
                     $action = '<a class=\"reapply_link\" href=\"javascript:;\"  rel=\"' . $data['u_id'] . '\">Re-apply</a>';
                     $json_dba .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
+                } else if ($data['l_status'] == 9){
+                	if ($aps_first++){
+                		$json_aps .= ',';
+                	}
+                	$l_status = $status_array[9];
+                	$action = '<a class=\"view_link\"{ href=\"javascript:;\" rel=\"' . $data['u_id'] . '\"></a>';
+                	$json_aps .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
+                } else if ($data['l_status'] == 10){
+                	if ($can_first++){
+                		$json_can .= ',';
+                	}
+                	$l_status = $status_array[10];
+                    $action = '<a class=\"reapply_link\" href=\"javascript:;\"  rel=\"' . $data['u_id'] . '\">Re-apply</a>';
+                	$json_can .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
+                } else if ($data['l_status'] == 11){
+                	if ($non_first++){
+                		$json_non .= ',';
+                	}
+                	$l_status = $status_array[11];
+                    $action = '<a class=\"view_link\" href=\"javascript:;\"  rel=\"' . $data['u_id'] . '\"></a>';
+                	$json_non .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
+                } else if ($data['l_status'] == 12){
+                	if ($ill_first++){
+                		$json_ill .= ',';
+                	}
+                	$l_status = $status_array[12];
+                    $action = '<a class=\"reapply_link\" href=\"javascript:;\"  rel=\"' . $data['u_id'] . '\"></a>';
+                	$json_ill .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
+                } else if ($data['l_status'] == 13){
+                	if ($pot_first++){
+                		$json_pot .= ',';
+                	}
+                	$l_status = $status_array[13];
+                    $action = '<a class=\"apply_link\" href=\"javascript:;\"  rel=\"' . $data['u_id'] . '\">apply</a>';
+                	$json_pot .= '["' . $org_name . '","' . $greek_name . '","' . $l_applied_date . '","' . $l_status . '","' . $action . '"' . ']';
                 }
             }
 
             if ($params['sort_dir'] == 'desc') {
+            	if ($json_pot != ''){
+            		$json .= $json_pot;
+            	}
+            	if ($json_ill != ''){
+            		if ($json_pot == ''){
+            			$json .= $json_ill;
+            		} else {
+            			$json .= ',' . $json_ill;
+            		}
+            	}
+            	if ($json_non != ''){
+            		if ($json_pot == '' && $json_ill == ''){
+            			$json .= $json_non;
+            		} else {
+            			$json .= ',' . $json_non;
+            		}
+            	}
+            	if ($json_can != ''){
+            		if ($json_pot == '' && $json_ill == '' && $json_non == ''){
+            			$json .= $json_can;
+            		} else {
+            			$json .= ',' . $json_can;
+            		}
+            	}
+            	if ($json_aps != ''){
+            		if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == ''){
+            			$json .= $json_aps;
+            		} else {
+            			$json .= ',' . $json_aps;
+            		}
+            	}
                 if ($json_dba != '') {
+                	if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == ''){
                     $json .= $json_dba;
+                	} else {
+                		$json .= ',' . $json_dba;
+                	}
                 }
                 if ($json_dbc != '') {
-                    if ($json_dba == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '') {
                         $json .= $json_dbc;
                     } else {
                         $json .= ',' . $json_dbc;
                     }
                 }
                 if ($json_dbv != '') {
-                    if ($json_dba == '' && $json_dbc == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '') {
                         $json .= $json_dbv;
                     } else {
                         $json .= ',' . $json_dbv;
                     }
                 }
                 if ($json_ul != '') {
-                    if ($json_dba == '' && $json_dbc == '' && $json_dbv == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '' && $json_dbv == '') {
                         $json .= $json_ul;
                     } else {
                         $json .= ',' . $json_ul;
                     }
                 }
                 if ($json_ot != '') {
-                    if ($json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '') {
                         $json .= $json_ot;
                     } else {
                         $json .= ',' . $json_ot;
                     }
                 }
                 if ($json_l != '') {
-                    if ($json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '') {
                         $json .= $json_l;
                     } else {
                         $json .= ',' . $json_l;
                     }
                 }
                 if ($json_par != '') {
-                    if ($json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '' && $json_l == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '' && $json_l == '') {
                         $json .= $json_par;
                     } else {
                         $json .=',' . $json_par;
                     }
                 }
                 if ($json_acs != '') {
-                    if ($json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '' && $json_l == '' && $json_par == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '' && $json_l == '' && $json_par == '') {
                         $json .= $json_acs;
                     } else {
                         $json .= ',' . $json_acs;
                     }
                 }
                 if ($json_avs != '') {
-                    if ($json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '' && $json_l == '' && $json_par == '' && $json_acs == '') {
+                    if ($json_pot == '' && $json_ill == '' && $json_non == '' && $json_can == '' && $json_aps == '' && $json_dba == '' && $json_dbc == '' && $json_dbv == '' && $json_ul == '' && $json_ot == '' && $json_l == '' && $json_par == '' && $json_acs == '') {
                         $json .= $json_avs;
                     } else {
                         $json .= ',' . $json_avs;
@@ -385,11 +475,46 @@ class LicenseRepository extends EntityRepository {
                     }
                 }
                 if ($json_dba != '') {
-                    if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc) {
+                    if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc == '') {
                         $json .= $json_dba;
                     } else {
                         $json .= ',' . $json_dba;
                     }
+                }
+                if ($json_aps != ''){
+                	if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc == '' && $json_dba == ''){
+                		$json .= $json_aps;
+                	} else {
+                		$json .= ',' . $json_aps;
+                	}
+                }
+                if ($json_can != ''){
+                	if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc == '' && $json_dba == '' && $json_aps == ''){
+                		$json .= $json_can;
+                	} else {
+                		$json .= ',' . $json_can;
+                	}
+                }
+                if ($json_non != ''){
+                	if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc == '' && $json_dba == '' && $json_aps == '' && $json_can == ''){
+                		$json .= $json_non;
+                	} else {
+                		$json .= ',' . $json_non;
+                	}
+                }
+                if ($json_ill != ''){
+                	if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc == '' && $json_dba == '' && $json_aps == '' && $json_can == '' && $json_non == ''){
+                		$json .= $json_ill;
+                	} else {
+                		$json .= ',' . $json_ill;
+                	}
+                }
+                if ($json_pot != ''){
+                	if ($json_avs == '' && $json_acs == '' && $json_par == '' && $json_l == '' && $json_ot == '' && $json_ul == '' && $json_dbv == '' && $json_dbc == '' && $json_dba == '' && $json_aps == '' && $json_can == '' && $json_non == '' && $json_ill == ''){
+                		$json .= $json_pot;
+                	} else {
+                		$json .= ',' . $json_pot;
+                	}
                 }
             }
         } else {
@@ -426,10 +551,13 @@ class LicenseRepository extends EntityRepository {
                     $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
                 } else if ($data['l_status'] == 3) {
                     $l_status = $status_array[3];
-                    $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
+                    $action = '<a class=\"view_link_fancybox\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
                 } else if ($data['l_status'] == 4) {
                     $l_status = $status_array[4];
                     $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
+                    if ($data['grandfathered'] == 'T'){
+                    	$action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">Archived</a>';
+                    }
                 } else if ($data['l_status'] == 5) {
                     $l_status = $status_array[5];
                     $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">View</a>';
@@ -442,6 +570,21 @@ class LicenseRepository extends EntityRepository {
                 } else if ($data['l_status'] == 8) {
                     $l_status = $status_array[8];
                     $action = '<a class=\"reapply_link\" href=\"javascript:;\"  rel=\"' . $data['u_id'] . '\">Re-apply</a>';
+                } else if ($data['l_status'] == 9){
+                	$l_status = $status_array[9];
+                    $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\"></a>';
+                } else if ($data['l_status'] == 10){
+                	$l_status = $status_array[10];
+                    $action = '<a class=\"reapply_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">Re-apply</a>';
+                } else if ($data['l_status'] == 11){
+                	$l_status = $status_array[11];
+                    $action = '<a class=\"view_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\"></a>';
+                } else if ($data['l_status'] == 12){
+                	$l_status = $status_array[12];
+                    $action = '<a class=\"reapply_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\"></a>';
+                } else if ($data['l_status'] == 13){
+                	$l_status = $status_array[13];
+                    $action = '<a class=\"apply_link\" href=\"javascript:;\" id=\"' . $data['u_id'] . '\" rel=\"' . $data['l_id'] . '\">Apply</a>';
                 }
 
                 /**
@@ -489,7 +632,7 @@ class LicenseRepository extends EntityRepository {
          * We have to build the query here
          */
         $q = $this->_em->createQuery("
-            SELECT partial l.{id,applied_date,status} , 
+            SELECT partial l.{id,applied_date,status,grandfathered} , 
                    partial v.{id,organization_name}, 
                    partial c.{id,organization_name, username}
             FROM BL\Entity\License l
@@ -499,7 +642,7 @@ class LicenseRepository extends EntityRepository {
        ");
 
         $q2 = $this->_em->createQuery("
-            SELECT partial l.{id,applied_date,status} , 
+            SELECT partial l.{id,applied_date,status,grandfathered} , 
                    partial v.{id,organization_name}, 
                    partial c.{id,organization_name, username}
             FROM BL\Entity\License l
@@ -514,21 +657,38 @@ class LicenseRepository extends EntityRepository {
          "iTotalDisplayRecords": ' . $records_total . ',
          "aaData":';
         $prec = array();
+        $top = array();
         foreach ($records as $v) {
             $action = '';
-            if ($v->status == '2') {
+            if ($v->status == 2) {
                 $action = '<a class="sign_link" href="javascript:;" id="' . $v->id . '" rel="' . $v->id . '">Sign</a>';
+            } else if ($v->status == '1'){
+            	$action = "";
             } else {
                 $action = '<a class="view_link" href="javascript:;" id="' . $v->id . '" rel="' . $v->id . '">View</a>';
+                
+                if ($v->grandfathered == 'T'){
+                	$action = '<a class="view_link" href="javascript:;" id="' . $v->id . '" rel="' . $v->id . '">Archived</a>';
+                }
             }
 
-            $prec[] = array(
-                $v->vendor_id->organization_name,
-                $v->applied_date->format('m/d/Y h:i a'),
-                $status_array[$v->status],
-                $action
-            );
+            if ($v->status == '2'){
+            	$top[] = array(
+	                $v->vendor_id->organization_name,
+	                $v->applied_date->format('m/d/Y h:i a'),
+	                $status_array[$v->status],
+	                $action
+	            );
+            } else {
+	            $prec[] = array(
+	                $v->vendor_id->organization_name,
+	                $v->applied_date->format('m/d/Y h:i a'),
+	                $status_array[$v->status],
+	                $action
+	            );
+            }
         }
+        $prec = array_merge($top, $prec);
 //        print_r($prec);
         $json .= \Zend_Json::encode($prec);
         $json .= '}';
@@ -634,7 +794,7 @@ class LicenseRepository extends EntityRepository {
         $order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir" : "";
         $vendor_id ? ($search_clause[] = "l.vendor_id = '$vendor_id'") : "";
         $client_id ? ($search_clause[] = "l.client_id = '$client_id'") : "";
-        $status ? ($search_clause[] = "l.status = '$status'") : "";
+        ($status > -1) ? ($search_clause[] = "l.status = '$status'") : "";
 
         /**
          * We have to build the query here
@@ -684,7 +844,7 @@ class LicenseRepository extends EntityRepository {
         $order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir" : "";
         $vendor_id ? ($search_clause[] = "l.vendor_id = '$vendor_id'") : "";
         $client_id ? ($search_clause[] = "l.client_id = '$client_id'") : "";
-        $status ? ($search_clause[] = "l.status = '$status'") : "";
+        ($status > -1) ? ($search_clause[] = "l.status = '$status'") : "";
 
         /**
          * We have to build the query here
@@ -721,7 +881,7 @@ class LicenseRepository extends EntityRepository {
     public function getUnLicensedClients($params = array()) {
 
         $order_clause = !empty($params['order_by']) ? "ORDER BY $params[order_by]" : "";
-        $conditions = "WHERE users.organization_name !='' AND users.account_type=" . $params['account_type'] . " AND users.user_status != 'Cancelled'";
+        $conditions = "WHERE users.organization_name !='' AND users.account_type=" . $params['account_type'] . " AND users.user_status = 'Current'";
 
         if (trim($params['l_status']) == '0') {
             $conditions .= " AND (licenses.status IS NULL OR licenses.status = '0')";

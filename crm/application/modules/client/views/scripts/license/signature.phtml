@@ -15,30 +15,23 @@ $vendor_name = $this->license->vendor_name;
         <h2>License Agreement Detail</h2>
     <?php } ?>
     <div class="spacer"></div>
+	<?php if ($this->license->status == 4 && $this->license->grandfathered == "T" ) { ?>
+        <div class="notification msginfo">
+            <a class="close"></a>
+            Because this agreement was not signed electronically, it will not be viewable below. If you would like a pdf copy of this agreement please email admin@greeklicensing.com
+        </div>
+    <?php } ?>
     <div style="width:875px">
         <?php if ($this->license->status == 2) { ?>
-            <?php if (is_null($this->license->recom_for_vendor)) { ?>
-                <b>Status:</b> Signed by vendor
+                <b>Status:</b> Signed by vendor and awaiting organization countersignature
                 <div class="spacer"></div>
-            <?php } else { ?>
-                <b>Status:</b> Signed by vendor with notes
-                <div class="one_third" style="float:right">
-                    <div class="div_left" style="float:right">
-                        <!-- &nbsp;<a href="javascript:;" id="view_notes" >View Notes from Affinity</a> -->
-                    </div>
-                    <div class="div_left" style="float:right">
-                        <!-- <img src="<?php echo $this->baseUrl('assets'); ?>/images/notes-icon.gif" class="" />-->
-                    </div>
-
-                </div>
-                <?php
-            }
-        }
+        <?php }
         ?>
+	<?php echo $this->form->recom_for_client; ?>
 <style type="text/css">
 @font-face {
         font-family: signed;
-        src: url('http://poweros.softura.com/crm/black_jack.ttf');
+        src: url('https://poweros.softura.com/crm/black_jack.ttf');
 }
 </style>
     </div>
@@ -50,7 +43,7 @@ $vendor_name = $this->license->vendor_name;
             <?php //echo $this->form->vendor_id; ?>
         </div>
         <div class="inputdiv">
-            Client By Org Name <br /><?php echo $this->form->client_name; ?>
+            Organization Name <br /><?php echo $this->form->client_name; ?>
             <?php //echo $this->form->client_id; ?>
         </div>
         <div class="inputdiv">
@@ -74,7 +67,18 @@ $vendor_name = $this->license->vendor_name;
     </div>
     <div class="spacer"></div>
     <div class="">
-        <?php echo $this->form->vendor_products; ?>
+        <?php
+        if ($this->license->status == 4)
+                echo $this->form->vendor_products->setAttribs(array('readonly' => 'readonly', 'class' => 'text_dimmed'));
+        else{ ?>
+<div class="notification msginfo">
+    <a class="close"></a>
+If you do not approve of any products listed below, then put the product in parentheses and write 'not approved' For example: shot glasses ---> (shot glasses not approved)
+</div>
+        <?php
+        echo $this->form->vendor_products;
+}
+        ?>
         <div class="spacer"></div>
         Supplier Name<br/>
         <?php echo $this->form->supplier_name; ?>
@@ -114,7 +118,6 @@ $vendor_name = $this->license->vendor_name;
     }
     ?> 
     <div class="spacer"></div>
-    <?php echo $this->form->recom_for_client; ?>
 
     <?php
     if ($this->license->status == 2) {
@@ -141,10 +144,10 @@ $vendor_name = $this->license->vendor_name;
         <div style="width:850px;float:left;">
             <div class="one_half" style="margin-right:0px">
                 <h3>Vendor Signature</h3>
-                Title<br>
-                <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_title ?>" ><br>
 		Digital Signature <br>
             <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_signature ?>"style="font-family: signed;"><br>
+                Title<br>
+                <input class="text_dimmed" type="text" readonly="readonly" value="<?php echo $this->license->vendor_title ?>" ><br>
                 Date<br>
                 <input class="text_dimmed" type="text" readonly="readonly" value="<?php
                         echo $this->license->vendor_sign_date!=NULL ? $this->license->vendor_sign_date->format('m-d-y H:i:s') : ''
@@ -217,7 +220,9 @@ $vendor_name = $this->license->vendor_name;
     .div_left{float: left}
     .arrow_icon{width: 12px; height: 16px;}
     #view_note{cursor: pointer; color: #1C70AD}
-
+	<?php if ($this->license->status != 4){ ?>
+		#vendor_products{background-color: white; opacity:1.0} 
+	<?php }?>
 </style>
 <script type="text/javascript">
     $(document).on('click','.print', function(){
@@ -326,6 +331,13 @@ $vendor_name = $this->license->vendor_name;
             }
         });
     }
+
+	$(document).on("ready", function(){
+		$("#vendor_products").on("change", function(){
+			console.log("changed");
+			$("#agreement_statement_ifr").contents().find(".v_product").text($(this).val());
+		});
+	});
     
     $(document).on("click", "#sample_image", function(){
         var link = $(this).attr('href');
@@ -424,7 +436,7 @@ $vendor_name = str_replace("'", "&apos;", $vendor_name);
             buttons: {
                 "Continue": function() {
                     $( this ).dialog( "close" );
-                    $('#mail_subject').val('Your application to get licensed was declined')
+                    $('#mail_subject').val($('#client_name').val() + ' has declined a license with ' + $('#vendor_name').val());
                     send_mail('cancel');                                                                                
                 }
             }
@@ -435,20 +447,19 @@ $vendor_name = str_replace("'", "&apos;", $vendor_name);
         var title_confirmation = "";
         var after_confirmation = "";
         var first_name = "<?php echo $first_name = !is_null($this->license->vendor_id->first_name) ? $this->license->vendor_id->first_name : ''; ?>";
-        var mail_text = '<div style="padding:5px">Dear '+ first_name+',<br><br>';
+        var mail_text = '<div style="padding:5px">Dear Affinity Licensing Department,<br><br>';
 
         if(type == "cancel"){
-            var html = 'Reason for decline:<br/><input type="text" name="decline_reason" id="decline_reason" value="' + decline_reason + '" style="width:600px;" value="">';
+            var html = '<br/>Reason for decline:<br/><input type="text" name="decline_reason" id="decline_reason" value="' + decline_reason + '" style="width:600px;">';
             $('#decline_reasons').css('display', 'block');
             $('#decline_reasons').html(html);
-            mail_text += 'The application to be licensed with a client ('+$('#client_name').val()+') was declined.<br><b>Reason for decline:</b><br><div>';                    
-            mail_text += '<br>If you want to re-apply, please log into your portal and click on the re-apply button next to the organization name. To log in go to: ';
-            title_confirmation = "Write the email to let the vendor application to get licensed with an organization was declined"                  
+            mail_text += 'Please inform '+$('#vendor_name').val()+' that we have elected to decline their license application.<br/><br/><b>Our reason for declining:</b><br><div><br/>';                    
+            mail_text += '<span id="reasonDisplay">' + decline_reason + '</span><br/>';
+            title_confirmation = "Please let Affinity know why you are decilning this application"                  
             after_confirmation = type;
         }
         
-        mail_text += '<a href="<?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?>"><?php echo $this->BUrl()->site_url('login/index/type/vendor'); ?></a><br><br>'
-        mail_text += 'Regards,<br><br>'
+        mail_text += 'Thank you,<br><br>'
         mail_text += $('#client_name').val()+'<br />';                       
         mail_text += '</div>';
        
@@ -482,6 +493,11 @@ $vendor_name = str_replace("'", "&apos;", $vendor_name);
                 $('textarea.FormElement').each(function(index) {
                     tinyMCE.execCommand('mceAddControl', false, $(this).attr('id'));                                                     
                 });                
+
+				$('#decline_reason').change(function(){
+					$('span#reasonDisplay').html($(this).val());
+				});
+                
                 $('#email_body_text').html(mail_text)
             },
             resizable: false,
@@ -576,10 +592,13 @@ $vendor_name = str_replace("'", "&apos;", $vendor_name);
     function review_pdf(){
         var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
         $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+
+        var number = $("#license_number").val();
+        
         $.ajax({
             url:'<?php echo $this->baseUrl("client/license/printinpdf/") ?>',
             type: "POST",
-            data:$('#sign_form').serialize()+'&agreement_statement'+ agreement,
+            data:$('#sign_form').serialize()+'&agreement_statement'+ agreement + "&lic_num="+number,
             dataType: 'json', 
             beforeSend: function() { $('#submit_wait1').show(); },
             complete: function() { $('#submit_wait1').hide();},
@@ -587,8 +606,8 @@ $vendor_name = str_replace("'", "&apos;", $vendor_name);
                 pdf_url = msg.name
                 $.fancybox({
                     'href'                  : site_url+"/client/license/pdflink/filename"+pdf_url,
-                    'height'                : 40,
-                    'width'                 : 300,
+                    'height'                : 115,
+                    'width'                 : 350,
                     'autoScale'             : true,
                     'autoDimensions'        : true,
                     'transitionIn'          : 'none',

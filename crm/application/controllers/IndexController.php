@@ -44,5 +44,13 @@ class IndexController extends Zend_Controller_Action
         // action body
     }
 
+    public function errorAction()
+    {
+	$this->view->error =  $this->_getParam('id');
+    }
 
+    public function errorcauseAction()
+    {
+        // action body
+    }
 }

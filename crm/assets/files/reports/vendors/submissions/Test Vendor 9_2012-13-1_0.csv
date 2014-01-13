@@ -1,0 +1,8 @@
+"Organization Name","Product sold to","Invoice Date","Invoice Num","Product Description",Qty,Price/Unit,"Gross Sales"
+"Alpha Chi Omega",joe,2013-10-08,123412,sdfaf,1,1.00,100.00
+"Alpha Chi Omega",mark,2013-10-09,2352345,sdfgs,2,2.00,100.00
+"Beta Theta Pi",mark,2013-10-08,12341234,asdfadsf,3,3.00,300.00
+"Beta Theta Pi",mike,2013-10-09,23452345,sdfgsdfg,3,3.00,100.00
+"Chi Omega",julie,2013-10-16,2341234,sdfdg,4,4.00,400.00
+"Delta Delta Delta",,1969-12-31,,,0,0.00,0.00
+"Alpha Chi Omega","big joe",2013-10-09,34563456,ssfg,9,9.00,9000.00

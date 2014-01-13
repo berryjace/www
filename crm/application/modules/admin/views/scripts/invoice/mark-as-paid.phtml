@@ -5,6 +5,7 @@
     <form name="mark_as_paid" id="mark_as_paid_id" action="" method="POST">
         Invoice Total: &nbsp;<b><?php echo $this->BUtils()->getCurrency($this->total_due); ?></b>                                
         <div class="spacer clear"></div>
+        <div class="paymentError">*Please select one</div>
         <?php echo $this->form->payment_type; ?>
         <div class="clear"></div>
         <?php echo $this->form->payment_ref; ?>
@@ -27,6 +28,7 @@
 </div>
 
 <style type="text/css">
+	.paymentError{display:none; color:red;}
     form{padding: 0px; margin: 0px;}
     .text{width: 95%; text-align: center;}
     .select{width: 100%;}
@@ -64,6 +66,7 @@
 			
            // var data = $('#mark_as_paid_id').serialize();
 
+           if ($("#payment_type-ReceivedCheck").is(":checked") || $("#payment_type-ReceivedEFT").is(":checked")){
             $.ajax({
                 url: site_url + '/admin/invoice/ajax-set-review-data/id/'+$("input#vendor").val()+'/inv_id/'+$("input#invoice").val(),
             	type: "POST",
@@ -75,6 +78,9 @@
 						window.parent.location.href = site_url + '/admin/invoice/invoice-payment-review/id/' + $("input#vendor").val() + '/inv_id/' + $("input#invoice").val()+'/mark-as/paid';
                 	}
             });
+           } else {
+				$(".paymentError").show();
+          }
         },
         close_popup_form : function(){
             window.parent.close_popup();

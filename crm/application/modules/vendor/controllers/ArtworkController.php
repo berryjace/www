@@ -87,6 +87,12 @@ class Vendor_ArtworkController extends Zend_Controller_Action {
     public function ajaxGetUsageGuidesDtAction() {
         $this->_helper->BUtilities->setNoLayout();
 
+        $lics = $this->em->getRepository("BL\Entity\License")->findOneBy(array('client_id' => $this->_getParam('id'), 'vendor_id' => (int) $this->_helper->BUtilities->getLoggedInUser()));
+        
+        $status = 0;
+        
+        if ($lics != null) $status = $lics->status;
+        
         $sorting_cols = array(
             '0' => 'cug.id',
             '1' => 'cug.guide_name',
@@ -103,6 +109,7 @@ class Vendor_ArtworkController extends Zend_Controller_Action {
             'sort_key' => isset($sorting_cols[$post_params['iSortCol_0']]) ? $sorting_cols[$post_params['iSortCol_0']] : '',
             'search_op' => isset($post_params['search_op']) ? $post_params['search_op'] : 'AND',
             'sort_dir' => isset($post_params['sSortDir_0']) ? $post_params['sSortDir_0'] : 'ASC',
+        	'lic_status' => $status,
         );
         //print_r($params);
         $json = $this->em->getRepository('BL\Entity\ClientUsageGuide')->getUsageGuidesForVendor($params);

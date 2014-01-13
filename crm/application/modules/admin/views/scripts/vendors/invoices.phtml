@@ -19,10 +19,8 @@ $this->placeholder('main_side_bar')->captureEnd();
 <br />
 <hr size="1" noshade />
 <div class="spacer"></div>
-<?php if($this->vendor->user_status == "Current"): ?>
 <a href="<?php echo $this->baseUrl('admin/vendors/invoice-create-vendor/id/'.$this->vendor->id); ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/black/plus.png" class="mgright5" alt=""> <span>Create An Invoice</span></a> &nbsp;
 <div class="spacer"></div>
-<?php endif; ?>
 <table cellpadding="0" cellspacing="0" border="0" class="dyntable sTable2" id="invoices-data-table">
     <thead>
         <tr>
@@ -106,11 +104,11 @@ $this->placeholder('main_side_bar')->captureEnd();
                 { sClass: "align-right" }, 
                 { sWidth:'10%', sClass: "align-center" } 
             ],
-            "aaSorting": [[0,'desc']], // Initial sorting order when page loads
+            "aaSorting": [[2,'desc']], // Initial sorting order when page loads
             "aoColumnDefs":[
                 { "bSortable": true, "aTargets": [ 0 ] },
                 { "bSortable": true, "aTargets": [ 1 ] },
-                { "bSortable": false, "aTargets": [ 2 ] },
+                { "bSortable": true, "aTargets": [ 2 ] },
                 { "bSortable": false, "aTargets": [ 3 ]},
                 { "bSortable": false, "aTargets": [ 4 ] },
                 { "bSortable": false, "aTargets": [ 5 ] },
@@ -180,7 +178,7 @@ $this->placeholder('main_side_bar')->captureEnd();
             if(confirm('Are you sure to delete this Invoice ? \n Please note that all the line items associated with this one will also be deleted.')){
                 $note_id=$(this).attr('rel').split("-")[1];
                 $.ajax({
-                    url:site_url+'/admin/vendors/ajax-delete-invoices/',
+                    url:site_url+'/admin/vendors/ajax-delete-invoices/inv_id/' + $(this).attr('rel'),
                     dataType:'json',
                     data : '',
                     type:'post',

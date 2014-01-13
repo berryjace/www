@@ -43,10 +43,10 @@ $this->placeholder('main_side_bar')->captureEnd();
             ?>
             <tr>
                 <td><?php echo ($client)? $client->organization_name:''; ?></td>
-                <td><?php if($this->currentQuarter >1) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 1)); ?>"> View Report </a><?php } ?></td>
-                <td><?php if($this->currentQuarter >2) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 2)); ?>"> View Report </a><?php } ?></td>
-                <td><?php if($this->currentQuarter >3) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 3)); ?>"> View Report </a><?php } ?></td>
-                <td><?php if($this->currentQuarter >4) { ?><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 4)); ?>"> View Report </a><?php } ?></td>
+                <td><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 1)); ?>"> View Report </a></td>
+                <td><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 2)); ?>"> View Report </a></td>
+                <td><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 3)); ?>"> View Report </a></td>
+                <td><a href="<?php echo $this->url(array('controller' => 'clients', 'action' => 'report-detail', 'module' => 'admin', 'year' => $this->year, 'clientId' => $client?$client->id:'', 'quarter' => 4)); ?>"> View Report </a></td>
             </tr>
         <?php
         }

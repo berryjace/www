@@ -1,7 +1,7 @@
 <?php
 $contents="<html>
 <head>
-<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js' type='text/javascript' charset='utf-8'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js' type='text/javascript' charset='utf-8'></script>
 <script src='js/jquery.uniform.min.js' type='text/javascript' charset='utf-8'></script>
 <script type='text/javascript' charset='utf-8'>
   $(function(){

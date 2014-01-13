@@ -193,7 +193,7 @@ class InvoiceRepository extends EntityRepository {
      * @return String (JSON)
      */
     public function searchVendorInvoiceByParams($search_params) {
-        $sorting_cols = array('0' => 'v.organization_name', '1' => 'v.user_status');
+        $sorting_cols = array('0' => 'v.organization_name', '1' => 'v.user_status', '2' => 'i.invoice_number', '3' => 'i.invoice_date', '4'=>'i.amount_due', '5'=>'i.amount_paid');
 
         $params = array(
             'search' => isset($search_params['search']) ? $search_params['search'] : '',
@@ -217,13 +217,13 @@ class InvoiceRepository extends EntityRepository {
         $search_clause.= ($params['quarter'] <> "") ? " AND i.quarter='" . $params['quarter'] . "' " : '';
         $search_clause.= ($params['invoice_type'] <> "" && $params['invoice_type'] !="All") ? " AND i.invoice_type='" . $params['invoice_type'] . "'" : '';
         $search_clause.= ($params['invoice_status'] <> "" && $params['invoice_status'] !="All") ? " AND i.invoice_status='" . $params['invoice_status'] . "' " : '';
-        $search_clause.= ($params['payment_status'] <> "") ? " AND i.payment_status='" . $params['payment_status'] . "' " : '';
+        $search_clause.= ($params['payment_status'] <> "" && $params['payment_status'] !="All") ? " AND i.payment_status='" . $params['payment_status'] . "' " : '';
         $search_clause.= ($params['vendor_status'] <> "" && $params['vendor_status'] !="All") ? " AND v.user_status='" . $params['vendor_status'] . "' " : '';
         
         $order_clause = !empty($params['sort_key']) ? " ORDER BY " . $params['sort_key'] . " " . $params['sort_dir'] . "" : "";
         //GROUP BY v.id
         $q = $this->_em->createQuery("
-            SELECT partial i.{id, invoice_date, invoice_number, invoice_type, amount_due, amount_paid, payment_status}, partial v.{id, organization_name, user_status}
+            SELECT partial i.{id, invoice_date, invoice_number,invoice_status, invoice_type, amount_due, amount_paid, payment_status}, partial v.{id, organization_name, user_status}
             FROM BL\Entity\Invoice i
             LEFT JOIN i.vendor_id v
             $search_clause

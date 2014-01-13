@@ -203,6 +203,11 @@ class User {
      */
     private $last_login;  
     
+    /**
+     * @Column(name="agreement_notification_email", type="string", nullable=true)
+     */
+    private $agreement_notification_email;
+    
     public function __construct() {
         $this->roles = new \Doctrine\Common\Collections\ArrayCollection();
         $this->reg_date = new \DateTime(date("Y-m-d H:i:s"));

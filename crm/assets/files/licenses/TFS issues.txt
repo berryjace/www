@@ -1,0 +1,137 @@
+1. Add user capture button missing
+2. SSN and TIN validation missing
+
+4. In patient edit window upload image not reflected
+5. Scanned document image update not reflected
+
+
+
+
+4264- cancelled appoinment not listed in today's patient listing
+3890-H&P report not been generated when user try to access from some other facility
+4205- SSN validation not handled add user page
+4261- edit profile issue fax phone no issue
+3838- In order page and add new patient referring physician option where loading panel not will appear when click on search button.
+2522- Sequence contains no elements issue in today patient list loading
+
+4321- White screen after entering values NPWT, Biopsy, skin subsuite and multilayercompression in wound procedure page (Completed)
+4345- fill out all wound procedure data page throws error
+4348- Progress note issue
+4375- page not get refreshed (Completed)
+4430- page throw null exception when click on home button (Completed)
+3670- In audit log report where start date should be less than the end date. Need validation (Completed)
+3636- vital sign fill the data from previous visit
+2252- subscription releated issues
+1238- Upload button should be disable
+
+
+
+
+UI issues:
+2398- In patient chart, wound listing where additional column is present while displaying "Healed" wound in the screen compare with "Active".
+3680- Mandatory Fields in superbill report should be in bold
+3786- In Educational document-Add popup window when user click on save without entering any it throws msg only for Caption missing. Where document on this page also manadatory
+3787- no msg thrown for missing upload image 
+3793- Loading panel is not appear when we click on order and esign approval buttons
+3794- Loading panel not appear when user click on patient search
+2531- In add insurance provider popup, validation error msg throw when its open
+2551- In order page under Diagnostic, where unchedked items are get displayed in view for checked item Ultra Sound
+2601- In wound procedure page the length of the diagnosis drop down list be more compare with other options. It should be similar to all pages.
+2649- CPT code page navigation issue
+2650- validation should be shown
+2652- In order page under Nuclear Medicine where check boxes should allign properly...
+2653- fields turned to be red when page open. 
+2675- ui issues in change password
+2711- patient image not loading in search appointment page
+2712- scanned document page image not loaded
+2430- Navigation should be required for HBO therapy page
+3888- When user open the educational document popup window allergies information not been showed in the background screen
+4235- Insurance page tab order fail
+1307- tab order add user
+1309- focus is not set
+1267- tab focus not present in firsteditable field.(Ad past wound)
+2411- disable add new hbo therapy option if user not ordered
+2425- Reminder is not listed
+2426- validation 
+2427- set focus in grids(Ex: facily and add user screen)
+1930- hospital logo not reflected immed..
+1669-
+1700- Pop up window closing issue
+1789- Pop up window closing issue
+1870- www. validation in super admin login
+2297- UI issue
+3919- scanned doc image not loaded
+3941- subheader should be in bold
+3946- order print issue 
+1482- tab focus issue in old password entry field
+1484- msg should be in order
+2260- error msg grouping
+1237- Record count is missing for referring physician
+1229- All dropdown should be sort alphabetically
+1225- Tool tip not present
+1136- error msg should be valid
+1125- Lable name "Email is not consistent"
+1122- Required field should be in bold
+1114- Tool tip is missing in hospital page
+1098- tab focus should be present in first editable field
+1872- underscore validation
+1626- multicompression wrap tab navigation
+2286- edit hospital update button issue
+2277- field warning issues
+2275- Billing contacts not validated
+2272- user facility change
+
+
+
+
+
+
+
+Task:
+1. Educational needs page image panel display near upload button
+4009 get in to dr first change password wont effect
+
+
+
+
+
+
+
+
+http://www.webdesignerdepot.com/2012/03/back-to-basics-how-to-code-an-html5-template/
+
+
+10:06 AM 1/17/2013 In scanned document where Doc image icon is not loading in edit mode.
+10:26 AM 1/17/2013 In order page and add new patient referring physician option where loading panel not will appear when click on search button.
+10:26 AM 1/17/2013 photo capture failed on new patient several times
+10:38 AM 1/17/2013 In wound measurement page where healted wound is retain next wound value and status has been changed as "Active"
+11:59 AM 1/17/2013 In audit log report where Date & time should be current facility date and time
+12:25 PM 1/17/2013 Medication notes field is not updated. On Dr first Presecription notes is present and listed.
+1:26 PM 1/17/2013 Patient reminder list report should be also present in place of report page.
+
+11:44 AM 1/21/2013 Lab result cannot be performed without lab order
+11:45 AM 1/21/2013 lab result field value comes in string data. it should be get saved 
+11:46 AM 1/21/2013 admin page loading panel not removed
+11:49 AM 1/21/2013 
+
+
+A printable report: Daily Patient List
+This will be simple table of the patients for the day with their addresses and phone numbers.
+Add an Import Data From Previous Visit option/function for 
+Wound Treatments
+Wound Assessments
+This will be similar too the function we currently have for Vital Signs
+They use several products in Wound Treatment that we do not currently list in WoundTracker.
+We list a lot of products, but, even so, this will likely come up again
+Since I don’t know the architecture of these screens, I’m not sure if my current ideas are “an easy fix”
+We could simply add their few products to our screens
+We could make the screens dropdowns instead of check-boxes to accommodate more options
+A later enhancement may be to add customization like we do with Admin Rules and System Generated Patient Care Suggestions.
+
+
+
+
+
+
+
+http://www.sqatester.com/documentation/testplansmpl.htm

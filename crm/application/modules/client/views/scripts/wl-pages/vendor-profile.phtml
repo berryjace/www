@@ -5,7 +5,7 @@
 jQuery(document).ready(function() {
     jQuery('#mycarousel').jcarousel();
 
-    $('.resize_img').each(function(){
+    /*$('.resize_img').each(function(){
     	 var dim = $(this).width()/$(this).height();
 
          var bWide = $(this).width() > $(this).height();
@@ -18,7 +18,7 @@ jQuery(document).ready(function() {
 				$(this).width(dim*250 + "px");
 				$(this).height("250px");
          }
-        });
+        });//*/
 
 
     var height = $('div.con').parent().height();
@@ -96,6 +96,10 @@ function hideOverlay(){
 		padding: 10px;
 		background-color: white;
 		width: 1170px;
+	}
+	.resize_img{
+		max-width : 250px;
+		max-height: 250px;
 	}
 </style>
 <br/>
@@ -183,7 +187,7 @@ function hideOverlay(){
     <div id="overlay">
     <div>
     	<a href="javascript:void(0)" onclick="hideOverlay()" title="click to close"><img id="xButton" alt="X" src="<?php echo $this->baseUrl('/assets/css/fancy_close.png');?>" /></a>
-		<img id="lrgPrev"alt="large preview" src="http://poweros.softura.com/crm/assets/files/samples/products/large/p17enkt4kfvnicc51st51esdsjj5.png"/>
+		<img id="lrgPrev"alt="large preview" src=""/>
 	</div>
     </div>
 </div>

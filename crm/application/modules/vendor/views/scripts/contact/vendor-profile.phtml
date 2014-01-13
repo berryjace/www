@@ -43,13 +43,11 @@ $this->placeholder('sub_menu_bar')->captureEnd();
     <div class="spacer clear"></div>
 
     <div class="one">
+    
         <?php echo $this->form->logo_url; echo $this->form->use_default."<br/>"; ?> &nbsp;
 	<?php if(!empty($this->logo)) {?>
 	    <a class="example1" id="logoLink" href="<?php echo $this->baseUrl("assets/files/vendor_profile/thumbs/" . $this->logo); ?>">View logo</a>
 	<?php } ?>
-        Logo must be a static image on a white background.
-        Storefront photos and product samples will not be approved.
-        The optimal size of the logo should be 250px X 250px.
         <?php
         //echo $this->baseUrl();
         if ($this->logo != '') {
@@ -69,7 +67,10 @@ $this->placeholder('sub_menu_bar')->captureEnd();
     <div class="spacer"></div>
     <?php //echo $this->form->product_offered;?>
 
+    <span id="product_error" style="color:red;display:none;">* Please add at least one product *</span>
+    <br/>
     <?php echo $this->form->product_category; ?>
+    
     <?php echo $this->form->product; ?>
     <button type="button" id="select_button" class="button button_brown">Add</button>
     <div class="spacer"></div>
@@ -84,13 +85,11 @@ $this->placeholder('sub_menu_bar')->captureEnd();
     <span id="product_val_set" class="one txtinput selected_products">
         <?php
         $total_products = '';
-		
         if (sizeof($this->products)) {
-			
             foreach ($this->products as $product) {
-                $total_products .= $product->id . ',';
+                $total_products .= $product['id'] . ',';
                 ?>
-                <a href="#<?php echo $product->id; ?>" class="cross" style="text-decoration:none;" rel="<?php echo $product->id; ?>"><?php echo $product->product_name; ?><img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> </a>
+                <a href="#<?php echo $product['id']; ?>" class="cross" style="text-decoration:none;" rel="<?php echo $product['id']; ?>"><?php echo $product['product_name']; ?><img align="absmiddle" src="<?php echo $this->baseUrl('assets') ?>/images/delete.png"/> </a>
                 <?php
             }
             $total_products = substr($total_products, 0, -1);
@@ -130,7 +129,7 @@ $this->placeholder('sub_menu_bar')->captureEnd();
         if (sizeof($this->vendorSampleFile) < 10) {
             ?>
             <button type="button" id="upload_sample" class="button button_black detail_button">Add Product Image</button>&nbsp;&nbsp;<br /><br />
-            <b style="color:red;">*</b> As a licensed vendor you may display up to 10 promotional product sample images. You may purchase space for 10 additional images by emailing admin@greeklicensing.com
+            <b style="color:red;">*</b> As a licensed vendor you may display up to 10 promotional product sample images.
             <?php
         }
         ?>
@@ -138,6 +137,9 @@ $this->placeholder('sub_menu_bar')->captureEnd();
     <div class="clear"></div>
     <div class="spacer"></div>
     <button type="button" id="btnSubmit" class="button button_black detail_button">Submit Changes for Approval</button>
+    <div>
+    	* Please note: Once you click 'Submit Changes' your requested changes will dissappear from the form above. This is normal, and your changes will reappear once they are approved by our administrators.
+    </div>
 </div>
 
 <style type="text/css">
@@ -159,6 +161,9 @@ $this->placeholder('sub_menu_bar')->captureEnd();
     /** Datatable code **/
     var oTable;
     $(window).bind('load',function(){
+
+		$("label[for='logo_url']").append("<br/>&#09;Logo must be a static image on a white background and must be either .GIF, .PNG, .BMP or .JPG. Storefront photos and product samples will not be approved. The optimal size of the logo should be 250px X 250px.");
+        
         oTable=$('#banners-data-table').dataTable( {
             "bProcessing": true,
             "bServerSide": true,

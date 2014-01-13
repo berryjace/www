@@ -19,14 +19,14 @@ $submissionHashSegment = '/submission_hash/'.$this->submission_hash;
 			//$current_year = BL_AMC::getCurrentQarter() == 2 ? $current_year + 1 : $current_year;
 			
 			$current_month = Date("m");
-			
-			$current_month -=1;
-			
-			if ($current_month <=  0) $current_month = 12;
-			
-			$current_quarter=  $current_month / 4;
-			
-			$current_quarter = ($current_quarter + 2) % 4 + 1;
+            
+            $current_month -=1;
+
+            if ($current_month <=  0) $current_month = 12;
+            
+            $current_quarter=  ($current_month-1)/12 * 4;
+            
+            $current_quarter = (($current_quarter + 2) % 4) + 1;
 			
 			$years = range($current_year + 1, $current_year - 5);
 			$year_dropdown_vals = array();
@@ -74,7 +74,7 @@ $submissionHashSegment = '/submission_hash/'.$this->submission_hash;
             rename: true,
             sortable: true,
             filters : [
-                {title : "Image files", extensions : "pdf,xls,xlsx,doc,docx,jpg,png"}
+                {title : "Image files", extensions : "pdf,xls,xlsx,doc,docx,jpg, jpeg,png"}
             ],
             'flash_swf_url' : site_url+"/assets/js/plupload/plupload.flash.swf",
             'silverlight_xap_url' : site_url+"/assets/js/plupload/plupload.silverlight.xap",

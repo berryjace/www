@@ -1,0 +1,48 @@
+4402
+4323
+4370
+4339
+
+
+4307
+4303
+
+4404
+
+
+History and physical report
+
+1. ROS data not coming as per the template
+2. Family history notes values coming with two commas like this (sdfs,), 
+3. In H&P report patient without complaints text coming as default. it should be check
+4. General Wound Notes (HPI notes) not coming
+5. Review of Systems (current visit / last checkout visit) not coming
+6. Space issue
+
+
+Progressnote report:
+1. Under order section where values lontophoresis should be intial caps "Lontophoresis"
+2. Body mechanic instruction and home instruction should be Plural
+
+
+Patient Tracker report:
+1. Need some space for address coloumn
+
+
+Facility stat tracker:
+1. CareComponent should be Care Component and also required space for two consecutive care components
+
+
+Emergency Access log:
+1. start date and End date position get changed when we click on show report
+
+https://chip.softuradomain.com/#/Authentication/Login
+
+
+http://babynames.looktamil.com/tools/numerology-chart
+
+
+4415
+4430
+4375
+9003458489

@@ -248,6 +248,12 @@ background-color: #917C54 !important;
             Describe If Other
         </p>
     </div>
+    
+    <?php if ($this->uploadedImages != null) { foreach($this->uploadedImages as $image){
+    	if (isset($image["name"])){
+    	if (strpos(strtolower($image["name"]), ".gif") !== FALSE || strpos(strtolower($image["name"]), ".jpg") !== FALSE  || strpos(strtolower($image["name"]), ".png") !== FALSE ){?>
+    	<input type="hidden" name="pics[]" value="<?php echo $image["name"];?>">
+    <?php }}}}?>
 </form>
 
 
@@ -304,7 +310,28 @@ background-color: #917C54 !important;
             "aaSorting": [[1,'desc']], // Initial sorting order when page loads
             "aoColumnDefs":[{ "bSortable": false, "aTargets": [ 2,3 ] }],  // Turning sorting on/off for cols
             "fnInitComplete": function (oSettings, json) {
+            	 //*
+                var now = new Date();
+                var update_date = '<?php echo date("m/d/yy"); ?>';
+				var row_class='';
+                
+                <?php if ($this->uploadedImages != null) { foreach($this->uploadedImages as $image){ if (isset($image["name"])){?>
+	                if($('#events-data-table > tbody > tr').length%2==0){
+	                    row_class='even';
+	                }else{
+	                    row_class='odd';
+	                }
+	            	var image_path = site_url+'/assets/files/samples/products/thumbs/<?php echo $image["name"] ?>';
 
+					if (image_path.toLowerCase().indexOf(".jpg") > -1 || image_path.toLowerCase().indexOf(".gif") >-1 || image_path.toLowerCase().indexOf(".png")){
+	            	
+		                $("#banners-data-table tbody").append('<tr class="'+row_class+'"><td>'+update_date+'</td>'
+		                    +'<td><input type="text" name="title[]" class="title" value=""/></td>'
+		                    +'<td><img height="50" src="'+image_path+'"/></td>'
+		                    +'<td>&nbsp;</td>'
+		                 );
+					}
+                <?php }}} ?>//*/
             }
         } );
 
@@ -377,7 +404,7 @@ $(document).ready(function() {
                 'title'                 : '<h4>Upload Product Sample. (Max '+upload_left+')</h4>',
                 'titlePosition'         : 'inside',
                 'autoDimensions'        : false,
-                'href'                  : site_url+"/admin/vendors/upload-files/max/"+upload_left,
+                'href'                  : site_url+"/admin/vendors/upload-files/max/"+upload_left+"/vid/<?php echo $this->vendor_id?>",
                 'transitionIn'          : 'elastic',
                 'transitionOut'         : 'none',
                 'type'                  : 'iframe'
@@ -527,6 +554,14 @@ function add_picture_to_form(pic){
             +'<td><img height="50" src="'+image_path+'"/></td>'
             +'<td>&nbsp;</td>'
             );
+
+		var words = $("#banners-data-table_info").text().split(" ");
+
+		$("td.dataTables_empty").remove();
+        
+        var line = "Showing " + words[1] + " to " + (parseInt(words[3]) + 1) + " of " + (parseInt(words[5]) + 1) + " entries";
+
+        $("#banners-data-table_info").text(line);
 
 
     }else{

@@ -101,7 +101,16 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td class="total_row"><!-- Total--></td>
-				<td class="total_col"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?> Total Due
+				
+				<?php 
+					$total = 0;
+					
+					foreach($this->summary_data['royalty_after_adv'] as $adv){
+						$total += round($adv, 2);
+					}//array_sum($this->summary_data['royalty_after_adv'])
+				?>
+				
+				<td class="total_col"><?php echo $this->BUtils()->getCurrency($total); ?> Total Due
 				</td>
 			</tr>
 		</tbody>

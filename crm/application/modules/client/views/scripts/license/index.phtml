@@ -5,6 +5,10 @@ $this->placeholder('main_side_bar')->captureEnd();
 ?>
 <h2>License Agreements Overview</h2>
 <div class="spacer"></div>
+
+<button type="button" id="exportPDF" class="button button_blue " >Export as PDF</button>
+<img style="margin-top:5px;display:none;" id="loadingGif" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" />
+<div class="spacer"></div>
 <div class="licensed_vendor">
     <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="vendors-data-table">
         <thead>
@@ -47,7 +51,38 @@ $this->placeholder('main_side_bar')->captureEnd();
     $(window).bind('load',function(){        
         init_oTable_initialize();
         init_alphabetical_filters();
-        init_server_search_fix();   // Will search only hitting enter not keypress        
+        init_server_search_fix();   // Will search only hitting enter not keypress  
+
+        $("#exportPDF").on("click", function(){
+            $("#loadingGif").show();
+        	$.ajax({
+                url:'<?php echo $this->baseUrl("client/license/ajax-get-vendor-pdf/")?>',
+                type: "POST",
+                data:"client_id=<?php echo $this->client->id;?>",
+                dataType: 'json', 
+                success: function(msg) {   
+					console.log("success!");
+					$("#loadingGif").hide();
+                                     
+                    pdf_url = msg.name
+                    //*
+                    $.fancybox({
+                        'href'                  : site_url+"/client/license/pdflink/filename"+pdf_url+"/from/vpdf",
+                        'height'                : 40,
+                        'width'                 : 300,
+                        'autoScale'             : true,
+                        'autoDimensions'        : true,
+                        'transitionIn'          : 'none',
+                        'transitionOut'         : 'none',
+                        'type'                  : 'iframe',
+                        'speedIn'      : 100,
+                        'speedOut'      : 100,
+                        'overlayShow'     : true,
+                        'overlayColor'     : "#FFF",
+                    });
+                }
+            });  
+        });      
     });
 
     function init_oTable_initialize(){

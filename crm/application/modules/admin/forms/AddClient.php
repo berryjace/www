@@ -175,7 +175,8 @@ class Admin_Form_AddClient extends Zend_Form {
                                 array(
                                     'table' => 'users',
                                     'field' => 'username')
-                        ), true, array('messages' => 'Username already exists'))
+                        ), true, array('messages' => 'Username already exists')),
+                	array('alnum', true, array('messages' => 'Usernam can only contain letters and numbers (no spaces, spcial characters, etc.)'))
                 ))
                 ->addFilter('StripTags')
                 ->addFilter('StringTrim');
@@ -272,8 +273,15 @@ class Admin_Form_AddClient extends Zend_Form {
                 ->addErrorMessage('Value is required')
                 ->addFilter('StripTags')
                 ->addFilter('StringTrim');
+        
+        $user_code = new Zend_Form_Element_Text('user_code');
+        $user_code->setLabel('Client Number')
+		        ->setDisableLoadDefaultDecorators(true)
+		        ->setAttribs(array('size' => '50', 'class' => 'text'))->setRequired(false)
+		        ->addFilter('StripTags')->addFilter('StringTrim');
 
         $this->addElements(array(
+        	$user_code,
             $name,
             $greekLetters,
             $description,

@@ -160,17 +160,30 @@ class Admin_NotificationController extends Zend_Controller_Action {
 // 		error_log("\ncount: " . $count, 3, "./errorLog.log");        
         
 //         $vendor_groups= array("option1"=>array("a", "b", "c"), "option2"=>array("a", "b", "c"));
-        
+
+        $client_groups = array();
         $clients = $this->em->getRepository("BL\Entity\User")->getClientNames();
-        foreach ($clients as $client) {
+    	foreach ($clients as $client) {
             if (trim($client['client_greek_name'] != "")) {
                 $client_list[$client['id']] = $client['client_greek_name'];
+                $status = strtolower($client["user_status"]);
+                
+                if ($status == "cancelled"){
+                	$client_groups['Cancelled'][$client['id']] = $client['client_greek_name'];
+                } else if ($status == "current"){
+                	$client_groups['Current'][$client['id']] = $client['client_greek_name'];
+                } else if ($status == "pending"){
+                	$client_groups['Pending'][$client['id']] = $client['client_greek_name'];
+                } else if ($status == "potential"){
+                	$client_groups['Potential'][$client['id']] = $client['client_greek_name'];
+                }
             }
         }
 
-        $form = new Admin_Form_Notification($vendor_groups, $client_list); //$vendor_list
+        $form = new Admin_Form_Notification($vendor_groups, $client_groups); //$vendor_list
         $this->view->form = $form;
         $this->view->vendor_groups = $vendor_groups;
+        $this->view->client_groups = $client_groups;
 
         $ajax = $this->_getParam('ajax', 0);
         

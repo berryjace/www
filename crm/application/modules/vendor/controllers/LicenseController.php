@@ -1,5 +1,22 @@
 <?php
 
+require_once('ThirdParty/tcpdf/tcpdf.php');
+class MYPDF extends TCPDF {
+
+	public $info="";
+	//Page header
+	// Page footer
+	public function Footer() {
+		// Position at 15 mm from bottom
+		$this->SetY(-15);
+		// Set font
+		$this->SetFont('helvetica', 'I', 8);
+		// Page number
+		$this->Cell(0, 10, "License Number : " . $this->info, 0, false, 'C', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10, 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+	}
+}
+
 class Vendor_LicenseController extends Zend_Controller_Action {
 
     public $numberOfLicenseProcessed = 0;
@@ -334,11 +351,13 @@ class Vendor_LicenseController extends Zend_Controller_Action {
             );
             $count++;
         }
-
+		
         $this->session->vendorFee = $this->getVendorFee($this->_helper->BUtilities->getLoggedInUser());
         $form4 = new Vendor_Form_Apply4();
         $form5 = new Vendor_Form_Apply5('check', ($count * $this->session->vendorFee));
-
+        
+        $this->view->hasFee = ($this->session->vendorFee > 0)? "1":"0";
+        
         if ($this->getRequest()->isPost()) {
             $formData = $this->getRequest()->getPost();
             if ($form4->isValid($formData)) {
@@ -376,6 +395,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
      * @return void
      */
     public function applyPayAction() {
+    	error_log("\napplyPayAction", 3, "./errorLog.log");
 
         $form5 = new Vendor_Form_Apply5('check', (sizeof($this->session->clientArr) * $this->session->vendorFee));
         $request = $this->getRequest();
@@ -387,7 +407,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
             $formData = $this->getRequest()->getPost();
 //            print_r($formData);
 
-            if ($this->session->vendorFee < 0 ) {
+            if ($this->session->vendorFee <= 0 ) {
                 $this->processLicense();
                 $this->processResult[] = 'A total of <b>' . $this->numberOfLicenseProcessed . '</b> license application(s) have been successfully submitted!';
                 $this->processResult[] = "Our administrators will review each application for completeness and
@@ -405,7 +425,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
                                             (Please note that you are not licensed with a group until you receive a
                                             counter-signed agreement). <br /><br />
                                             You can click on the LICENSES tab in your profile at any time to view an
-                                            applicationâ€™s status.";
+                                            application's status.";
                 Zend_Session::namespaceUnset('default');
                 $this->view->assign('processResult', $this->processResult);
             } else {
@@ -418,14 +438,26 @@ class Vendor_LicenseController extends Zend_Controller_Action {
                         $this->view->assign('vendorFee', $this->session->vendorFee);
                         $formData = $this->getRequest()->getPost();
                         if ($form5->isValid($formData)) {
-                            $response = $this->call_bill_highway_api(array('amount' => $formData['amount_total'], 'rtn_no' => $formData['bank_routing'], 'account_no' => $formData['bank_acc_no']));
-//                            print_r($response);
-//                            echo $response->eCheckPaymentByGroupResult->anyType['4'];
+                        	$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>(int)$this->_helper->BUtilities->getLoggedInUser()));
+                            $response = $this->call_bill_highway_api(array('amount' => $formData['amount_total'], 'rtn_no' => $formData['bank_routing'], 'account_no' => $formData['bank_acc_no'], 'vendor'=>$vendor));
+                            //print_r($response);
+                            //echo $response->eCheckPaymentByGroupResult->anyType['4'];
                             $this->session->apply5 = $formData;
-                            $this->updateUserInfo();     //update user changes information
-                            $this->processWithCard();
-                            Zend_Session::namespaceUnset('default');
-                            $this->view->assign('processResult', $this->processResult);
+			    if($response->eCheckPaymentByGroupResult->anyType['3'] == "00"){
+				    $this->updateUserInfo();     //update user changes information
+
+				    $confirmation_number = $response->eCheckPaymentByGroupResult->anyType[1];
+				    	
+				    $this->processWithCard($confirmation_number);
+				    Zend_Session::namespaceUnset('default');
+				    $this->view->assign('processResult', $this->processResult);
+			    }
+			    else{
+			    $form5->populate($formData);
+                            $this->_helper->viewRenderer->setRender('apply5');
+			    $this->view->msg = $response->eCheckPaymentByGroupResult->anyType['4'];;
+		            //$this->_helper->flashMessenger($this->view->msg, "Info");
+			    }
                         } else {
                             $form5->populate($formData);
                             $this->_helper->viewRenderer->setRender('apply5');
@@ -522,10 +554,10 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         } else if ($this->getRequest()->isPost() || $this->_request->isXmlHttpRequest()) {
             $formData = $this->getRequest()->getPost();
             $email = array(
-                'to' => preg_split('/[;,]/', $license->client_id->email),
+                'to' => preg_split('/[;,]/', $license->client_id->agreement_notification_email),
                 'to_name' => $license->client_id->organization_name,
-                'from' => $license->vendor_id->email,
-                'from_name' => $license->vendor_id->organization_name
+                'from' => "licensing@greeklicensing.com", //$license->vendor_id->email,
+                'from_name' => "Greek Licensing", // $license->vendor_id->organization_name
             );
             $notification = array(
                 'send_via' => 'site_notification',
@@ -720,8 +752,8 @@ class Vendor_LicenseController extends Zend_Controller_Action {
      */
     private function processWithCheck() {
         $clients_id = $this->session->apply2['client_id'];
-        if ($this->sendInvoice($clients_id)) {
-            $this->processLicense();
+        $invoice_id = $this->processLicense();
+        if ($this->sendInvoice($clients_id, $invoice_id)) {
             $this->processResult[] = 'A total of <b>' . $this->numberOfLicenseProcessed . '</b> license application(s) have been successfully submitted!';
             $this->processResult[] = "Our administrators will review each application for completeness and
                                             appropriateness before sending a license agreement to you for electronic
@@ -752,9 +784,9 @@ class Vendor_LicenseController extends Zend_Controller_Action {
      * @access private
      * @return void
      */
-    private function processWithCard() {
+    private function processWithCard($confirmation_number = "") {
 //        print_r($this->session->apply4);
-        $this->processLicense();
+        $this->processLicense($confirmation_number);
         $this->processResult[] = 'A total of <b>' . $this->numberOfLicenseProcessed . '</b> license application(s) have been successfully submitted!';
         $this->processResult[] = "Our administrators will review each application for completeness and
                                     appropriateness before sending a license agreement to you for electronic
@@ -786,7 +818,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
      * @access private
      * @return void
      */
-    private function processLicense() {
+    private function processLicense($confirmation_number = "") {
         $clients_id = $this->session->apply2['client_id'];
         $vendor_id = $this->_helper->BUtilities->getLoggedInUser();
         $products = $this->session->apply3['products'];
@@ -803,8 +835,8 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $invoice->updated_at = new DateTime();
         $invoice->invoice_date = new DateTime();
         $invoice->invoice_type="Application Fees";
-        $invoice->fiscal_year = $year . '-' . substr(($year+1), 2);
-        $invoice->quarter = $quarter;
+        $invoice->fiscal_year = BL_AMC::getCurrentFiscalYear();
+        $invoice->quarter = BL_AMC::getCurrentQarter();
         $invoice->company_name = $vendor->organization_name;
         $invoice->webpage = $vendor->website;
         $invoice->address_line1 = $vendor->address_line1;
@@ -820,11 +852,49 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $invoice->payment_status = "Due";
         $invoice->amount_paid = 0;
         $invoice->vendor_id = $vendor;
+        $invoice->invoice_term = "Net 15 Days";
+        
+        $date = new DateTime();
+        
+        $date->add(new DateInterval("P15D"));
+        
+        $invoice->due_date = $date;
         
         $this->em->persist($invoice);
         $this->em->flush();
         
-        $invoice->invoice_number = $this->view->BUtils()->getInvoiceNumber($vendor->id);
+        $payment = null;
+        
+        if ($confirmation_number != ""){
+        	$payment = new \BL\Entity\Payment();
+        	
+        	$payment->vendor = $invoice->vendor_id;
+        	$payment->payment_year = $year . '-' . substr(($year+1), 2);
+        	$payment->payment_quarter = $quarter;
+        	$payment->record_date = new DateTime(date('Y-m-d H:i:s'));
+        	$payment->last_modified_date = new DateTime(date('Y-m-d H:i:s'));
+        	$payment->payment_month = date('m');
+        	$payment->invoice = $invoice;
+        	$payment->amount_paid = 0;
+        	
+        	$this->em->persist($payment);
+        	$this->em->flush();
+        }
+
+
+        $invoiceID = "INV_";
+        
+        $id = $invoice->id . "";
+        
+        for ($i = 0; $i < 9-strlen($id); $i++){
+        	$invoiceID .= "0";
+        }
+        
+        $invoiceID .= $id;
+        
+        $invoice->invoice_number = $invoiceID;
+        $this->em->persist($invoice);
+        $this->em->flush();
         
         $total_due = 0;
         $total_paid = 0;
@@ -838,7 +908,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
                     $license->vendor_id = $this->em->find('BL\Entity\User', $vendor_id);
                     $license->status = '3';
                     $license->payment_method = isset($this->session->apply5['billing_options']) ? $this->session->apply5['billing_options'] : 'N/A';
-                    $license->payment_status = isset($this->session->apply5['billing_options']) ? 'not_paid' : 'not_charged';
+                    $license->payment_status = isset($this->session->apply5['billing_options']) ? ($this->session->apply5['billing_options'] == 'card')? 'paid' : 'not_paid' : 'not_charged';
                     $license->supplier_name = $this->session->apply3['supplier_name'];
                     $license->other_desc = $this->session->apply3['other_desc'];
                     $license->applied_date = new DateTime();
@@ -882,8 +952,9 @@ class Vendor_LicenseController extends Zend_Controller_Action {
                         
                         $item->amount_paid = $this->session->vendorFee;
                         $item->license_status = 4;
-                        $item->payment_status = "Recieved Check";
-                        $item->invoice_status = "Partially Paid";
+                        $item->payment_status = "Recieved EFT";
+                        $item->invoice_status = "Closed";
+                    	$item->check_number = "Bill Highway " . $confirmation_number;
                         
                         $total_paid += $this->session->vendorFee;
                     }
@@ -939,6 +1010,45 @@ class Vendor_LicenseController extends Zend_Controller_Action {
                     }
 
                     $this->numberOfLicenseProcessed++;
+                
+                    if ($confirmation_number != ""){
+                    	$payItem = new BL\Entity\PaymentLineItems();
+                    	
+                    	$payItem->payment_id = $payment->id;
+                    	$payItem->pmt_id = $payment;
+                    	$payItem->client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$client_id));
+                    	$payItem->recordDate = new DateTime(date('Y-m-d H:i:s'));
+    					$payItem->last_modified_date = new DateTime(date('Y-m-d H:i:s'));
+			    		$payItem->payment_year = $year . '-' . substr(($year+1), 2);
+			    		$payItem->payment_quarter = $quarter;
+			    		$payItem->payment_month = date('m');
+			    		$payItem->amount_paid = $this->session->vendorFee;
+			    		
+			    		
+			    		$client = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$client_id));
+			    		
+			    		$clientOperation = $this->em->getRepository("BL\Entity\ClientOperation")->findOneBy(array('user_id'=>$client));
+			    		
+			    		$payItem->sharing = '1';
+			    		$payItem->percent_amc = '0.0';
+			    		
+			    		if ($clientOperation != NULL){
+			    			if ($clientOperation->sharing == '1' || $clientOperation->sharing == '' || $clientOperation->sharing == NULL){
+			    				$payItem->sharing = '1';
+			    			} else {
+			    				$payItem->sharing = '0';
+			    			}
+			    		}
+			    		
+			    		if ($payItem->sharing == '1'){
+			    			if ($clientOperation->commission_per != '' && $clientOperation->commission_per != NULL) $payItem->percent_amc = $clientOperation->commission_per;
+			    			else $payItem->percent_amc = '0.30';
+			    		}
+			    		
+			    		$this->em->persist($payItem);
+			    		$this->em->flush();
+			    		
+                    }
                 } else {
                     $this->processResult[] = 'Duplicate license application issue occured!'; //needs to set up a error variable.
                 }
@@ -950,11 +1060,20 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $invoice->amount_due = $total_due;
         
         if ($total_paid == $total_due){
-        	$invoice->payment_status = "Received Check";
+        	$invoice->payment_status = "Paid";
+			$invoice->invoice_status = "Closed";
+        }
+
+        if ($confirmation_number != ""){
+        	$payment->amount_paid = $total_paid;
+        	$payment->check_num = "Bill Highway " . $confirmation_number;
+        	$this->em->persist($payment);
+        	$this->em->flush();
         }
         
         $this->em->persist($invoice);
         $this->em->flush();
+		return $invoice->id;
     }
 
     /**
@@ -966,8 +1085,10 @@ class Vendor_LicenseController extends Zend_Controller_Action {
      * @param integer $client_id
      * @return boolean
      */
-    private function sendInvoice($clients_id) {
+    private function sendInvoice($clients_id, $invoice_id = 0) {
 
+    	$invoice = $this->em->getRepository("BL\Entity\Invoice")->findOneBy(array('id'=>$invoice_id));
+    	
         $organizations = array();
         foreach ($clients_id as $client_id) {
             $client = $this->em->getRepository("BL\Entity\User")->findOneBy(array('account_type' => ACC_TYPE_CLIENT, 'id' => $client_id));
@@ -984,6 +1105,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $this->view->city = $this->session->apply1['city'];
         $this->view->state= $this->session->apply1['state'];
         $this->view->zip  = $this->session->apply1['zipcode'];
+        $this->view->invoice = $invoice;
         $pdf_params = array(
             'author' => 'AMC Admin',
             'title' => 'Licensing Application Invoice Payment',
@@ -998,8 +1120,8 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $params = array(
             'to' => $this->session->apply1['email'],
             'to_name' => $this->session->apply1['firstname'],
-            'from' => 'registration@greeklicensing.com',
-            'from_name' => 'AMC Admin',
+            'from' => 'licensing@greeklicensing.com',
+            'from_name' => 'Greek Licensing',
             'subject' => 'Licensing Application Received',
             'body' => $this->view->render('/license/license-email-template.phtml'),
             'file' => $save_to
@@ -1081,7 +1203,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $form->populate($existing_data);
         if ($this->getRequest()->isPost()) {
             $formData = $this->getRequest()->getPost();
-            print_r($formData);
+            //print_r($formData);
             die();
 
 //            $this->ajaxValidate($form, $formData);
@@ -1184,7 +1306,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $featureID = '3';
         $clientId = '1199';
         $groupId = '18976';
-        $key = 'E394C14EF283AABAFE816E41';
+        $key = '1161B2BB9524849CC206FB0D';
         $EncryptedRTN = '';
         $EncryptedAcctNumber = '';
 
@@ -1193,6 +1315,8 @@ class Vendor_LicenseController extends Zend_Controller_Action {
 //          echo $EncryptedAcctNumber." len = ".  strlen($EncryptedAcctNumber)."<br />";
 //          echo $EncryptedRTN." len = ".  strlen($EncryptedRTN);
 
+        $vendor = $params['vendor'];
+        
         $params = array(
             'apiKey' => $apiKey,
             'featureID' => $featureID,
@@ -1201,10 +1325,9 @@ class Vendor_LicenseController extends Zend_Controller_Action {
             'Amount' => $params['amount'],
             'rtn' => $EncryptedRTN,
             'accountNumber' => $EncryptedAcctNumber,
-            'payerName' => 'Test Payer',
-            'checkNumber' => '123',
-            'email' => 'testpayer@billhighway.com',
-            'memo' => 'Test ACH group payment',
+            'payerName' => $vendor->organization_name,
+            'email' => $vendor->email,
+            'memo' => 'ACH Application Payment',
             'occurs' => 'once',
             'numberOfOccurrences' => 1
         );
@@ -1384,7 +1507,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
 
         $license = $this->em->getRepository('BL\Entity\License')->findOneBy(array('id' => $license_id));
         
-        $samples = $this->em->getRepository('BL\Entity\ProductDesign')->findBy(array('owner_id'=>$vendor, 'is_approved'=>1) );
+        $samples = $this->em->getRepository("BL\Entity\VendorSampleFile")->findBy(array("Vendor"=>$vendor, "active"=>1, "use_for"=>"product_info"));
         
         $this->view->product_size = count($samples);
         
@@ -1423,7 +1546,9 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         require_once('ThirdParty/tcpdf/tcpdf.php');
 
         // create new PDF document
-        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+       // $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+        $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+		$pdf->info = $formData['lic_num'];
         // set document information
         $pdf->SetCreator(PDF_CREATOR);
         $pdf->SetAuthor('AMC Admin');
@@ -1476,7 +1601,7 @@ class Vendor_LicenseController extends Zend_Controller_Action {
         $this->_helper->BUtilities->setNoLayout();
         $path = rtrim(Zend_Controller_Front::getInstance()->getBaseUrl(), '/') . "/tmp/" . $this->_getParam('filename');
         echo '<div style="font-family: DroidSansRegular,\"Segoe UI\",\"Lucida Sans Unicode\",\"Lucida Grande\",sans-serif;font-size: 13px;">';
-        echo '<a target="_blank" href="' . $path . '">Click </a>to download the PDF</div> ';
+        echo 'Click <a target="_blank" href="' . $path . '">here</a> to download a PDF copy for your viewing convienience.<br/>*Please note, however, that all agreements must be signed electronically at the bottom of the webpage*</div> ';
     }
 
 }

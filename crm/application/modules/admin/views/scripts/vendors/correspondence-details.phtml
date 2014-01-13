@@ -11,7 +11,7 @@
         <?php echo html_entity_decode($this->correspondence->subject); ?>
         <div class="spacer clear"></div>
         <h3>Note:</h3>
-        <pre><?php echo html_entity_decode($this->correspondence->note); ?></pre>
+        <pre><?php echo strip_tags(html_entity_decode($this->correspondence->note), "<br/><br /><br><br >"); ?></pre>
     </div>
 </div>
 

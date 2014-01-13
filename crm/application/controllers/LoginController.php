@@ -37,28 +37,36 @@ class LoginController extends Zend_Controller_Action {
                 $this->view->custom_err_mssg = 'Please fill in the required credentials<br/>';
             } else {
 
-
-                $result = Zend_Auth::getInstance()->authenticate($adapter);
-
-		//Zend_Debug::dump($result);exit;
-                if (Zend_Auth::getInstance()->hasIdentity()) {
-
-                    $auth1 = Zend_Auth::getInstance()->getIdentity();
-                    if (isset($_POST['rememberme'])) {
-                        Zend_Session::rememberMe(60 * 60 * 24 * 30); //remember for 30 days
-                    } else {
-                        Zend_Session::forgetMe();
-                    }
-
-		    $ref = $this->_getParam('ref');
-		    if(!empty($ref)) {
-			$this->_redirect($ref);
-		    }
-                    $this->manage_redirects(NULL);
-                    //$this->manage_redirects('profile');
-                } else {
-                    $this->view->custom_err_mssg = 'Authentication Error<br/>';
-                }
+            	$user = $this->em->getRepository("BL\Entity\User")->findOneBy(array("username"=>$this->_getParam('username')));
+            	
+            	if ($user == null){
+            		$this->view->custom_err_mssg = 'Authentication Error<br/>';
+            	} else {
+	            	if ($user->reg_status != "activated"){
+	            		$this->view->custom_err_mssg = 'Login Error: account not activated<br/>';
+	            	} else {
+	
+		                $result = Zend_Auth::getInstance()->authenticate($adapter);
+		
+		                if (Zend_Auth::getInstance()->hasIdentity()) {
+		
+		                    $auth1 = Zend_Auth::getInstance()->getIdentity();
+		                    if (isset($_POST['rememberme'])) {
+		                        Zend_Session::rememberMe(60 * 60 * 24 * 30); //remember for 30 days
+		                    } else {
+		                        Zend_Session::forgetMe();
+		                    }
+		
+						    $ref = $this->_getParam('ref');
+						    if(!empty($ref)) {
+							$this->_redirect($ref);
+						    }
+		                    $this->manage_redirects(NULL);
+		                } else {
+		                    $this->view->custom_err_mssg = 'Authentication Error<br/>';
+		                }
+		            }
+            	}
             }
         } elseif (Zend_Auth::getInstance()->hasIdentity()) {
             $auth1 = Zend_Auth::getInstance()->getIdentity();
@@ -132,7 +140,7 @@ class LoginController extends Zend_Controller_Action {
 		    $user->roles->role_id =2;
 		    $this->em->persist($user);
         	    $this->em->flush();
-		    Zend_Debug::dump($user);exit();
+		    //Zend_Debug::dump($user);exit();
                     $showNotifications = $this->em->getRepository("BL\Entity\Notification")->notificationTitles();
                     $this->_redirect('vendor/index/index/showNotifications/' . $showNotifications);
                 }
@@ -159,11 +167,11 @@ class LoginController extends Zend_Controller_Action {
         //$hybridauth_session_data = $this->hybridauth->getSessionData();
         //print_r($hybridauth_session_data);die('==');
         $adapters_list = $this->hybridauth->getAuthenticatedProviders();
-        $provider = @$_GET["provider"] ? @$_GET["provider"] : @$adapters_list[0]; //$_GET["provider"];
-        if ($provider) {
-            $adapter = $this->hybridauth->authenticate($provider);
-            $this->social_login($provider);
-        }
+        //$provider = @$_GET["provider"] ? @$_GET["provider"] : @$adapters_list[0]; //$_GET["provider"];
+        //if ($provider) {
+        //    $adapter = $this->hybridauth->authenticate($provider);
+        //    $this->social_login($provider);
+        //}
     }
 
     public function check_valid_social_login($provider) {

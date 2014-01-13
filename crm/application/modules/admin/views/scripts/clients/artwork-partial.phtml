@@ -27,6 +27,9 @@
         ?>
     </span>
 </div>
+<div id="dialog-confirm" title="Are you sure you want to delete?" style="display:none;">
+    <p>  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Notification will be permanently deleted and cannot be recovered. Are you sure?</p>
+</div>
 
 <style type="text/css">
     .aphabetical_filters{
@@ -85,6 +88,7 @@
         init_server_search_fix();   // Will search only hitting enter not keypress
         init_view_usageguide_link();
         init_download_usageguide_link();                
+	init_row_delete();
     });
     
     function init_oTable_initialize(){
@@ -141,6 +145,43 @@
             oTable.fnFilter($(this).text());
         });
     }
+	function row_delete(usageGuideId, pageTitle){
+            var message = pageTitle + " will be permanently deleted and cannot be recovered. Are you sure?";
+            $("#dialog-confirm").text(message);
+            $( "#dialog:ui-dialog" ).dialog( "destroy" );
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height:'auto',
+                modal: true,
+                buttons: {
+                    "Delete": function() {
+                        var mine = $( this )
+                        $.ajax({
+                            type : 'post',
+                            url: site_url+'/admin/clients/delete-usage-guide/',
+                            data:'id='+usageGuideId,
+                            success: function(response) {
+                                mine.dialog( "close" );
+                                $('#master_checkbox').removeAttr("checked");
+                                oTable.fnDraw();
+                                $.jGrowl(pageTitle+" has been deleted.");
+                            }
+                        });
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+    }
+	function init_row_delete(){
+        $(document).on('click', '.delete_usageguide',function(){
+            var usageGuideId = ($(this).attr('rel'));
+            var usageGuideTitle = '"'+($(this).attr('title'))+'"';
+            row_delete(usageGuideId, usageGuideTitle);
+        });
+    }
+
     /** Datatable code **/
         
 function loadDetailsView(thisItem){        

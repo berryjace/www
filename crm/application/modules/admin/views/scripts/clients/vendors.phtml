@@ -19,8 +19,11 @@ $this->placeholder('main_side_bar')->captureEnd();
 </div>
 <br />
 <hr size="1" noshade />
-<div class="spacer"></div>
 
+<button type="button" id="exportPDF" class="button button_blue " >Export as PDF</button>
+<img style="margin-top:5px;display:none;" id="loadingGif" src="<?php echo $this->baseUrl("assets"); ?>/images/loading.gif" />
+
+<div class="spacer"></div>
 <div class="spacer"></div>
 <table cellpadding="0" cellspacing="0" border="0" class="dyntable" id="licenses-data-table">
     <thead>
@@ -68,6 +71,37 @@ $this->placeholder('main_side_bar')->captureEnd();
         init_alphabetical_filters();
         init_server_search_fix();   // Will search only hitting enter not keypress
         init_vendor_link();
+
+        $("#exportPDF").on("click", function(){
+            $("#loadingGif").show();
+        	$.ajax({
+                url:'<?php echo $this->baseUrl("admin/clients/ajax-get-vendor-pdf/")?>',
+                type: "POST",
+                data:"client_id=<?php echo $this->client->id;?>",
+                dataType: 'json', 
+                success: function(msg) {   
+					console.log("success!");
+					$("#loadingGif").hide();
+                                     
+                    pdf_url = msg.name
+                    //*
+                    $.fancybox({
+                        'href'                  : site_url+"/admin/clients/pdflink/filename"+pdf_url,
+                        'height'                : 40,
+                        'width'                 : 300,
+                        'autoScale'             : true,
+                        'autoDimensions'        : true,
+                        'transitionIn'          : 'none',
+                        'transitionOut'         : 'none',
+                        'type'                  : 'iframe',
+                        'speedIn'      : 100,
+                        'speedOut'      : 100,
+                        'overlayShow'     : true,
+                        'overlayColor'     : "#FFF",
+                    });
+                }
+            });  
+        });
     });    
     
     function init_vendor_link(){

@@ -61,7 +61,7 @@
 			<tr><td></td></tr>
                         <tr>
                         	<td style="border:1px solid black;">
-					&nbsp;Amt Due:</td><td align="right" style="border:1px solid black;"><?php echo $currency->toCurrency($this->invoice->amount_due);?>&nbsp;&nbsp;</td>
+					&nbsp;Amt Due:</td><td align="right" style="border:1px solid black;"><?php echo $currency->toCurrency($this->invoice->amount_due-$this->invoice->amount_paid);?>&nbsp;&nbsp;</td>
                         </tr>
                         <tr>
                                  <td style="border:1px solid black;">&nbsp;Amt. &nbsp;&nbsp;Enclosed:</td><td style="border:1px solid black;"></td>

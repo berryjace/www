@@ -124,33 +124,28 @@ class Admin_Model_Portal {
         $user = $this->ct->em->getRepository('BL\Entity\User')->findOneBy(array('id' => (int) $this->ct->getRequest()->getParam('id')));
 
         if ($this->ct->getRequest()->isPost()) {
+        	
             $formData = $this->ct->getRequest()->getPost();
             if ($form->isValid($formData)) {
                 $user->account_type = (int) $form->getValue('account_type');
                 $user->first_name = $form->getValue('first_name');
                 $user->last_name = $form->getValue('last_name');
 //                $user->username = $form->getValue('username');
-                $user->password = ($form->getValue('password') != '' && isseet($form->getValue('password')) && $form->getValue('password') != null)? md5($form->getValue('password')): $user->password;
-//                $user->email = $form->getValue('email');
-                if ($form->getValue('status') === '1') {
+				if ($form->getValue('password') != '' && $form->getValue('password') != null){
+						$user->password = md5($form->getValue('password'));
+				}
+				
+				if ($form->getValue('status') === '1') {
                     $user->user_status = 'Current';
                     $user->reg_status = 'activated';
                 } else {
                     $user->user_status = 'Cancelled';
+                    $user->reg_status = 'Declined';
                 }
+                
                 $role = $this->ct->em->getRepository('BL\Entity\Role')->findOneBy(array('id' => (int) ACC_TYPE_ADMIN));  // $form->getValue('account_type')
-                $user->roles->set($role);                
-//                $bool = false;
-//                foreach ($user->roles as $key => $r) {
-//                    if($r->id === (int) $role->id){
-//                        $bool = true;
-//                        break;
-////                        echo $r->id . " " . $r->role_name;
-//                    }
-//                }               
-//                if(!$bool){
-//                    $user->roles->add($role);
-//                }                
+                $user->roles->set($role);      
+
                 $this->ct->em->persist($user);
                 $this->ct->em->flush();
 

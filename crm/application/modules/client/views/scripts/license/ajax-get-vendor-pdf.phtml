@@ -1,0 +1,37 @@
+<table border="1" width="100%" class="vendorTable"  border="0">
+    <thead>
+        <tr>
+            <th class="head0" width="25%" align="left"><u><b><h3>Company Name</h3></b></u></th>
+            <th class="head1" width="25%" align="left"><u><b><h3>Address</h3></b></u></th>
+            <th class="head0" width="25%" align="left"><u><b><h3>Product</h3></b></u></th>
+            <th class="head1" width="25%" align="left"><u><b><h3>Phone/Website</h3></b></u></th>
+        </tr>            
+    </thead>
+    <?php 
+    foreach($this->licenses as $item) { ?>
+    <?php 
+    	$operation = $this->vendorOperationRepository->findOneBy(array('user_id'=>$item->vendor_id));
+    ?>
+    <tr>
+        <td width="25%" align="left" ><big><?php echo $item->vendor_id->organization_name; ?></big></td>
+        <td width="25%" align="left" ><big><?php echo $item->vendor_id->address_line1 . $item->vendor_id->address_line2; ?><br/><?php echo $item->vendor_id->city . ", " . $item->vendor_id->state . " " . $item->vendor_id->zipcode;?></big></td>
+        <td width="25%" align="left" ><big><?php echo ($operation != null)? $operation->vendor_products : ""; ?></big></td>
+        <td width="25%" align="left" ><big><?php echo ($item->vendor_id->phone != "")? $item->vendor_id->phone . "<br/><br/>" : "";?><?php echo $item->vendor_id->website;?></big><br/></td>
+      </tr>
+      <tr><td class="line" colspan="4"><br></td></tr>
+      <?php }?>
+</table>
+
+<style type="text/css">
+    table{
+    	border-spacing: 5;
+    	border-collapse:collapse;
+    }
+    
+    td.line{
+    	border-top: 1px solid black;
+    	margin-top: 15px;
+    	border-spacing: 5px;
+    }
+    
+</style>

@@ -1,9 +1,9 @@
 <?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
 <?php $user = Zend_Auth::getInstance()->getIdentity();
 $isAdmin = ($user->account_type == 1) ? 1 : 0;
-
+$isEmployee = ($user->account_type == 4)? 1 : 0;
 ?>
-<?php if(!$isAdmin) {?>
+<?php if(!$isAdmin && !$isEmployee) {?>
 <div class="leftalign">
 	<a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>"
 		class="iconlink<?php echo ($action === "history") ? '' : '2'; ?>"><img
@@ -19,7 +19,7 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
 </div>
 <?php }?>
 <div class="spacer clear"></div>
-<?php if(!$isAdmin) {?>
+<?php if(!$isAdmin && !$isEmployee) {?>
 <div class="notification msginfo">
 	<a class="close"></a> Based on the summary you have provided, the following royalties are due. Please note,
 	your report will not be recieved until you click "Submit Report" below.
@@ -46,7 +46,7 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
 </div>
 <div class="spacer clear"></div>
 <div class="one">
-	<?php if(!$isAdmin) {?>
+	<?php if(!$isAdmin && !$isEmployee) {?>
 	<h1><?php echo $this->vendor->organization_name;?></h1>
 	<h3>Royalty Report Summary</h3>
 	<h3>
@@ -85,15 +85,27 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
 			<?php foreach ($this->summary_data['clients'] as $client): ?>
 			<tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
 				<td><?php echo $client;  ?></td>
+				<?php if (isset($this->summary_data['royalties'])){?>
+					<?php if ($this->summary_data['royalties'][$i] != "None"){?>
+						<td style="text-align:center;">
+						--
+						</td>
+						<td style="text-align:center;">
+						--
+						</td>
+					<?php } else {?>
 				<td><?php echo $this->BUtils()->getCurrency($this->summary_data['gross_sales'][$i]);  ?>
 				</td>
 				<td><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' : $this->summary_data['royalty_commission'][$i].'%'; ?>
 				</td>
-				<!--<td><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_before_adv'][$i]); ?>
+					<?php }?>
+				<?php } else {?>
+				<td><?php echo $this->BUtils()->getCurrency($this->summary_data['gross_sales'][$i]);  ?>
 				</td>
-			 	<td><?php echo $this->BUtils()->getCurrency(is_null($this->summary_data['annual_advance'][$i]) ? 0 : $this->summary_data['annual_advance'][$i]);  ?>
-				</td> -->
-				<td><?php echo $this->BUtils()->getCurrency($this->summary_data['royalty_after_adv'][$i]); ?>
+				<td><?php echo is_null($this->summary_data['royalty_commission'][$i]) ? 'N/A' : $this->summary_data['royalty_commission'][$i].'%'; ?>
+				</td>
+				<?php }?>
+				<td><?php echo $this->BUtils()->getCurrency((isset($this->summary_data['royalties']))?  ( $this->summary_data['royalties'][$i] != "None")? floatval($this->summary_data['royalties'][$i]): $this->summary_data['royalty_after_adv'][$i] : $this->summary_data['royalty_after_adv'][$i]); ?>
 				</td>
 			</tr>
 			<?php $i++; ?>
@@ -102,17 +114,27 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td class="total_row"><!-- Total--></td>
-				<td class="total_col"><?php echo $this->BUtils()->getCurrency(array_sum($this->summary_data['royalty_after_adv'])); ?> Total Due
+				<?php 
+				$total = 0;
+				
+				foreach($this->summary_data['royalty_after_adv'] as $adv){
+					$total += round($adv, 2);
+				}
+				
+					$ta = array_sum($this->summary_data['royalty_after_adv']);
+					$tb = (isset($this->summary_data['royalties']))? array_sum($this->summary_data['royalties']) : 0;
+				?>
+				<td class="total_col"><?php echo $this->BUtils()->getCurrency($total + $tb); ?> Total Due
 				</td>
 			</tr>
 		</tbody>
 	</table>
 </div>
 <div class="spacer clear"></div>
-<?php if(!$isAdmin) {?>
+<?php if(!$isAdmin && !$isEmployee) {?>
 <?php }?>
 <div class="rightalign">
-	<?php if(!$isAdmin) {?>
+	<?php if(!$isAdmin && !$isEmployee) {?>
 	<button name="back" id="back" class="button button_black">Return to Previous Page</button>
 	<button name="submit_report" id="submit_report"
 		class="button button_black">Submit Report</button>
@@ -194,9 +216,16 @@ div.jGrowl div.jGrowl-notification {
 			window.history.go(-1);
         },
         approve_or_reject : function(e){
-          $url = site_url+'/admin/reports/approve-or-reject/type/Approved/rid/<?php echo $this->summary_data['submission_hash']?>/rtype/hash';
-          console.log($url);
-          loadPopupView($url);
+        	$.ajax({
+                'url'	:	site_url+'/vendor/royalty/ajax-create-report',
+                'type'	:	'post',
+                'dataType'	:	'json',
+                'success'	:	function(d){
+                    $url = site_url+'/admin/reports/approve-or-reject/type/Approved/submission_hash/<?php echo $this->summary_data['submission_hash']?>/rtype/hash';
+                    console.log($url);
+                    loadPopupView($url);
+                    }
+            });
       }
     };
     $(function(){

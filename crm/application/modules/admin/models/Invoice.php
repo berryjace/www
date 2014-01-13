@@ -83,6 +83,25 @@ class Admin_Model_Invoice {
             if ($form->isValidPartial($formData)) {
                 $i = 0;
                 
+                $date = $formData['inv_date'];
+                
+                $date = str_replace("/", "-", $date);
+                
+                $invoice->company_name = $formData['vendor_name'];
+                $invoice->invoice_number = $formData['inv_num'];
+                $invoice->invoice_type = $formData['inv_type'];
+                $invoice->invoice_date = new DateTime(date($date)); //new DateTime(date($form->getValue('inv_date') . date('H:i:s')));
+                $invoice->invoice_term = $formData['inv_term'];
+                $invoice->email = $formData['email'];
+                $invoice->address_line1 = $formData['address_line_1'];
+                $invoice->address_line2 = $formData['address_line_2'];
+                $invoice->phone1 = $formData['phone_1'];
+                $invoice->phone2 = $formData['phone_2'];
+                $invoice->city = $formData['city'];
+                $invoice->state = $formData['state'];
+                $invoice->zip = $formData['zip'];
+                $invoice->fax = $formData['fax'];
+                
                 $items = $this->ct->em->getRepository('BL\Entity\InvoiceLineItems')->findBy(array('invoice_id'=>$invoice->id));
                 $allItems = array();
                 foreach($items as $item){
@@ -212,6 +231,17 @@ class Admin_Model_Invoice {
         $lineitems = $this->ct->em->getRepository("BL\Entity\InvoiceLineItems")->getLineItemsForPDF($invoice->id);
         $this->ct->view->invoice = $invoice;
         $this->ct->view->lineitems = $lineitems;
+        
+        $amount_due = $invoice->amount_due;
+        $ad = 0;
+        
+        foreach($lineitems as $item){
+        	$ad = $item->amount_due - $item->amount_paid;
+        }
+        
+        
+        $this->view->amount_due = $amount_due;
+        
         $html = $this->ct->view->render('invoice/invoice-pdf-template.phtml');
 	$header = $this->ct->view->render('invoice/invoice-pdf-template-header.phtml');
 //        print_r($html);
@@ -227,44 +257,62 @@ class Admin_Model_Invoice {
         );
         $this->ct->view->BUtils()->getPDF2($params);
     }
-    /**
-     * Function to export Annual inovice as PDF
-     * @author Jace
-     * @copyright Blueliner Marketing
-     * @version 0.1
-     * @access public
-     * @return String
-     */
-     public function exportInvoiceAsPdf(){
- 	$this->ct->getHelper('BUtilities')->setNoLayout();
-        $invoice = $this->ct->em->getRepository("BL\Entity\Invoice")->findOneBy(array('id' => (int) $this->ct->getRequest()->getParam('inv_id'), 'vendor_id' => (int) $this->ct->getRequest()->getParam('id')));
-        $lineitems = $this->ct->em->getRepository("BL\Entity\InvoiceLineItems")->getLineItemsForPDF($invoice->id);
-        $this->ct->view->invoice = $invoice;
-        $this->ct->view->lineitems = $lineitems;
-        $html = $this->ct->view->render('invoice/invoice-pdf-template.phtml');
-	if($this->ct->view->invoice->invoice_type=="Annual")
-        	$header = $this->ct->view->render('invoice/invoice-pdf-template-header-annual.phtml');
-	elseif(true)
-		$header = $this->ct->view->render('invoice/invoice-pdf-template-header.phtml');
-//        print_r($html);
-        $params = array(
-            'author' => $invoice->vendor_id->organization_name,
-            'title' => 'Export invoice',
-            'subject' => 'Invoice',
-            'pdf_content' => $html,
-            'file_name' => $invoice->invoice_number,
-            'file_path' => APPLICATION_PATH . '/../tmp/',
-            'output_type' => 'I',
-            'header' => $header
-        );
-	if($this->ct->view->invoice->invoice_type=="Annual")
-        	$this->ct->view->BUtils()->getMulticolumnPDF($params);
-	elseif(true)
-		$this->ct->view->BUtils()->getPDF2($params);
+	/**
+	* Function to export Annual inovice as PDF
+	* @author Jace
+	* @version 0.1
+	* @access public
+	* @return String
+	*/
+	public function exportInvoiceAsPdf(){
+		$this->ct->getHelper('BUtilities')->setNoLayout();
 
+		$invoice = $this->ct->em->getRepository("BL\Entity\Invoice")->findOneBy(array('id' => (int) $this->ct->getRequest()->getParam('inv_id'), 
+											      'vendor_id' => (int) $this->ct->getRequest()->getParam('id')));
 
-     }
-	
+		$lineitems = $this->ct->em->getRepository("BL\Entity\InvoiceLineItems")->getLineItemsForPDF($invoice->id);
+
+		$this->ct->view->invoice = $invoice;
+		$this->ct->view->lineitems = $lineitems;
+
+		$html = $this->ct->view->render('invoice/invoice-pdf-template.phtml');
+
+		if($this->ct->view->invoice->invoice_type=="Annual")
+			$header = $this->ct->view->render('invoice/invoice-pdf-template-header-annual.phtml');
+		elseif($this->ct->view->invoice->invoice_type=="Misc.")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-misc.phtml');
+		elseif($this->ct->view->invoice->invoice_type=="Refund")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-refund.phtml');
+		elseif($this->ct->view->invoice->invoice_type=="Quarterly Report")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-Qreport.phtml');
+		elseif($this->ct->view->invoice->invoice_type=="Late Fee")
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-LateFee.phtml');
+		 elseif($this->ct->view->invoice->invoice_type=="First Time Advance"){
+                        $header = $this->ct->view->render('invoice/invoice-pdf-template-header-ApplicationFee.phtml');
+			$html = $this->ct->view->render('invoice/invoice-pdf-template-ApplicationFee.phtml');
+		}
+		elseif(true)
+			$header = $this->ct->view->render('invoice/invoice-pdf-template-header-misc.phtml');
+
+		//        print_r($html);
+
+		$params = array(
+			'author' => $invoice->vendor_id->organization_name,
+			'title' => 'Export invoice',
+			'subject' => 'Invoice',
+			'pdf_content' => $html,
+			'file_name' => $invoice->invoice_number,
+			'file_path' => APPLICATION_PATH . '/../tmp/',
+			'output_type' => 'I',
+			'header' => $header
+		);
+
+		if($this->ct->view->invoice->invoice_type=="Annual")
+			$this->ct->view->BUtils()->getMulticolumnPDF($params);
+		elseif(true)
+			$this->ct->view->BUtils()->getPDF2($params);
+	}
+
 
     /**
      * Function to mark invoice as paid/partial paid/void/waive
@@ -331,6 +379,7 @@ class Admin_Model_Invoice {
             $this->ct->getHelper('BUtilities')->setNoLayout();
 
             $invoice->invoice_status = 'Voided';
+            $invoice->payment_status = 'Voided';
             $this->ct->em->persist($invoice);
             $this->ct->em->flush();
 
@@ -339,6 +388,7 @@ class Admin_Model_Invoice {
             $this->ct->getHelper('BUtilities')->setNoLayout();
 
             $invoice->invoice_status = 'Waived';
+            $invoice->payment_status = 'Waived';
             $this->ct->em->persist($invoice);
             $this->ct->em->flush();
 

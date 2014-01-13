@@ -8,9 +8,9 @@ $this->placeholder('sub_menu_bar')->captureEnd();
 <div class="spacer clear"></div>
 
 <div class="one">    
-    <b>Account Number : </b><?php echo $this->is_bank_info ? $this->bank_info->account_number : 'N/A'; ?>
+    <b>Account Number : </b><?php echo $this->acct ? $this->acct : 'N/A'; ?>
     <div class="spacer clear"></div>      
-    <b>Routing Number : </b><?php echo $this->is_bank_info ? $this->bank_info->routing_number : 'N/A'; ?>
+    <b>Routing Number : </b><?php echo $this->routing ? $this->routing : 'N/A'; ?>
     <div class="spacer clear"></div>            
     <button name="add_update" id="add_update" class="button button_black">Add or Update</button>    
 </div>

@@ -309,6 +309,12 @@ class License {
     private $save_status;
 
     /**
+     * @var string $grandfathered
+     * @Column(name="grandfathered", type="string", length=1, nullable=false)
+     */
+    private $grandfathered;
+
+    /**
      * @var string $file_path
      * @Column(name="file_path", type="string", length=200, nullable=true)
      */
@@ -344,7 +350,10 @@ class License {
     }
 
     public function __get($property) {
-        return $this->$property;
+	if(isset($this->$property))
+	        return $this->$property;
+	else
+		return null;
     }
 
     public function __set($property, $value) {

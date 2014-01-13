@@ -13,6 +13,7 @@
 <div class="hidden">
     <span class="aphabetical_filters">
         <?php
+	echo $this->status;
         foreach (range('A', 'Z') as $char) {
             echo '<a href="javascript:;" class="letter_filter">' . $char . '</a> &nbsp;';
         }
@@ -59,7 +60,11 @@
 
     function init_download_usageguide_link(){
         $(document).on("click", "a.download_link", function(){
+	<?php if ($this->status == 4){ ?>
             window.location.href=site_url+"/vendor/artwork/download/file/"+$(this).attr('rel');
+	<?php } else { ?>
+	    alert("You are not yet Licensed with this organization. Once you are licensed, you will be able to download these guidelines.");
+	<?php } ?>
         });
     }
     

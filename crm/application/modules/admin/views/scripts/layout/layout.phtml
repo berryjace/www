@@ -16,7 +16,7 @@ $user = Zend_Auth::getInstance()->getIdentity();
         <?php echo $this->headLink(); ?>
         <script type="text/javascript"> var site_url="<?php echo $this->baseUrl(); ?>"; </script>
         <?php if (APPLICATION_ENV == "production"): ?>
-            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <?php else: ?>
             <script type="text/javascript" src="<?php echo $this->baseUrl("assets"); ?>/js/jquery/jquery-1.7.1.min.js"></script>            
         <?php endif; ?>
@@ -153,6 +153,30 @@ $user = Zend_Auth::getInstance()->getIdentity();
         </div><!--maincontent-->
 
         <br />
+        <div style="width:100%;margin-bottom:10px;" id="sslBadgeContainer">
+			<table id="sslBadgeTable" style="" width="135" border="0" cellpadding="2" cellspacing="0" title="Click to Verify - This site chose Symantec SSL for secure e-commerce and confidential communications.">
+			<tr>
+			<td width="135" align="center" valign="top"><script type="text/javascript" src="https://seal.verisign.com/getseal?host_name=greeklicensing.com&amp;size=L&amp;use_flash=NO&amp;use_transparent=NO&amp;lang=en">
+				
+			</script>
+			<script type="text/javascript">
+				$(document).ready(function(){
+					var width = $(window).width();
+					var height = $("#sslBadgeTable").height();
+					var pageHeight = $(document).height();
+		
+					$("#sslBadgeContainer").height(height);
+					
+					width -= 135;
+					width /= 2;
+					
+					$("#sslBadgeTable").css("left", width + "px");
+				});
+			</script><br />
+			<a href="http://www.symantec.com/verisign/ssl-certificates" target="_blank"  style="color:#000000; text-decoration:none; font:bold 7px verdana,sans-serif; letter-spacing:.5px; text-align:center; margin:0px; padding:0px;">ABOUT SSL CERTIFICATES</a></td>
+			</tr>
+			</table>
+		</div>
         <div class="footer footer_float">
             <div class="footerinner">
                 &copy; 2011. Greek Licensing Portal

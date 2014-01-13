@@ -71,7 +71,7 @@ $this->placeholder('sub_menu_bar')->captureEnd();
     <?php } ?>
     
     <div class="spacer"></div>
-    <?php echo $this->partial('artwork/index-partial.phtml', array('id'=>$this->user->id)); ?>
+    <?php echo $this->partial('artwork/index-partial.phtml', array('id'=>$this->user->id,'status'=>$this->lic->__get('status'))); ?>
 </div>
 
 

@@ -1,4 +1,50 @@
 <?php
+require_once('ThirdParty/tcpdf/tcpdf.php');
+class VPDF extends TCPDF {
+
+	public $imgUrl="";
+	public $client="";
+	//Page header
+	// Page footer
+	public function Footer() {
+		// Position at 15 mm from bottom
+		$this->SetY(-15);
+		// Set font
+		$this->SetFont('helvetica', 'I', 8);
+		// Page number
+		$this->Cell(0, 10, $this->client->organization_name, 0, false, 'L', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10, 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+	}//*/
+
+	public function Header(){
+		//$this->Cell(0, 0, "<b>".$this->client->organization_name."--Licensed Vendors</b><small>(as of ".date("M d, Y").")</small>", 0, false, 'C', 0, '', 0, false, 'T', 'M');
+
+		$this->SetFont('helvetica', '', 18);
+
+		$this->Cell(0, 30, $this->client->organization_name . "---Licensed Vendors", 0, false, 'C', 0, '', 0, false, 'M', 'B');
+
+		$this->SetFont('helvetica', '', 10);
+		$this->Cell(0, 30, "(as of ". date("M d,Y").")          ", 0, false, 'R', 0, '', 0, false, 'M', 'B');
+
+		$this->Image($this->imgUrl, 3, 1, 25, 25, 'JPG', '', 'L', false, 300, '', false, false, 0, false, false, false);
+	}
+}
+
+class MYPDF extends TCPDF {
+
+	public $info="";
+	//Page header
+	// Page footer
+	public function Footer() {
+		// Position at 15 mm from bottom
+		$this->SetY(-15);
+		// Set font
+		$this->SetFont('helvetica', 'I', 8);
+		// Page number
+		$this->Cell(0, 10, "License Number : [License Number]", 0, false, 'C', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10, 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+	}
+}
 
 class Admin_ClientsController extends Zend_Controller_Action {
 
@@ -113,10 +159,12 @@ class Admin_ClientsController extends Zend_Controller_Action {
                 $user->state = $form->getValue('state');
                 $user->zipcode = $form->getValue('zip_code');
                 $user->email = $form->getValue('email');
+                $user->agreement_notification_email = $form->getValue('agreement_notification_email');
                 $user->phone = $form->getValue('phone');
                 $user->fax = $form->getValue('fax');
                 $user->website = $form->getValue('url');
                 $user->updated_at = new DateTime();
+                $user->user_code = $form->getValue('user_code');
                 $this->em->persist($user);
                 $this->em->flush();
 
@@ -201,9 +249,11 @@ class Admin_ClientsController extends Zend_Controller_Action {
                 'state' => ($this->client->state == '' || $this->client->state == NULL ? 'NULL' : $this->client->state ),
                 'zip_code' => $this->client->zipcode,
                 'email' => $this->client->email,
+            	'agreement_notification_email' => $this->client->agreement_notification_email,
                 'url' => $this->client->website,
                 'phone' => $this->client->phone,
-                'fax' => $this->client->fax
+                'fax' => $this->client->fax,
+            	'user_code' => $this->client->user_code
             );
             if (sizeof($clientProfile)) {
                 $existing_data['greek_letters'] = $clientProfile->greek_name;
@@ -335,8 +385,8 @@ class Admin_ClientsController extends Zend_Controller_Action {
                 'default_note_to_all_applying_vendors' => $clientOperation->notes,
                 'client_status' => $this->client->user_status,
                 'commission_start_date' => (!is_null($clientOperation->commission_start_date)) ? $clientOperation->commission_start_date->format("m/d/Y") : '',
-                'commission_per' => $clientOperation->commission_per ? $clientOperation->commission_per : '30' ,
-                'sharing' => $clientOperation->sharing ? $clientOperation->sharing : 'yes'
+                'commission_per' => ($clientOperation->commission_per != null && $clientOperation->commission_per != '') ? $clientOperation->commission_per : '0.30' ,
+                'sharing' => ($clientOperation->sharing != null && $clientOperation->sharing != '') ? $clientOperation->sharing : 'yes'
             );
         }
 
@@ -432,6 +482,7 @@ class Admin_ClientsController extends Zend_Controller_Action {
         $this->getClient();
         $this->view->client = $this->client;
         $this->_helper->JSLibs->do_call(array('load_jqui_assets', 'load_dataTable_assets'));
+        $this->_helper->JSLibs->load_fancy_assets();
     }
 
     /**
@@ -484,6 +535,82 @@ class Admin_ClientsController extends Zend_Controller_Action {
         echo $json;
     }
 
+    public function ajaxGetVendorPdfAction(){
+		ini_set('max_execution_time', 600); //300 seconds = 5 minutes
+    	$this->_helper->BUtilities->setNoLayout();
+    	
+    	$client_id = $this->_getParam('client_id');
+    	
+    	$client = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id'=>$client_id));
+    	
+    	$licenses = $this->em->getRepository("BL\Entity\License")->getClientLicensesSortedVendor($client->id);
+    	
+    	$licenseArray = array();
+    	
+    	foreach($licenses as $license){
+    		if ($license->vendor_id->user_status == "Current") $licenseArray[] = $license;
+    	}
+    	
+    	$this->view->client = $client;
+    	$this->view->licenses = $licenseArray;
+    	
+    	$this->view->vendorOperationRepository = $this->em->getRepository("BL\Entity\VendorOperation");
+    	
+    	$html = $this->view->render('clients/ajax-get-vendor-pdf.phtml');
+    	
+    	require_once('ThirdParty/tcpdf/config/lang/eng.php');
+    	require_once('ThirdParty/tcpdf/tcpdf.php');
+    	
+    	$pdf = new VPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+    	
+    	$pdf->client = $client;
+    	
+    	$pdf->imgUrl = APPLICATION_PATH . "/../assets/images/olp-logo.jpg";
+    	
+    	
+    	$pdf->SetCreator(PDF_CREATOR);
+    	$pdf->SetAuthor('');
+    	$pdf->SetTitle('Vendors Export PDF');
+    	
+    	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+    	$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+    	
+    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+    	
+    	$pdf->SetMargins(0, PDF_MARGIN_TOP, 0, true);
+    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+    	
+    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    	
+    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+    	
+    	$pdf->setLanguageArray($l);
+    	
+    	$pdf->setFontSubsetting(true);
+    	
+    	$pdf->SetFont('dejavusans', '', 8, '', true);
+    	
+    	$pdf->AddPage();
+    	
+    	$guid = date("mdYhis");
+    	
+    	$pdf->writeHTML($html, true, 0, true, 0);
+    	//$save_to = APPLICATION_PATH . '/../tmp/' . $client->organization_name . "-vendors-" . $guid . ".pdf";
+    	$save_to = realpath(dirname(__FILE__) . '/../../../../tmp');
+    	
+    	$pdf->Output($save_to . "/" . $client->organization_name . "-vendors-" . $guid . ".pdf", 'F');
+    	echo Zend_Json::encode(array('code'	=>	'success', 'name'=>( "/" . $client->organization_name . "-vendors-" . $guid . ".pdf")));
+    	/*
+    	 * 
+        $real_path = realpath(dirname(__FILE__) . '/../../../../tmp');
+        $pdf->Output($real_path . "/license_agreement_" . "_" . $dt . ".pdf", 'F');
+        //return $real_path . "/license_agreement_" . "_" . $dt . ".pdf";
+        echo Zend_Json::encode(array('template' => $real_path . "/license_agreement_" . "_" . $dt . ".pdf", 'name' => "/license_agreement_" . "_" . $dt . ".pdf"));
+    	 */
+    	// echo Zend_Json::encode(array('template' => $real_path . "/license_agreement_" . "_" . $dt . ".pdf", 'name' => "/license_agreement_" . "_" . $dt . ".pdf"));
+    }
+    
     /**
      * Function add/edit royalty fee for a client.
      * @author Rasidul
@@ -1102,7 +1229,9 @@ class Admin_ClientsController extends Zend_Controller_Action {
                     $artwork = new $class();
                     $artwork->title = $titles[$key];
                     $artwork->file_url = $pic;
-                    $artwork->file_extension = end(explode('.', $pic));
+		    $parts = explode('.',$pic);
+                    $ext = end($parts);
+                    $artwork->file_extension = $ext;
                     $artwork->User = $this->client;
                     $artwork->upload_date = new DateTime();
                     $this->em->persist($artwork);
@@ -1210,8 +1339,10 @@ class Admin_ClientsController extends Zend_Controller_Action {
             $artwork = $this->em->getRepository("BL\Entity\ClientArtwork")->findOneBy(array('id' => $this->_getParam('id', '')));
             if (sizeof($artwork)) {
                 $targetDir = APPLICATION_PATH . '/../assets/files/artworks/';
-                @unlink($targetDir . $artwork->file_url);
-                @unlink($targetDir . 'thumbs/_thumb' . $artwork->file_url);
+		if(file_exists($targetDir . $artwork->file_url))
+                        @unlink($targetDir . $artwork->file_url);
+                if(file_exists($targetDir . 'thumbs/_thumb' . $artwork->file_url))
+                        @unlink($targetDir . 'thumbs/_thumb' . $artwork->file_url);
                 $this->em->remove($artwork);
                 $this->em->flush();
                 $this->em->clear();
@@ -1389,10 +1520,11 @@ class Admin_ClientsController extends Zend_Controller_Action {
             $existing_data['greek_number_of_alumni'] = $clientProfile->greek_number_of_alumni;
             $existing_data['greek_number_of_undergrads'] = $clientProfile->greek_number_of_undergrads;
             $existing_data['greek_number_of_alumni_chapters'] = $clientProfile->greek_number_of_alumni_chapters;
-            $existing_data['greek_total_ug_chapters'] = $clientProfile->greek_total_ug_chapters;
+            $existing_data['greek_number_of_colg_chapters'] = $clientProfile->greek_number_of_colg_chapters;
             $existing_data['profile_status_update_time'] = $clientProfile->profile_status_update_time;
             $existing_data['headquarters_city'] = $clientProfile->headquarters_city;
             $existing_data['headquarters_state'] = $clientProfile->headquarters_state;
+	    $existing_data['foundingYear'] = $clientProfile->org_founding_year;
         } else {
             $clientProfile = new \BL\Entity\ClientProfile();
         }
@@ -1428,11 +1560,12 @@ class Admin_ClientsController extends Zend_Controller_Action {
                 $clientProfile->greek_number_of_alumni = $form->getValue('greek_number_of_alumni');
                 $clientProfile->greek_number_of_undergrads = $form->getValue('greek_number_of_undergrads');
                 $clientProfile->greek_number_of_alumni_chapters = $form->getValue('greek_number_of_alumni_chapters');
-                $clientProfile->greek_total_ug_chapters = $form->getValue('greek_total_ug_chapters');
+                $clientProfile->greek_number_of_colg_chapters = $form->getValue('greek_number_of_colg_chapters');
                 $clientProfile->profile_status_update_time = new DateTime();
                 $clientProfile->headquarters_city = $form->getValue('headquarters_city');
                 $clientProfile->headquarters_state = $form->getValue('headquarters_state');
                 $clientProfile->user_id = $client;
+		$clientProfile->org_founding_year = $form->getValue('foundingYear');
                 $this->em->persist($clientProfile);
                 $this->em->flush();
 
@@ -1550,12 +1683,15 @@ class Admin_ClientsController extends Zend_Controller_Action {
     }
     public function reportDetailAction() {
          $this->view->currency = new Zend_Currency('en_US');
+        $this->_helper->JSLibs->do_call(array('load_jqui_assets', 'load_dataTable_assets'));
          $clientId = $this->_getParam('clientId');
          $quarter = $this->_getParam('quarter');
          $year = $this->_getParam('year');
          $this->view->year=$year;
          $this->view->clientId=$clientId;
          $this->view->quarter=$quarter;
+         $this->view->itemsRepository = $this->em->getRepository("BL\Entity\InvoiceLineItems");
+         $this->view->paymentRepository = $this->em->getRepository("BL\Entity\Payment");
          $this->view->reportDetail = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array('client' => $clientId, 'payment_quarter'=> $quarter, 'payment_year' => $year));
          $this->view->clientDetail = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $clientId));
          $existingClientReport = $this->em->getRepository("BL\Entity\ClientReport")->findOneBy(array('client_id' =>  (int) $clientId, 'fiscal_year' => $year, 'quarter' =>  (int) $quarter));
@@ -1566,25 +1702,83 @@ class Admin_ClientsController extends Zend_Controller_Action {
     }
     public function affinityReportDetailAction() {
          $this->view->currency = new Zend_Currency('en_US');
+        $this->_helper->JSLibs->do_call(array('load_jqui_assets', 'load_dataTable_assets'));
          $clientId = $this->_getParam('clientId');
          $quarter = $this->_getParam('quarter');
          $year = $this->_getParam('year');
          $this->view->year=$year;
          $this->view->clientId=$clientId;
          $this->view->quarter=$quarter;
+         $this->view->itemsRepository = $this->em->getRepository("BL\Entity\InvoiceLineItems");
+         $this->view->paymentRepository = $this->em->getRepository("BL\Entity\Payment");
          $this->view->reportDetail = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array('client' => $clientId, 'payment_quarter'=> $quarter, 'payment_year' => $year));
          $this->view->clientDetail = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $clientId));
 
+    }
+    //Added by Jace 9-17
+    public function quarterlyReportDetailAction() 
+    {
+         $this->view->currency = new Zend_Currency('en_US');
+         $clientId = $this->_getParam('clientId');
+         $quarter = $this->_getParam('quarter');
+         $year = $this->_getParam('year');
+         $this->view->year=$year;
+         $this->view->clientId=$clientId;
+         $this->view->quarter=$quarter;
+         $this->view->reportDetail = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array('client' => $clientId, 'payment_year' => $year));
+         $this->view->clientDetail = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $clientId));
+         $existingClientReport = $this->em->getRepository("BL\Entity\ClientReport")->findOneBy(array('client_id' =>  (int) $clientId, 'fiscal_year' => $year));
+         if($existingClientReport)
+         {
+            $this->view->lastPostDate = $existingClientReport->mdate;
+         }
+    }
+
+    public function affinityQuarterlyReportDetailAction()
+    {
+         $this->view->currency = new Zend_Currency('en_US');
+         $clientId = $this->_getParam('clientId');
+         $quarter = $this->_getParam('quarter');
+         $year = $this->_getParam('year');
+         $this->view->year=$year;
+         $this->view->clientId=$clientId;
+         $this->view->quarter=$quarter;
+         $this->view->reportDetail = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array('client' => $clientId, 'payment_year' => $year));
+         $this->view->clientDetail = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $clientId));
+         $existingClientReport = $this->em->getRepository("BL\Entity\ClientReport")->findOneBy(array('client_id' =>  (int) $clientId, 'fiscal_year' => $year));
+         if($existingClientReport)
+         {
+            $this->view->lastPostDate = $existingClientReport->mdate;
+         }
     }
     public function exportPdfAction() {
          $this->view->currency = new Zend_Currency('en_US');
          $clientId = $this->_getParam('clientId');
          $quarter = $this->_getParam('quarter');
+	 $this->view->quarter = $quarter;
          $year = $this->_getParam('year');
+	 $this->view->year = $year;
          $postToClient = $this->_getParam('postToClient');
-         $this->view->reportDetail = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array('client' => $clientId, 'payment_quarter'=> $quarter, 'payment_year' => $year));
+	 	$isAdminReport = $this->_getParam('aReport');
+	 	$this->view->isAdminReport = ($isAdminReport == 't');
+         
+         $reportDetail = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array('client' => $clientId, 'payment_quarter'=> $quarter, 'payment_year' => $year));
+
+		 usort ($reportDetail, function($a, $b){
+         	$ret = strcasecmp($a->pmt_id->vendor->organization_name, $b->pmt_id->vendor->organization_name);
+         	
+         	if ($ret == 0){
+         		if ($a->pmt_id->record_date > $b->pmt_id->record_date) $ret = 1;
+         		if ($b->pmt_id->record_date > $a->pmt_id->record_date) $ret = -1;
+         	}
+         	
+         	return $ret;
+		 });
+         
+         $this->view->reportDetail = $reportDetail;
          $this->view->clientDetail = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $clientId));
          $organizationName=$this->view->clientDetail->organization_name;
+         $this->view->invoiceItemsRepository = $this->em->getRepository("BL\Entity\InvoiceLineItems");
          $html = $this->view->render('clients/export-pdf.phtml');
 		//                print_r($html);
 		//                die('---------');
@@ -1593,7 +1787,7 @@ class Admin_ClientsController extends Zend_Controller_Action {
 		    'title' => 'Export PDF',
 		    'subject' => 'report',
 		    'pdf_content' => $html,
-		    'file_name' => $organizationName.'-'.$year.'-'.$quarter,
+		    'file_name' => str_replace(",", "", $organizationName) .'-'.$year.'-'.$quarter,
 		    'file_path' => APPLICATION_PATH . '/../tmp/',
 		    'output_type' => 'F'
 		);
@@ -1776,6 +1970,7 @@ class Admin_ClientsController extends Zend_Controller_Action {
         $request = Zend_Controller_Front::getInstance()->getRequest();
         $path = $request->getScheme() . '://' . $request->getHttpHost() . Zend_Controller_Front::getInstance()->getBaseUrl();
         $text = "../../../../assets";
+        $text3 = "../../assets";
         $text2 = "http://www.greeklicensing.com/crm/assets";
         $master_template = @$template[0]->template;
         
@@ -1784,6 +1979,7 @@ class Admin_ClientsController extends Zend_Controller_Action {
         error_log("\nswapping portions",3 , "./errorLog.log");
         
         $master_template = str_replace($text, $path . '/assets', $master_template);
+        $master_template = str_replace($text3, $path . '/assets', $master_template);
         $master_template = str_replace($text2, $path . '/assets', $master_template);
 
         $form->template->setValue($master_template);
@@ -2006,7 +2202,7 @@ class Admin_ClientsController extends Zend_Controller_Action {
                 $user->password = md5($form->getValue('password'));
                 $user->user_status = "Current";
                 $user->reg_status = "activated";
-                //$user->user_code = '';
+                $user->user_code = $form->getValue('user_code');
                 $role = $this->em->getRepository('BL\Entity\Role')->findOneBy(array('id' => ACC_TYPE_CLIENT));
                 $user->roles->add($role);
                 $this->em->persist($user);
@@ -2613,7 +2809,7 @@ class Admin_ClientsController extends Zend_Controller_Action {
         require_once('ThirdParty/tcpdf/tcpdf.php');
 
         // create new PDF document
-        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+        $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
         //$pdf =  new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, false, 'ISO-8859-1', false);
 
         // set document information
@@ -2678,6 +2874,32 @@ class Admin_ClientsController extends Zend_Controller_Action {
         $path =  rtrim(Zend_Controller_Front::getInstance()->getBaseUrl(),'/')."/tmp/". $this->_getParam('filename');
         echo '<div style="font-family: DroidSansRegular,\"Segoe UI\",\"Lucida Sans Unicode\",\"Lucida Grande\",sans-serif;font-size: 13px;">';
         echo '<a target="_blank" href="'.$path.'">Click </a>to download the PDF</div> ';
+    }
+/**
+     * Function to delete usage guide
+     * @author Masud
+     * @copyright Blueliner Marketing
+     * @version 0.1
+     * @access public
+     * @return String
+     */
+    public function deleteUsageGuideAction() {
+        $this->_helper->BUtilities->setNoLayout();
+        if ($this->_request->isXmlHttpRequest()) {
+            $Ids = explode(',', $this->_getParam('id'));
+            foreach ($Ids as $id) {
+                $guide = $this->em->getRepository('BL\Entity\ClientUsageGuide')->findOneBy(array('id' => $id));
+                if ($guide) {
+                    $targetDir = APPLICATION_PATH . '/../assets/files/usage_guides/';
+                    @unlink($targetDir . $guide->guide_url);
+                    $this->em->remove($guide);
+                    $this->em->flush();
+                    $this->em->clear();
+                } else {
+                    throw new Zend_Controller_Action_Exception("Required Parameter Missing or Incorrect", 404);
+                }
+            }
+        }
     }
 
 }

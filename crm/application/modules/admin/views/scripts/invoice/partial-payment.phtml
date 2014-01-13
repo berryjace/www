@@ -2,14 +2,16 @@
 <hr size="1" noshade />
 
 <div class="one">
-    <form name="partial_payment" action="" method="POST">
+    <form name="partial_payment" id="partial_payment" action="" method="POST">
         Invoice Total: &nbsp;<b><?php echo $this->BUtils()->getCurrency($this->total_due); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Total remaining: &nbsp;<b><?php echo $this->BUtils()->getCurrency($this->total_remaining); ?></b>
         <div class="spacer clear"></div>
+        <div class="paymentError">*Please select one</div>
         <?php echo $this->form->payment_type; ?>
         <div class="clear"></div>
         <?php echo $this->form->payment_ref; ?>
         <div class="clear"></div>
+        <div class="amountError">*Please input amount</div>
         <?php echo $this->form->payment_amount; ?>
         <div class="clear"></div>
         <?php echo $this->form->payment_date; ?>        
@@ -29,6 +31,8 @@
 </div>
 
 <style type="text/css">
+	.paymentError{display:none; color:red;}
+	.amountError{display:none; color:red;}
     form{padding: 0px; margin: 0px;}       
     .text{width:95%; text-align: center;}
     .select{width:100%;}
@@ -53,6 +57,8 @@
             }  
         }, 
         record_payment : function(){
+
+            if (($("#payment_type-ReceivedCheck").is(":checked") || $("#payment_type-ReceivedEFT").is(":checked")) && $("#payment_amount").val() != ''){
             $.ajax({
                 url: site_url + '/admin/invoice/ajax-set-review-data/id/'+$("input#vendor").val()+'/inv_id/'+$("input#invoice").val(),
                 type: "POST",
@@ -67,6 +73,12 @@
                     console.log("error");
                 }
             });
+           } else {
+				if (!$("#payment_type-ReceivedCheck").is(":checked") && !$("#payment_type-ReceivedEFT").is(":checked")) $(".paymentError").show();
+				else $(".paymentError").hide();
+				if ($("#payment_amount").val() == '') $(".amountError").show();
+				else $(".amountError").hide();
+           }
         },
         payment_amount : function(e){            
             var checkedvalue = $(this).val();

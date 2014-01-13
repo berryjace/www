@@ -16,7 +16,8 @@ class Application_Form_Signup extends Zend_Form {
                 ->setLabel('Username <sup class="errors">*</sup>')
                 ->setDisableLoadDefaultDecorators(true)
                 ->setAttribs(array('size' => '50', 'class' => 'text'))->setRequired(true)
-                ->addFilter('StripTags')->addFilter('StringTrim');
+                ->addFilter('StripTags')->addFilter('StringTrim')
+        		->addValidator('alnum');
 
         $password = new Zend_Form_Element_Password('password');
         $password->addDecorator('Label', array('escape' => false))

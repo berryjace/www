@@ -1,0 +1,37 @@
+<?php
+?>
+<div id="view-content">
+    <h1>Video tutorials</h1>
+    <div>
+    <br/>
+    <p>
+		We have created the following short tutorial videos as an added resource to guide you through using the Affinity Gateway.
+    </p>
+    </div>
+	<br/>
+	<h2><b>How to verify your company profile: <a href="javascript:void(0);" rel="http://www.screencast.com/t/ANURK2WFb" class="tutorialLink" target="_blank">Watch Video</a></b></h2>
+	<br/>
+	<br/>
+	<h2><b>How to apply for a license agreement: <a href="javascript:void(0);" rel="http://www.screencast.com/t/Hmxcb5zS6NOP" class="tutorialLink" target="_blank">Watch Video</a></b></h2>
+	<br/>
+	<br/>
+	<h2><b>How to access official artwork: <a href="javascript:void(0);" rel="http://www.screencast.com/t/sKo8rYWon1" class="tutorialLink" target="_blank">Watch Video</a></b></h2>
+	<br/>
+	<br/>
+	<h2><b>How to submit product designs for approval: <a href="javascript:void(0);" rel="http://www.screencast.com/t/FIXYjq5ED" class="tutorialLink" target="_blank">Watch Video</a></b></h2>
+	<br/>
+	<br/>
+	<h2><b>How to submit changes to your web profile: <a href="javascript:void(0);" rel="http://www.screencast.com/t/4uidfBqu" class="tutorialLink" target="_blank">Watch Video</a></b></h2>
+</div>
+
+<script type="text/javascript">
+	$(document).on("ready", function(){
+		$(".tutorialLink").each(function(){
+			$(this).on("click", function(){
+				var url = $(this).prop('rel');
+
+				window.open(url, "_blank", "height="+$(window).height()+",width="+$(window).width());
+			});
+		});
+	});
+</script>

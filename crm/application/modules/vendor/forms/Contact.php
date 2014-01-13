@@ -43,12 +43,6 @@ class Vendor_Form_Contact extends Zend_Form {
                 ->setAttribs(array('size' => '50', 'class' => 'text desable'))->setRequired(false)
                 ->addFilter('StripTags')->addFilter('StringTrim');
 
-//        $state = new Zend_Form_Element_Text('state');
-//        $state->setLabel('State *')
-//                ->setDisableLoadDefaultDecorators(true)
-//                ->setAttribs(array('size' => '50', 'class' => 'text desable'))->setRequired(false)
-//                ->addFilter('StripTags')->addFilter('StringTrim');
-
         $state_options = \BL_AMC::parseYAML(APPLICATION_PATH . '/configs/state_options.yml');
         $state = new Zend_Form_Element_Select('state');
         $state->setLabel('State / Province')
@@ -88,7 +82,7 @@ class Vendor_Form_Contact extends Zend_Form {
                 ->addFilter('StripTags')->addFilter('StringTrim');
 
         $email = new Zend_Form_Element_Text('email');
-        $email->setLabel('Recovery Email')
+        $email->setLabel('Gateway Main Contact/Recovery Email')
                 ->setDisableLoadDefaultDecorators(true)
                 ->setAttribs(array('size' => '50', 'class' => 'text desable'))->setRequired(false)
                 ->addFilter('StripTags')->addFilter('StringTrim');

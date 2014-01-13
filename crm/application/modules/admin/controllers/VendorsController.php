@@ -1,4 +1,23 @@
 <?php
+
+
+require_once('ThirdParty/tcpdf/tcpdf.php');
+class MYPDF extends TCPDF {
+
+    public $info="";
+    //Page header
+    // Page footer
+    public function Footer() {
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Set font
+        $this->SetFont('helvetica', 'I', 8);
+        // Page number
+		$this->Cell(0, 10, "License Number : " . $this->info, 0, false, 'C', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10, 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+    }
+}
+
 class Admin_VendorsController extends Zend_Controller_Action {
 
     public $vendor = null;
@@ -8,6 +27,8 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $this->doctrineContainer = Zend_Registry::get('doctrine');
         $this->em = $this->doctrineContainer->getEntityManager();
         $product_categories = $this->em->getRepository("BL\Entity\ProductCategory")->findAll();
+		$this->session = new Zend_Session_Namespace('default');
+		
         $categories = array();
         $categories[''] = 'Select category';
         foreach ($product_categories as $category) {
@@ -138,7 +159,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
 	}
 	$targetDir = APPLICATION_PATH . '/../assets/files/licenses/';
 
-	@mkdir($targetDir, 0755, true);
+	//@mkdir($targetDir, 0755, true);
 
 
 	$form->getElement('client_id')->addMultiOptions($clientsArr);
@@ -171,7 +192,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
 			$license->annual_advance = $license->default_renewal_fee = $formData['advance'];
 			$license->license_agree_number = $formData['license_number'];
 	
-			if($formData['vendor_type'] ==1) {
+			if($formData['vendor_type_id'] ==1) {
 			    $license->royalty_commission_type = '%';
 			} else {
 			    $license->royalty_commission_type = '$';
@@ -387,25 +408,42 @@ class Admin_VendorsController extends Zend_Controller_Action {
      * @return String
      */
     public function ajaxGetInvoiceNumberAction() {
+    	error_log("\najaxGetInvoiceNumberAction()", 3, "./errorLog.log");
         $this->_helper->BUtilities->setNoLayout();
         $vendor = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id' => $this->_getParam('vendor_id'), 'account_type' => ACC_TYPE_VENDOR));
-        /**
-         * todo: Pull the greek orgs with only the vendor is licensed with
-         */
-//        $clients = $this->em->getRepository("BL\Entity\License")->getClientsForVendorInvoice($vendor->id);
-         /**
-         * todo: Pull the greek orgs
-         */
         $clients = $this->em->getRepository("BL\Entity\User")->findBy(array('account_type' => ACC_TYPE_CLIENT, 'user_status' => 'Current'), array('organization_name' => 'asc'));
-//        $this->view->BUtils()->doctrine_dump($clients[0]->client_id);
+
         $client_array = array();
+        $affinityData = null;
+        $affinity2Data = null;
+        $bankData = null;
+        
+        $affinity = $this->em->getRepository("BL\Entity\User")->findOneBy(array('account_type'=>ACC_TYPE_CLIENT, 'organization_name'=>'Affinity Consultants'));
+        $affinity2 = $this->em->getRepository("BL\Entity\User")->findOneBy(array('account_type'=>ACC_TYPE_CLIENT, 'organization_name'=>'Affinity Overpayment Refund'));
+		$bank = $this->em->getRepository("BL\Entity\User")->findOneBy(array('account_type'=>ACC_TYPE_CLIENT, 'organization_name'=>'Bank Fee'));
+        
+        if ($affinity != NULL) $affinityData = array('id'=>$affinity->id, 'name'=>$affinity->organization_name);
+        if ($affinity2 != NULL) $affinity2Data = array('id'=>$affinity2->id, 'name'=>$affinity2->organization_name);
+        if ($bank != NULL) $bankData = array('id'=>$bank->id, 'name'=>$bank->organization_name);
+                
         foreach ($clients as $key => $client) {
-//            $client_array[$client->client_id->id] = $client->client_id->organization_name;
             $client_array[$client->id] = $client->organization_name;
         }
-//        ksort($client_array);
+        
+        $inv_num = $this->view->BUtils()->getInvoiceNumber($vendor->id);
+        
+        $latestInvoice = $this->em->createQuery("SELECT i.id FROM BL\Entity\Invoice i ORDER BY i.id DESC")->setMaxResults(1)->getSingleScalarResult();
+        
+        $inv_num = "INV_";
+        
+        for($i =0; $i < (9-strlen($latestInvoice)); $i++){
+        	$inv_num .= "0";
+        }
+        
+        $inv_num .= ($latestInvoice + 1);
+        
         $vendor_data = array(
-            'inv_num' => $this->view->BUtils()->getInvoiceNumber($vendor->id),
+            'inv_num' => $inv_num,
             'inv_date' => date('m/d/Y'),
             'email' => $vendor->email,
             'address_line_1' => $vendor->address_line1,
@@ -416,7 +454,10 @@ class Admin_VendorsController extends Zend_Controller_Action {
             'phone_1' => $vendor->phone,
             'phone_2' => $vendor->phone2,
             'fax' => $vendor->fax,
-            'clients' => $client_array
+            'clients' => $client_array,
+        	'affinity' => $affinityData,
+        	'affinity2' => $affinity2Data,
+        	'bank' => $bankData
         );
         echo Zend_Json::encode($vendor_data);
     }
@@ -436,11 +477,13 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $license = $this->em->getRepository("BL\Entity\License")->findOneBy(array('id' => (int) $this->_getParam('id', 0)));
         $this->view->license = $license;
         //$this->view->BUtils()->doctrine_dump($license);
+        $vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$license->vendor_id->id));
 
-	$description_array = $this->getHelper('BUtilities')->parseYAML(APPLICATION_PATH . '/configs/royalty_description.yml');
+		$description_array = $this->getHelper('BUtilities')->parseYAML(APPLICATION_PATH . '/configs/royalty_description.yml');
 
-
-
+		$samples = $this->em->getRepository('BL\Entity\VendorSampleFile')->findBy(array('Vendor'=>$vendor));
+		
+		
         $ajax = $this->_getParam('ajax', 0);
         $license_number = 'A' . $license->applied_date->format('ym') . $license->id;
         if ($this->getRequest()->isPost() || $this->_request->isXmlHttpRequest()) {
@@ -473,12 +516,11 @@ class Admin_VendorsController extends Zend_Controller_Action {
 
             if ($formData['approved'] == "1") {
             	
-            	$vendor = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id'=>$license->vendor_id->id));
             	
-            	$vendor->user_status = "Current";
+            	//$vendor->user_status = "Current";
             	
-            	$this->em->persist($vendor);
-            	$this->em->flush();
+            	//$this->em->persist($vendor);
+            	//$this->em->flush();
             	
                 $license->admin_sign_date = new DateTime(date('Y-m-d H:i:s'));
                 $license->status = '1';
@@ -619,11 +661,12 @@ class Admin_VendorsController extends Zend_Controller_Action {
                 }
             }
             if (sizeof($client_op) > 0) {
-                $form->recom_for_vendor->setValue($client_op->notes);
+               // $form->recom_for_vendor->setValue($client_op->notes);
             }
             if (sizeof($vendor_op) > 0) {
                 $form->royalty_structure->setValue($vendor_op->vendor_royalty_structure);
                 $form->recom_for_client->setValue($vendor_op->vendor_recommendation_to_client);
+                $form->recom_for_vendor->setValue($vendor_op->default_note_to_vendor);
             }
             $vendor_products_name = "&nbsp;";
             if (sizeof($vendor_products) > 0) {
@@ -708,15 +751,33 @@ class Admin_VendorsController extends Zend_Controller_Action {
 //            echo $rlt_adv. " ".$rlt_com;
 //            die('----');
 
+            
+            $has_samples = $license->sample_status;
+            
+            if ($license->sample_status == 0){
+            	if (count($samples) > 0) $has_samples = 1;
+            }
+            
+            $payment_status = $license->payment_status;
+            
+           	if ($license->payment_status == 'not_charged') $payment_status = "paid";
+           	
+           	error_log("\npayment status " . $payment_status, 3, "./errorLog.log");
+           	
+           	if ($payment_status == "paid") $payment_status = 1;
+           	else $payment_status = 0;
+            
+           	error_log("\ngreek royalty description" . $clinet_profile_check->greek_royalty_description, 3, "./errorLog.log");
+           	
             $form->agreement_statement->setValue($template);
             $form->vendor_products->setValue($vendor_products_name);
             $form->vendor_name->setValue($license->vendor_id->organization_name);
-            $form->sample_status->setValue($license->sample_status);
-            $form->payment_status->setValue($license->payment_status);
+            $form->sample_status->setValue($has_samples);
+            $form->payment_status->setValue($payment_status);
             $form->client_name->setValue($license->client_id->organization_name);
             $form->royalty_description->setValue($clinet_profile_check->greek_royalty_description);
             $form->grant_of_license->setValue($clinet_profile_check->greek_grant_of_license);
-            $form->annual_advance->setValue($clinet_profile_check->annual_advance);
+            $form->annual_advance->setValue($clinet_profile_check->greek_default_renewal_fee); //annual_advance);
             $form->supplier_name->setValue($license->supplier_name);
             $form->license_number->setValue($license_number);
             $form->target_audience->setValue($target_audience);
@@ -811,8 +872,23 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $this->view->form = $form;
     }
 
-  
-    
+  	public function ajaxSaveLicenseNotesAction(){
+  		
+  		$this->_helper->BUtilities->setNoLayout();
+
+  		$license_id = $this->_getParam('id');
+  		$notes = $this->_getParam('notes');
+  		
+  		$license = $this->em->getRepository('BL\Entity\License')->findOneBy(array('id'=>$license_id));
+  		
+  		$license->license_specific_note = $notes;
+  		
+  		$this->em->persist($license);
+  		$this->em->flush();
+  		
+  		echo Zend_Json::encode(array("code" => "success", "success" => "true"));
+  	}
+  	
     public function ajaxSaveAgreementAction(){
     	error_log("\najaxSaveAgreementAction()", 3, "./errorLog.log");
     	$this->_helper->BUtilities->setNoLayout();
@@ -822,7 +898,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
     	$oldFileName = $this->_getParam('upload_file_name');
     	$oldFileNameArray = explode(',', $oldFileName);
     	
-    	$license = $this->em->getRepository('BL\Entity\License')->findOneBy(array('license_agree_number'=>$license_number));
+    	$license = $this->em->getRepository('BL\Entity\License')->findOneBy(array('id'=>$license_number));
     	
     	if (empty($vendor_id)) $vendor_id = $this->_helper->BUtilities->getLoggedInUser();
     	
@@ -832,6 +908,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
     	$index = 0;
     	
     	foreach($oldFileNameArray as $oldFile){
+    		error_log("\nsaving file for license: " . $license->id, 3, "./errorLog.log");
     		$ext = pathinfo($oldFile, PATHINFO_EXTENSION);
     		
     		$newName = $license_number . '_' . (++$index) . "." . $ext;
@@ -1626,6 +1703,74 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $this->_helper->BUtilities->setNoLayout();
         $search_model = new Admin_Model_Search($this);
         echo $search_model->searchInvoices();
+    }/**
+     * Function to delete Vendor specific invoices records for ajax calls
+     * @author Jason B
+     * @copyright Softura
+     * @version 0.1
+     * @access public
+     * @return String
+     */
+    public function ajaxDeleteInvoicesAction(){
+    	$this->_helper->BUtilities->setNoLayout();
+    	
+    	$invoice_id = $this->_getParam('inv_id');
+    	
+    	if (is_numeric($invoice_id)){
+    	
+	    	$invoice = $this->em->getRepository("BL\Entity\Invoice")->findOneBy(array("id"=>$invoice_id));
+	    	if ($invoice != null){
+		    	$items = $this->em->getRepository("BL\Entity\InvoiceLineItems")->findBy(array("invoice_id" => $invoice));
+		
+		    	
+		    	$onlinePayments = $this->em->getRepository("BL\Entity\OnlinePayment")->findBy(array("invoice"=>$invoice));
+		    	
+		    	foreach($onlinePayments as $onlinePayment){
+		    		$this->em->remove($onlinePayment);
+		    		$this->em->flush();
+		    	}
+		    	
+		    	$payments = $this->em->getRepository("BL\Entity\Payment")->findBy(array("invoice" => $invoice));
+		    	
+		    	$payments_lineitems = array();
+		
+		    	if ($payments != null){
+			    	foreach($payments as $payment){
+			    		$payments_lineitems[] = $this->em->getRepository("BL\Entity\PaymentLineItems")->findBy(array("payment_id"=>$payment->id));
+			    	}
+			    	
+			    	foreach($payments_lineitems as $payments_items){
+			    		foreach($payments_items as $item){
+			    			$this->em->remove($item);
+			    			$this->em->flush();
+			    		}
+			    	}
+			    	
+			    	foreach($payments as $pament){
+			    		$this->em->remove($payment);
+			    		$this->em->flush();
+			    	}
+		    	
+		    	}
+		    	 
+		    	foreach($items as $item){
+		    		$this->em->remove($item);
+		    		$this->em->flush();
+		    	}
+		    	
+		    	$this->em->remove($invoice);
+		    	$this->em->flush();
+		    	$this->em->clear();
+		    	
+		    	$this->em->remove($invoice);
+		    	 
+		    	echo Zend_Json_Encoder::encode(array('code'=>'success', 'msg'=>"Successfully deleted invoice"));
+	    	} else {
+	    		echo Zend_Json_Encoder::encode(array('code'=>'success', 'msg'=>"Unable to find invoice"));
+	    	}
+    	} else {
+    		echo Zend_Json_Encoder::encode(array('code'=>'success', 'msg'=>"Invalid invoice information"));
+    	}
     }
 
     /**
@@ -1759,24 +1904,31 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $this->view->vendor = $this->vendor;
         $this->view->vendor_id = $vendor_id;
         $VendorProfile = $this->em->getRepository('BL\Entity\VendorProfile')->findBy(array('user_id' => (int) $vendor_id,'active' => '1'),array('update_date' => 'DESC'),1);
-	$VendorProfile = $VendorProfile[0];
+	if(isset($VendorProfile[0])){
+                $VendorProfile = $VendorProfile[0];
+		$products = explode(",",$VendorProfile->product_offered);
+	}
+        else
+        {
+	        $class = 'BL\Entity\VendorProfile';
+	        $VendorProfile = new $class();
+        }
+
         $vendorSampleFile = $this->em->getRepository('BL\Entity\VendorSampleFile')->findBy(array('Vendor' => (int) $vendor_id, 'use_for' => 'web_profile'));
         $vendorOperation = $this->em->getRepository("BL\Entity\VendorOperation")->findOneBy(array('user_id' => (int) $vendor_id));
 	$this->view->vendorSampleFile = $vendorSampleFile;
         $user = $this->vendor;
-        $vendor_service = $this->em->getRepository('BL\Entity\VendorService')->findBy(array('vendor_id' => (int) $vendor_id));
+        //$vendor_service = $this->em->getRepository('BL\Entity\VendorService')->findBy(array('vendor_id' => (int) $vendor_id));
+	$vendor_service = $VendorProfile->services;
+	
+	$vendor_service = explode(",",$vendor_service);
 
-        $products = explode(",",$VendorProfile->product_offered);
-
-        if (!sizeof($this->view->products)) {
-            $this->view->products = NULL;
-        }
 
 	$this->view->products = array();
 	foreach($products as $product){
 		/*
-		$this->view->BUtils()->doctrine_dump($this->em->getRepository('BL\Entity\Product')->findByid($product));
-		echo "-------------";
+		//$this->view->BUtils()->doctrine_dump($this->em->getRepository('BL\Entity\Product')->findByid($product));
+		//echo "-------------";
 		$this->view->BUtils()->doctrine_dump($this->em->getRepository('BL\Entity\VendorWebProfileProducts')->getVendorProducts($vendor_id));
 		echo "-------------";
 		*/
@@ -1789,7 +1941,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $vendor_default_service = array();
         if (sizeof($vendor_service)) {
             foreach ($vendor_service as $vs) {
-                $vendor_default_service[] = $vs->service_id->id;
+                $vendor_default_service[] = $vs;
             }
         }
 
@@ -1870,7 +2022,6 @@ class Admin_VendorsController extends Zend_Controller_Action {
                 }
 
 
-
                 //--- saving vendor information to DB
                 $VendorProfile->user_id = $user;
                 $VendorProfile->organization_name = $form->getValue('organization_name');
@@ -1884,6 +2035,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
                 $VendorProfile->phone2 = $form->getValue('phone2');
                 $VendorProfile->fax = $form->getValue('fax');
                 $VendorProfile->zip = $form->getValue('zip');
+				$VendorProfile->services = ($form->getValue('services') != '')? implode(",",$form->getValue('services')) : null;
                 $VendorProfile->active = 1;
                 if ($filename != null) {
                     $VendorProfile->logo_url = $filename;
@@ -1944,22 +2096,25 @@ class Admin_VendorsController extends Zend_Controller_Action {
 */
 
                 //-- sample file update code
-                if (sizeof($formData['pics'])) {
-                    $i = 0;
-                    foreach ($formData['pics'] as $product_sample) {
-                        $class = 'BL\Entity\VendorSampleFile';
-                        $VendorSampleFile = new $class();
-                        $VendorSampleFile->file_url = $product_sample;
-                        $VendorSampleFile->active = 1;
-                        $VendorSampleFile->title = $formData['title'][$i];
-                        $VendorSampleFile->file_extension = substr($product_sample, strpos($product_sample, '.') + 1);
-                        $VendorSampleFile->upload_date = new DateTime();
-                        $VendorSampleFile->use_for = 'web_profile';
-                        $VendorSampleFile->Vendor = $user;
-                        $this->em->persist($VendorSampleFile);
-                        $this->em->flush();
-                        $i++;
-                    }
+
+                if (array_key_exists('pics', $formData)){
+	                if (sizeof($formData['pics'])) {
+	                    $i = 0;
+	                    foreach ($formData['pics'] as $product_sample) {
+	                        $class = 'BL\Entity\VendorSampleFile';
+	                        $VendorSampleFile = new $class();
+	                        $VendorSampleFile->file_url = $product_sample;
+	                        $VendorSampleFile->active = 1;
+	                        $VendorSampleFile->title = $formData['title'][$i];
+	                        $VendorSampleFile->file_extension = substr($product_sample, strpos($product_sample, '.') + 1);
+	                        $VendorSampleFile->upload_date = new DateTime();
+	                        $VendorSampleFile->use_for = 'web_profile';
+	                        $VendorSampleFile->Vendor = $user;
+	                        $this->em->persist($VendorSampleFile);
+	                        $this->em->flush();
+	                        $i++;
+	                    }
+	                }
                 }
 
                 $this->_helper->flashMessenger("Web Profile updated succesfully!", "Info");
@@ -2107,6 +2262,37 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $vendor_model->getContact();
     }
 
+    public function oldContactAction(){
+    	$this->_helper->BUtilities->setEmptyLayout();
+    	
+    	$form = new Admin_Form_Contact();
+    	
+    	$id = $this->_getParam("id");
+    	
+    	$profile = $this->em->getRepository("BL\Entity\UserProfile")->findOneBy(array("id"=>$id));
+    	
+    	$existing = array(
+    			'username'=>$profile->username,
+    			'organization_name'=>$profile->organization_name,
+    			'vendor_number' => $profile->user_code,
+    			'address_line_1'=>$profile->address_line1,
+    			'address_line_2'=>$profile->address_line2,
+    			 'phone_1' => $profile->phone,
+    			'phone_2' => $profile->phone2,
+    			'city' => $profile->city,
+    			'state'=>$profile->state,
+    			'zip' => $profile->zipcode,
+    			'fax' => $profile->fax,
+    			'web_page'=> $profile->website,
+    			'email'=>$profile->email,
+    			'company_email'=>$profile->company_email
+    	);
+    	
+    	$form->populate($existing);
+    	
+    	$this->view->form = $form;
+    }
+
     /**
      * Function to edit vendors contact
      * @author Masud
@@ -2156,10 +2342,30 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $this->_helper->JSLibs->load_jqui_assets();
         $this->_helper->JSLibs->load_plupload_assets();
         $this->_helper->BUtilities->setBlankLayout();
+        
+        $this->session->vendor_id = $this->_getParam('vid');
+    }
+    
+    public function clearUploadedFilesAction(){
+    	error_log("\nclearing uploaded", 3, "./errorLog.log");
+    	
+    	$this->_helper->BUtilities->setBlankLayout();
+    	
+    	if ($this->session->uploadedImages != null) $this->session->uploadedImages = null;
+    	
+    	echo Zend_Json::encode(array('code' => 'success', 'success'=>true));
+    	
     }
 
     public function doUploadAction() {
 
+    	$vendor = $this->em->getRepository("BL\Entity\User")->findOneBy(array('id'=>$this->session->vendor_id));
+    	 
+    	if (is_null($this->session->uploadedImages)){
+    		error_log("\nsetting uploaded images variable", 3, "./errorLog.log");
+    		$this->session->uploadedImages = array();
+    	} else {
+    	}
         /**
          * Todo
          * 4. Add to DB
@@ -2208,6 +2414,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
                 // Open temp file
                 $out = fopen($targetDir . DIRECTORY_SEPARATOR . $fileName, $chunk == 0 ? "wb" : "ab");
                 if ($out) {
+        			
                     // Read binary input stream and append it to temp file
                     $in = fopen($_FILES['file']['tmp_name'], "rb");
 
@@ -2236,10 +2443,26 @@ class Admin_VendorsController extends Zend_Controller_Action {
 
                     $thumb->resize(450, 300);
                     $thumb->save($thumb2_save_path);
-
+	                if (!in_array(array("name"=>$fileName), $this->session->uploadedImages)){
+	        				
+        				$class = 'BL\Entity\VendorSampleFile';
+        				$VendorSampleFile = new $class();
+        				$VendorSampleFile->file_url = $fileName;
+        				$VendorSampleFile->active = 1;
+        				$VendorSampleFile->file_extension = substr($fileName, strpos($fileName, '.') + 1);
+        				$VendorSampleFile->upload_date = new DateTime();
+        				$VendorSampleFile->use_for = 'product_info';
+        				$VendorSampleFile->Vendor = $vendor;
+        				$this->em->persist($VendorSampleFile);
+        				$this->em->flush();
+        				$this->session->uploadedImages[] = array("name"=>$fileName);
+        				
+        			}
+        			
                     /**
                      * And delete the tmp file
                      */
+        			
                     @unlink($_FILES['file']['tmp_name']);
                 }
                 else
@@ -2549,6 +2772,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
         );
 
         $this->view->products = $this->em->getRepository('BL\Entity\VendorProductInfoDetails')->getVendorProducts($vendor_id);
+        $this->view->uploadedImages = $this->session->uploadedImages;
         //Zend_Debug::dump($this->view->products);
 
 
@@ -2558,6 +2782,8 @@ class Admin_VendorsController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $formData = $this->getRequest()->getPost();
             if ($form->isValid($formData)) {
+            	$this->session->uploadedImages = null;
+            	
                 //Zend_Debug::dump($formData);
                 //-- saving to vendor product infos
                 if (!sizeof($VendorProductInfo)) {
@@ -2612,17 +2838,10 @@ class Admin_VendorsController extends Zend_Controller_Action {
                     if (sizeof($formData['pics'])) {
                         $i = 0;
                         foreach ($formData['pics'] as $product_sample) {
-                            $class = 'BL\Entity\VendorSampleFile';
-                            $VendorSampleFile = new $class();
-                            $VendorSampleFile->file_url = $product_sample;
+                        	
+                            $VendorSampleFile = $this->em->getRepository('BL\Entity\VendorSampleFile')->findOneBy(array('file_url'=>$product_sample));
+                            
                             $VendorSampleFile->title = $formData['title'][$i];
-                            //$VendorSampleFile->product_id=$this->em->find('BL\Entity\Product', $formData['sample_product'][$i]);
-                            $VendorSampleFile->file_extension = substr($product_sample, strpos($product_sample, '.') + 1);
-                            $VendorSampleFile->upload_date = new DateTime();
-                            if ($this->getRequest()->getActionName() == 'product-info') {
-                                $VendorSampleFile->use_for = 'product_info';
-                            }
-                            $VendorSampleFile->Vendor = $user;
                             $this->em->persist($VendorSampleFile);
                             $this->em->flush();
                             $i++;
@@ -3183,8 +3402,13 @@ class Admin_VendorsController extends Zend_Controller_Action {
             if ($first++) {
                 $json .= ',';
             }
+            
+            $org_name = (!is_null($v->organization_name) ? $v->organization_name : 'N/A') ;
+            
+            $org_name = trim(str_replace('"', '\"',str_replace("\r", "", str_replace("\n", "", $org_name))));
+            
             $json .= '[
-                  "' . (!is_null($v->organization_name) ? $v->organization_name : 'N/A') . '",
+                  "' . $org_name . '",
                   "' . $profile_status . '",
                   "' . (!is_null($v->update_date) ? $v->update_date->format("m/d/Y") : "N/A") . '",
                   "<a class=\"details\" rel=\"' . $v->id . '\" href=\"javascript:;\" id=\"' . $v->id . '\">' . 'View' . '</a>"
@@ -3217,12 +3441,21 @@ class Admin_VendorsController extends Zend_Controller_Action {
 	$VendorProfile = $VendorProfile[0];
 
 	$VendorProfileCurrent = $this->em->getRepository('BL\Entity\VendorProfile')->findBy(array('user_id' => $this->view->vendor_profile->user_id,'active' => '1'),array('update_date' => 'DESC'),1);
+	$services = explode(",",$VendorProfile->services);
+	if($VendorProfileCurrent != Null){
         $VendorProfileCurrent = $VendorProfileCurrent[0];
+	$productsCurrent = explode(",",$VendorProfileCurrent->product_offered);
+	$this->view->productsCurrent = array();
+        foreach($productsCurrent as $product){
+                if($product != null)
+                $this->view->productsCurrent = array_merge ($this->view->productsCurrent, $this->em->getRepository('BL\Entity\Product')->findByid($product));
+
+        }
+	}
 
         $vendor_service = $this->em->getRepository('BL\Entity\VendorService')->findBy(array('vendor_id' => $this->view->vendor_profile->user_id));
 
 	$products = explode(",",$VendorProfile->product_offered);
-	$productsCurrent = explode(",",$VendorProfileCurrent->product_offered);
 
         $this->view->products = $this->em->getRepository('BL\Entity\VendorWebProfileProducts')->getVendorProducts($this->view->vendor_profile->user_id->id);
         if (!sizeof($this->view->products)) {
@@ -3231,12 +3464,8 @@ class Admin_VendorsController extends Zend_Controller_Action {
 
 	$this->view->products = array();
 	foreach($products as $product){
+		if($product != null)
                 $this->view->products = array_merge ($this->view->products, $this->em->getRepository('BL\Entity\Product')->findByid($product));
-
-        }
-	$this->view->productsCurrent = array();
-	foreach($productsCurrent as $product){
-                $this->view->productsCurrent = array_merge ($this->view->products, $this->em->getRepository('BL\Entity\Product')->findByid($product));
 
         }
 
@@ -3281,7 +3510,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
                 'company_discripction' => $VendorProfileCurrent->company_discripction
             );
         } else {
-            reset($existing_dataCurrent = array());
+            $existing_dataCurrent = array();
         }
 
 
@@ -3300,8 +3529,9 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $this->options['categories'] = array();
         $this->options['products'] = array();
         $this->options['service'] = $service_type;
-        $this->options['selected_service'] = array(1,2);
+        $this->options['selected_service'] = explode(",",$VendorProfile->services);
         $form = new Vendor_Form_VendorProfile($this->options);
+	$this->options['selected_service'] = explode(",",(count($VendorProfileCurrent) > 0)? $VendorProfileCurrent->services : "");
 	$form2 = new Vendor_Form_VendorProfile($this->options);
 
         $this->view->form = $form;
@@ -3364,32 +3594,30 @@ class Admin_VendorsController extends Zend_Controller_Action {
             $this->em->persist($vendor_profile);
             $this->em->flush();
             $this->view->status = $status;
-	    error_log($status, 3, "./errorLog.log");
 	    $this->em->find("BL\Entity\VendorSampleFile", (int) $this->_getParam('sample_id'));
 
             //-- sending notification email to vendor
             if ($status == 1) {
-            	error_log("\napproved\n", 3, "./errorLog.log");
 
                 $params = array(
-                    'to' => $user['0']->company_email,
+                    'to' => $user['0']->email,
                     'to_name' => $vendor_profile->organization_name,
-                    'from' => 'admin@greek-licensing.com',
-                    'from_name' => 'Greek Licensing Registration',
-                    'subject' => 'You web profile changes have been accepted!',
-                    'body' => 'Dear ' . $vendor_profile->organization_name . ',' . "<br/><br/>" . 'The recent changes you have made to your web profile has been approved.'
+                    'from' => 'webprofiles@greeklicensing.com',
+                    'from_name' => 'Greek Licensing Web Profiles',
+                    'subject' => 'Your web profile changes have been accepted',
+                    'body' => 'Dear ' . $vendor_profile->organization_name . ',' . "<br/><br/>" . 'All or some of the recent changes you have requested to your web profile have been approved.'
                     . "<br/><br/>" . 'To see your new web profile, simply click on the link below and login with your username and password.' . "<br/><br/>"
-                    . '<a href="http://Vendors.Greeklicensing.com">http://Vendors.Greeklicensing.com</a>' . "<br/><br/>"
-                    . 'Once you are logged in, click on the Profile tab.'
-                    . "Regards, <br /><br />"
-                    . "Melissa Jean-Baptiste<br />Licensing Department<br />e: Registration@greeklicensing.com<br />"
-                    . "p: 760-734-6764 ext. 140<br />f:  707-202-0532 <br />"
+                    . '<a href="http://Greeklicensing.com">http://Greeklicensing.com</a>' . "<br/><br/>"
+                    . 'Once you are logged in, click on the Profile tab and navigate to \'Web Profile \'.<br /><br />'
+                    . "Sincerely, <br /><br />"
+                    . "Web Profile Department<br />e: webprofiles@greeklicensing.com<br />"
+                    . "p: 760-734-6764<br />f: 707-202-0532<br />"
                 );
 
             } 
 	    else {
                 $params = array(
-                    'to' => $user['0']->company_email,
+                    'to' => $user['0']->email,
                     'to_name' => $vendor_profile->organization_name,
                     'from' => 'webprofiles@greeklicensing.com',
                     'from_name' => 'Greek Licensing Web Profiles',
@@ -3399,7 +3627,7 @@ class Admin_VendorsController extends Zend_Controller_Action {
                     . "<b>" . $reason . "</b><br/><br/>"
                     . 'We are committed to helping your business by assisting you in creating an acceptable web profile. If you have any questions about the process, please do not hesitate to ask.<br />'
                     . "<br/>Thank you, <br /><br />"
-                    . "Web Profile Administrator<br />e:webprofiles@greeklicensing.com<br />"
+                    . "Web Profile Administrator<br />e: webprofiles@greeklicensing.com<br />"
                     . "p: 760-734-6764<br />f:  707-202-0532 <br />"
                 );
             }
@@ -3659,40 +3887,22 @@ class Admin_VendorsController extends Zend_Controller_Action {
         $pattern = '/&nbsp;<br>/';
         $replace = '<br pagebreak="true" />';
         $licensing_agreement = preg_replace($pattern, $replace, $licensing_agreement);
+		//$this->view->BUtils()->doctrine_dump($licensing_agreement);
+        //die('----------------');
 
-        /* $sitnature = '<br pagebreak="true" /><table style="border-style: none;" border="0">
-          <tbody>
-          <tr>
-          <td style="border-style: none; width: 45%; vertical-align: top;">
-          <div style="border-right: 1px dotted #aaa;">
-          <h3>'. $license->vendor_name .'</h3><br /><br />' . $license->vendor_signature . '<br /><br />' . $license->vendor_title . '<br /><br />' . $license->vendor_sign_date->format('m-d-y') . '
-          </div>
-          </td>
-          <td style="border-style: none; width: 55%; vertical-align: top;">
-          <div style="padding-left: 20px;">
-          <h3>'. $license->client_name .'</h3><br /><br />' . $license->client_signature . '<br /><br />' . $license->client_title . '<br /><br />' . $license->client_sign_date->format('m-d-y') . '
-          </div>
-          </td>
-          </tr>
-          </tbody>
-          </table>';
-          $licensing_agreement .= $sitnature; */
 
         require_once('ThirdParty/tcpdf/config/lang/eng.php');
         require_once('ThirdParty/tcpdf/tcpdf.php');
 
         // create new PDF document
-        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
-        //$pdf =  new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, false, 'ISO-8859-1', false);
+        $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, true);
+		$pdf->info = $formData['lic_num'];
         // set document information
         $pdf->SetCreator(PDF_CREATOR);
         $pdf->SetAuthor('AMC Admin');
         $pdf->SetTitle('Licensing Agreement');
         $pdf->SetSubject('Licensing Agreement between clinet and Vendor');
         $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
-        // set default header data
-//        $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE . ' 065', PDF_HEADER_STRING);
-        // set header and footer fonts
         $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
         $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
         // set default monospaced font

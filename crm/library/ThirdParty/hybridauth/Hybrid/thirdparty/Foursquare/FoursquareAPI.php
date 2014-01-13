@@ -113,7 +113,7 @@ class FoursquareApi {
 	 * @param String $addr An address string accepted by the google maps api
 	 */
 	public function GeoLocate($addr){
-		$geoapi = "http://maps.googleapis.com/maps/api/geocode/json";
+		$geoapi = "https://maps.googleapis.com/maps/api/geocode/json";
 		$params = array("address"=>$addr,"sensor"=>"false");
 		$response = $this->GET($geoapi,$params);
 		$json = json_decode($response);

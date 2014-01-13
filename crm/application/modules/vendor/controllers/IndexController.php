@@ -28,6 +28,11 @@ class Vendor_IndexController extends Zend_Controller_Action {
             }
         }
     }
+    
+    public function helpAction(){
+        $this->_helper->JSLibs->load_jqui_assets();
+    	$this->view->isHelp = true;
+    }
 
     public function editAction() {
         $this->_helper->JSLibs->load_jqui_assets();

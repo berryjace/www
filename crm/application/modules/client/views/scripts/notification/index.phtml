@@ -4,7 +4,11 @@ echo $this->partial('layout/sidebar-calendar.phtml');
 $this->placeholder('main_side_bar')->captureEnd();
 ?>
 <div id="view-content">	
-<h2>Notification</h2>
+<h2>Notifications</h2>
+<div class="notification msginfo">
+    <a class="close"></a>
+All notifications listed here are sent by Affinity Consultants and viewable only by you.
+</div>
 <div class="spacer"></div>
     <div style="float: left">
         <ul class="submenu" id="page_select" style="border:0 none; padding: 0px;">

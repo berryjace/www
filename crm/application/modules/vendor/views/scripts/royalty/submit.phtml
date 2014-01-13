@@ -18,18 +18,19 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
              * If now is quarter 2 (OCT - DEC), we have to make the default fiscal year in the coming one.
              */
             $select_fiscal_year = $current_fiscal_year.'-'.substr(($current_fiscal_year + 1), 2);
-            
+
             $current_fiscal_month = Date("m");
             
             $current_fiscal_month -=1;
-
+            
             if ($current_fiscal_month <=  0) $current_fiscal_month = 12;
             
-            $current_quarter=  $current_fiscal_month / 4;
+            $current_quarter=  ($current_fiscal_month-1)/12 * 4;
             
-            $current_quarter = ($current_quarter + 2) % 4 + 1;
+            $current_quarter = (($current_quarter + 2) % 4) + 1;
             
-            if ($current_fiscal_month < 7) $select_fiscal_year = ($current_fiscal_year-1).'-'.substr($current_fiscal_year, 2);
+            if ($current_fiscal_month < 7) 
+		$select_fiscal_year = ($current_fiscal_year-1).'-'.substr($current_fiscal_year, 2);
             
             $current_fiscal_year = $current_quarter == 2 ? $current_fiscal_year + 1 : $current_fiscal_year;
             $years = range($current_fiscal_year + 1, $current_fiscal_year - 5);
@@ -42,11 +43,11 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
             ?>
             <?php
             echo $this->formLabel("quarter", "Quarter");
-            echo $this->formSelect("quarter", empty($this->quarter) ? array($current_quarter): $this->quarter, null, array(
-                1 => "Q1 (Sales Jul 01 - Sept 30)",
-                2 => "Q2 (Sales Oct 01 - Dec 31)",
-                3 => "Q3 (Sales Jan 01 - Mar 31)",
-                4 => "Q4 (Sales April 01 - Jun 30)"
+            echo $this->formSelect("quarter", empty($this->quarter) ? array(BL_AMC::getCurrentQarter()): $this->quarter, null, array(
+                1 => "Q1 (Sales Aug 7 - Nov 6)",
+                2 => "Q2 (Sales Nov 7 - Feb 6)",
+                3 => "Q3 (Sales Feb 7 - May 7)",
+                4 => "Q4 (Sales May 8 - Aug 6)"
             ));
             ?>
         </div>
@@ -131,7 +132,7 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
 		    <?php }?>
                 </tbody>
             </table>
-            <button type="submit" id="submit-report-1" class="button button_black">Submit Report</button>&nbsp; &nbsp;
+            <button type="submit" id="submit-report-1" class="button button_black">Save & Continue</button>&nbsp; &nbsp;
             <button type="button" class="button button_green" id="save-report-1">Save Report</button>
         </form>
     </div>
@@ -171,7 +172,7 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
                         </thead>
                         <tbody>
 				<?php foreach($report as $key => $row1) {
-				    $row = unserialize($row1);
+				    $row = $row1;
 				    ?>
 				    <tr class="sales_row">
 					<td><?php echo $this->formText("product_sold_to[]", $row->product_sold_to, array('id' => '', 'class' => 'text sold_to', 'size' => 30)); ?></td>
@@ -239,7 +240,7 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
 
 		<?php } ?>
             </div>
-            <button type="button" id="submit-report-2" class="button button_black">Submit Report</button> &nbsp;&nbsp;
+            <button type="button" id="submit-report-2" class="button button_black">Save & Continue</button> &nbsp;&nbsp;
 	    <button type="button" class="button button_green" id="save-report-2">Save Report</button>
         </form>
     </div>
@@ -354,6 +355,15 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
             
             if(confirm("Are you certain that the sales data is complete?")){
                 // Send the report
+                 $(".gross_sales").each(function(){
+ 					var text = $(this).val();
+ 	
+ 					text = text.replace("$", "");
+ 					text = text.replace(",", "");
+ 	
+ 					$(this).val(text);
+ 				});
+ 				
                 
                 console.log("confirmed");
                 
@@ -411,6 +421,15 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
 	$('#save-report-1').on('click',function(){
             if(confirm("Save this Report for now?")){
                 // Send the report
+                 $(".gross_sales").each(function(){
+ 					var text = $(this).val();
+ 	
+ 					text = text.replace("$", "");
+ 					text = text.replace(",", "");
+ 	
+ 					$(this).val(text);
+ 				});
+ 				
                 $form=$(this).parents("form");
                 $.ajax({
                     url : site_url+"/vendor/royalty/ajax-save-report",
@@ -446,6 +465,15 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
                 /**
                  * first remove all the dynamically created hidden fields
                  */
+                 $(".gross_sales").each(function(){
+  					var text = $(this).val();
+  	
+  					text = text.replace("$", "");
+  					text = text.replace(",", "");
+  	
+  					$(this).val(text);
+  				});
+  				
                 $("input[name^=greek_org]").remove(); //$("input[name^=greek_orgs]").remove();
                 $('.sub_group').each(function(){
                     $group=$(this);
@@ -490,6 +518,15 @@ $this->headLink()->appendStylesheet($this->baseUrl('assets/css/plugins/theme-dp.
                 /**
                  * first remove all the dynamically created hidden fields
                  */
+                 $(".gross_sales").each(function(){
+  					var text = $(this).val();
+  	
+  					text = text.replace("$", "");
+  					text = text.replace(",", "");
+  	
+  					$(this).val(text);
+  				});
+  				
                 $("input[name^=greek_org]").remove(); //$("input[name^=greek_orgs]").remove();
                 $('.sub_group').each(function(){
                     $group=$(this);

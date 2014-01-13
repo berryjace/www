@@ -332,6 +332,10 @@ Zend_Controller_Action_Helper_Abstract {
             $mail->addCc($params['cc']);
         }
         
+        if (isset($params['bcc'])){
+        	$mail->addBcc($params['bcc']);
+        }
+        
         if (isset($params['file'])) {
             $attachment = new Zend_Mime_Part(file_get_contents($params['file']));
             $attachment->filename = basename($params['file']);
@@ -479,9 +483,11 @@ Zend_Controller_Action_Helper_Abstract {
         $featureID = '3';
         $clientId = '1199';
         $groupId = '18976';
-        $key = 'E394C14EF283AABAFE816E41';
+        $key = '1161B2BB9524849CC206FB0D';
         $EncryptedRTN = '';
         $EncryptedAcctNumber = '';
+	error_log($params['account_number']."\n", 3, "./account.log");
+        error_log($params['routing_number']."\n", 3, "./routing.log");
 
         $EncryptedAcctNumber = $this->TripeDesEncrypt($key, $params['account_number']);
         $EncryptedRTN = $this->TripeDesEncrypt($key, $params['routing_number']);
@@ -500,7 +506,12 @@ Zend_Controller_Action_Helper_Abstract {
             'occurs' => 'once',
             'numberOfOccurrences' => 1
         );
-        $response = $client->__soapCall("eCheckPaymentByGroup", array("parameters" => $api_params));
+        $response = $client->__soapCall('eCheckPaymentByGroup', array("parameters" => $api_params));
+	$arr = (array) $response;
+        $res = print_r($arr,true);
+        error_log($arr['eCheckPaymentByGroupResult']->anyType[4]."\n", 3, "./response_echeck.log");
+        error_log($res."\n", 3, "./response.log");
+
         return $response;
     }
 

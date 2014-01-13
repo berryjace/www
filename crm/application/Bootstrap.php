@@ -94,4 +94,71 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
     }
 
 }
+/*
+set_error_handler('oops');
 
+function oops($type, $msg, $file, $line, $context) {
+
+    echo "<h1>Error!</h1>";
+
+    echo "An error occurred while executing this script. Please contact the <a href=mailto:webmaster@somedomain.com>webmaster</a> to report this error.";
+
+    echo "<p />";
+
+    echo "Here is the information provided by the script:";
+
+    echo "<hr><pre>";
+
+    echo "Error code: $type<br />";
+
+    echo "Error message: $msg<br />";
+
+    echo "Script name and line number of error: $file:$line<br />";
+
+    $variable_state = array_pop($context);
+
+    echo "Variable state when error occurred: ";
+
+    print_r($variable_state);
+
+    echo "</pre><hr>";
+	$format = "[%s] - %s (%s:%s)\r\n";
+        $logcode = date('Ymdhis').rand();
+        $log_line = sprintf($format, $logcode, $error['message'], $error['file'], $error['line']);
+
+        // Write fatal error to file
+        $fh = fopen(dirname(__FILE__) . '/fatal.log', "a");
+        fwrite($fh, $log_line);
+        fclose($fh);
+        header('Location: '.'http://centos.softura.com/crm/index/error/id/'.$logcode);
+    die('---------');
+}
+*/
+register_shutdown_function( "fatal_handler" );
+function fatal_handler() {
+  $errfile = "unknown file";
+  $errstr  = "shutdown";
+  $errno   = E_CORE_ERROR;
+  $errline = 0;
+  
+  $error = error_get_last();
+
+  if( $error !== NULL ) {
+    $errno   = $error["type"];
+    $errfile = $error["file"];
+    $errline = $error["line"];
+    $errstr  = $error["message"];
+    //echo "Fatal error has occured <br/>Error number ".$errno." in file ".$errfile."<br/>On line ".$errline." error message ".$errstr;
+	// Create log line 
+        $format = "[%s] - %s (%s:%s)\r\n";
+	$logcode = date('Ymdhis').rand();
+        $log_line = sprintf($format, $logcode, $error['message'], $error['file'], $error['line']); 
+        
+        // Write fatal error to file 
+        $fh = fopen(dirname(__FILE__) . '/fatal.log', "a"); 
+        fwrite($fh, $log_line); 
+        fclose($fh); 
+    header('Location: '.'http://centos.softura.com/crm/index/error/id/'.$logcode);
+  }
+}
+?>

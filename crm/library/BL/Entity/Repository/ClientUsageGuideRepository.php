@@ -100,10 +100,12 @@ class ClientUsageGuideRepository extends EntityRepository {
         foreach ($records as $g) {
             $file_path = $params['base_url'] . '/assets/images/';
             $guide_icon = 'document.png';
-            $action_link = '<a class="view_link" href="javascript:;" rel="' . $g->id . '" rev="' . $g->user_id->id . '">View</a>';
+            if ($params['lic_status'] == 4) $action_link = '<a class="view_link" href="javascript:;" rel="' . $g->id . '" rev="' . $g->user_id->id . '">View</a>';
+            else $action_link = '';
             if (($g->guide_url != '') || ($g->guide_url != NULL)) {
                 $guide_icon = $g->guide_type . ".png";
-                $action_link .= '&nbsp;|&nbsp;<a class="download_link" href="javascript:;" rel="' . $g->guide_url . '">Download</a>';
+                if ($action_link != '') $action_link .= '&nbsp;|&nbsp;<a class="download_link" href="javascript:;" rel="' . $g->guide_url . '">Download</a>';
+            	else $action_link = '<a class="download_link" href="javascript:;" rel="' . $g->guide_url . '">Download</a>';
             }
 
             $prec[] = array(
@@ -155,7 +157,7 @@ class ClientUsageGuideRepository extends EntityRepository {
             $action_link = '<a class="view_link" href="javascript:;" rel="' . $g->id . '" rev="' . $g->user_id->id . '">View</a>';
             if (($g->guide_url != '') || ($g->guide_url != NULL)) {
                 $guide_icon = $g->guide_type . ".png";
-                $action_link .= '&nbsp;|&nbsp;<a class="download_link" href="javascript:;" rel="' . $g->guide_url . '">Download</a>';
+                $action_link .= '&nbsp;|&nbsp;<a class="download_link" href="javascript:;" rel="' . $g->guide_url . '">Download</a>'.' | <a class="delete_usageguide" href="javascript:;" title="' . $g->guide_name . '" rel="' . $g->id . '">Delete</a>';;
             }
             $prec[] = array(
                 '<img src="' . $file_path . $guide_icon . '" class="usageguide_logo" >',

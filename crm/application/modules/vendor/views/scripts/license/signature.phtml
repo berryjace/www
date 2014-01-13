@@ -10,7 +10,7 @@ $client_name = $this->license->client_id->organization_name;
 <style type="text/css">
 @font-face {
         font-family: signed;
-        src: url('http://poweros.softura.com/crm/black_jack.ttf');
+        src: url('https://poweros.softura.com/crm/black_jack.ttf');
 }
 </style>
 <form action="" method="post" id="sign_form">    
@@ -20,10 +20,10 @@ $client_name = $this->license->client_id->organization_name;
         <h2>License Agreement Detail</h2>
     <?php } ?>
     <div class="spacer"></div>
-    <?php if ($this->license->status == 4 && $this->license->vendor_signature == "" ) { ?>
+    <?php if ($this->license->status == 4 && $this->license->grandfathered == "T" ) { ?>
         <div class="notification msginfo">
             <a class="close"></a>
-            This license agreement was signed prior to the electronic signature feature now available in the vendor gateway. Because of this, your agreement is not visible on this page. However, if you would like to request a copy of your agreement you may do so by emailing <span style="color:#0000ff">admin@greeklicensing.com</span>
+            Because this agreement was not signed electronically, it will not be viewable below. If you would like a pdf copy of this agreement please email admin@greeklicensing.com
         </div>
     <?php } ?>
     <div style="width:875px">
@@ -32,7 +32,7 @@ $client_name = $this->license->client_id->organization_name;
                 <b>Status:</b> Approved from AMC
                 <div class="spacer"></div>
             <?php } else { ?>
-                <b>Status:</b> Approved from AMC with notes
+                <b>Status:</b> <!-- Approved from AMC with notes -->License Agreement Awaiting Vendor Signature
                 <div class="one_third" style="float:right">
                     <div class="div_left" style="float:right">
                         <!-- &nbsp;<a href="javascript:;" id="view_notes" >View Notes from Affinity</a> -->
@@ -54,7 +54,7 @@ $client_name = $this->license->client_id->organization_name;
             <?php echo $this->form->vendor_id; ?>
         </div>
         <div class="inputdiv">
-            Client By Org Name <br /><?php echo $this->form->client_name; ?>
+            Organization Name <br /><?php echo $this->form->client_name; ?>
             <?php echo $this->form->client_id; ?>
         </div>
         <div class="inputdiv">
@@ -466,10 +466,13 @@ $client_name = str_replace("'", "&apos;", $client_name);
     function review_pdf(){
         var agreement = encodeURIComponent(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
         $('#agreement_statement').val(tinyMCE.getInstanceById('agreement_statement').getBody().innerHTML);
+
+        var numb = $("#license_number").val();
+        
         $.ajax({
             url:'<?php echo $this->baseUrl("vendor/license/printinpdf/") ?>',
             type: "POST",
-            data:$('#sign_form').serialize()+'&agreement_statement'+ agreement,
+            data:$('#sign_form').serialize()+'&agreement_statement'+ agreement+"&lic_num="+numb,
             dataType: 'json', 
             beforeSend: function() { $('#submit_wait1').show(); },
             complete: function() { $('#submit_wait1').hide();},
@@ -477,8 +480,8 @@ $client_name = str_replace("'", "&apos;", $client_name);
                 pdf_url = msg.name
                 $.fancybox({
                     'href'                  : site_url+"/vendor/license/pdflink/filename"+pdf_url,
-                    'height'                : 40,
-                    'width'                 : 300,
+                    'height'                : 115,
+                    'width'                 : 350,
                     'autoScale'             : true,
                     'autoDimensions'        : true,
                     'transitionIn'          : 'none',

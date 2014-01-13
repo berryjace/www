@@ -21,7 +21,6 @@ class Vendor_ContactController extends Zend_Controller_Action
         $clients = $this->em->getRepository('BL\Entity\License')->getUnLicensedClients($params);
         $this->organizations = array();
         foreach ($clients as $client) {
-			if (isset($client['u_id'])&& isset($client['organization_name']))
             $this->organizations[$client['u_id']] = ' ' . $client['organization_name'] . '           ';
         }
 
@@ -347,9 +346,17 @@ class Vendor_ContactController extends Zend_Controller_Action
         $this->_helper->JSLibs->load_dataTable_assets();
 
         $vendor_id = $this->_helper->BUtilities->getLoggedInUser();
+	
+	$user = $this->em->getRepository('BL\Entity\User')->findOneBy(array('id' => (int) $vendor_id));
+
+
         $this->view->vendor_id = $vendor_id;
 	$VendorProfile = $this->em->getRepository('BL\Entity\VendorProfile')->findBy(array('user_id' => (int) $vendor_id,'active' => '1'),array('update_date' => 'DESC'),1);
-	$VendorProfile = $VendorProfile[0];
+	$products= array();
+	if($VendorProfile != Null){
+		$VendorProfile = $VendorProfile[0];
+		$products = explode(",",$VendorProfile->product_offered);
+	}
         $vendorSampleFile = $this->em->getRepository('BL\Entity\VendorSampleFile')->findBy(array('Vendor' => (int) $vendor_id,'use_for'=>'web_profile'));
         $this->view->vendorSampleFile = $vendorSampleFile;
         $this->view->vendorSampleFileCount = count($vendorSampleFile);
@@ -357,7 +364,6 @@ class Vendor_ContactController extends Zend_Controller_Action
         $vendor_service = $this->em->getRepository('BL\Entity\VendorService')->findBy(array('vendor_id' => (int) $vendor_id));
         //$this->view->BUtils()->doctrine_dump($vendor_service);
 
-	$products = explode(",",$VendorProfile->product_offered);
 
         $this->view->products = $this->em->getRepository('BL\Entity\VendorWebProfileProducts')->getVendorProducts($vendor_id);
         if(!sizeof($this->view->products)){
@@ -412,7 +418,7 @@ class Vendor_ContactController extends Zend_Controller_Action
         }else{
             reset($existing_data=array());
         }
-
+	$existing_data['organization_name']=$user->organization_name;
 
         //$services_array = $this->_helper->BUtilities->parseYAML(APPLICATION_PATH . '/configs/services.yml');
         $service_list = $this->em->getRepository("BL\Entity\Service")->findAll();
@@ -420,13 +426,14 @@ class Vendor_ContactController extends Zend_Controller_Action
             $service_type[$service['id']] = $service['title'];
         }
         $this->options['service'] = $service_type;
-        $this->options['selected_service'] = $vendor_default_service;
+        $this->options['selected_service'] = explode(",",$VendorProfile->services);
 
         $form = new Vendor_Form_VendorProfile($this->options);
 
         $this->view->form = $form;
         if ($this->getRequest()->isPost()) {
-        	$this->session->uploadedImages = null;
+            error_log("\nA", 3, "./errorLog.log");
+       	    $this->session->uploadedImages = null;
         	
             $formData = $this->getRequest()->getPost();
             if ($form->isValid($formData)){
@@ -435,9 +442,15 @@ class Vendor_ContactController extends Zend_Controller_Action
                     $class = 'BL\Entity\VendorProfile';
                     $VendorProfile = new $class();
                 }
+                
+                error_log("\nB", 3, "./errorLog.log");
 
                 //-- file(logo) upload code --//
                 $destination_dir = APPLICATION_PATH.'/../assets/files/vendor_profile/';
+                $extension = null;
+                $filename = null;
+               
+                
                 try {
                     $adapter = new Zend_File_Transfer_Adapter_Http();
                     $adapter->setDestination($destination_dir);
@@ -454,13 +467,15 @@ class Vendor_ContactController extends Zend_Controller_Action
                         //$original_copy_save_path = $destination_dir . DIRECTORY_SEPARATOR . $filename;
                         $thumb = PhpThumbFactory::create($destination_dir . DIRECTORY_SEPARATOR . $filename);
                         //$thumb->resize(110, 110)->padding(110, 75, '#FFFFFF');
-                        $thumb->resize(250, 250)->padding(0, 0, '#FFFFFF');
+                        $thumb->resize(250, 250);
+			//$thumb->padding(0, 0, '#FFFFFF');
                         $thumb->save($thumb_save_path);
                     }
                 } catch (Exception $ex) {
                     echo "Exception!\n";
                     echo $ex->getMessage();
                 }
+
 
                 //--- saving vendor information to DB
 		$class = 'BL\Entity\VendorProfile';
@@ -479,6 +494,7 @@ class Vendor_ContactController extends Zend_Controller_Action
                 $VendorProfile->zip=$form->getValue('zip');
                 $VendorProfile->active= -1;
 		$VendorProfile->update_date = date('Y-m-d H:i:s');
+			if ($form->getValue('services') != null && $form->getValue('services') != "") $VendorProfile->services = implode(",",$form->getValue('services'));
                 if($filename!=null){
                     $VendorProfile->logo_url=$filename;
                 }
@@ -515,6 +531,8 @@ class Vendor_ContactController extends Zend_Controller_Action
                         $this->em->flush();
                     }
                 }
+                
+                error_log("\nD", 3, "./errorLog.log");
 /*
                 //-- saving vendor offered products
                 $product_array = explode(',',$form->getValue('products'));
@@ -536,7 +554,8 @@ class Vendor_ContactController extends Zend_Controller_Action
                 }
 */
                 //-- sample file update code
-                if(sizeof($formData['pics'])){
+                
+                if(isset($formData['pics'])){
                     $i = 0;
                     foreach($formData['pics'] as $product_sample){
                         $class = 'BL\Entity\VendorSampleFile';
@@ -556,6 +575,8 @@ class Vendor_ContactController extends Zend_Controller_Action
                         $i++;
                     }
                 }
+                
+                error_log("\nF", 3, "./errorLog.log");
 
                 //--- send mail to admin
 //                $mail = new Zend_Mail();
@@ -589,6 +610,22 @@ class Vendor_ContactController extends Zend_Controller_Action
                 //$this->view->message = '@@@@@@@@@@@';
                 $this->_helper->flashMessenger("Web Profile update has been requested", "Info");
                 $this->_redirect($this->view->BUrl()->absoluteUrl());
+            } else {
+            	$form->populate($formData);
+	            
+	            $prods = array();
+	            
+		    if(isset($formData['products'])&&$formData['products']!="")
+	            	$ids = explode(",", $formData['products']);
+	            else
+			$ids = null;
+	            foreach($ids as $id){
+	            	
+	            	$prods = array_merge ($prods, $this->em->getRepository('BL\Entity\Product')->findByid($id));
+	            	
+	            }
+	            
+	            $this->view->products = $prods;
             }
         }else{
             $form->populate($existing_data);
@@ -855,7 +892,27 @@ class Vendor_ContactController extends Zend_Controller_Action
                 if($form->getValue('editContact')=="1"){
 
 		    $vendorProfile = $this->em->getRepository('BL\Entity\VendorProfile')->findOneBy(array('user_id'=>$vendor_id));
-
+				    $profile = new BL\Entity\UserProfile();
+				    	
+				    $profile->organization_name = $user->organization_name;
+				    $profile->username = $user->username;
+				    $profile->address_line1 = $user->address_line1;
+				    $profile->address_line2 = $user->address_line2;
+				    $profile->city = $user->city;
+				    $profile->state = $user->state;
+				    $profile->zipcode = $user->zipcode;
+				    $profile->email = $user->email;
+				    $profile->phone = $user->phone;
+				    $profile->phone2 = $user->phone2;
+				    $profile->fax = $user->fax;
+				    $profile->website = $user->website;
+				    $profile->user_code = $user->user_code;
+				    $profile->user = $user;
+				    $profile->company_email = $user->company_email;
+				    	
+				    $this->em->persist($profile);
+				    $this->em->flush();
+				    
                     $user->organization_name = $form->getValue('organization_name');
                     $vendorProfile->organization_name = $form->getValue('organization_name');
 
@@ -863,7 +920,7 @@ class Vendor_ContactController extends Zend_Controller_Action
                     $user->address_line2 = $form->getValue('address_line_2');
                     $user->city = $form->getValue('city');
                     $user->state = $form->getValue('state');
-                    $user->zip = $form->getValue('zip');
+                    $user->zipcode = $form->getValue('zip');
                     $user->email = $form->getValue('email');
                     $user->company_email = $form->getValue('company_email');
                     $user->phone = $form->getValue('phone_1');

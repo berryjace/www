@@ -127,6 +127,26 @@ $this->placeholder('main_side_bar')->captureEnd();
         </div>
     </div>
 </form>
+<div <?php if ($this->old_profiles == null || empty($this->old_profiles)) echo "style='display:none;'";?>>
+<div class="clear"></div>
+	<h2 class="old">Old Profiles</h2>
+	<hr size="1" noshade=""></hr>
+	<br/>
+	<table cellspacing="0" cellpadding="0" border="1" id="oldProfTable" class = "dynatable dataTable" aria-describedby="oldProfTable_info">
+		<tr class="tr_heading">
+	        <td width="8%" class="td_bkg1">&nbsp;&nbsp;Company Name</td>
+	    	<td width="10%" class="td_bkg2">&nbsp;&nbsp;Change Date</td>
+	        <td width="10%" class="td_bkg1">&nbsp;&nbsp;Action</td>
+		</tr>
+		<?php foreach($this->old_profiles as $profile){?>
+		<tr class="oldTR">
+			<td>&nbsp;&nbsp;<?php echo $profile->organization_name;?></td>
+			<td>&nbsp;&nbsp;<?php echo $profile->active_date->format('M d, Y - h:i A');?></td>
+			<td>&nbsp;&nbsp;<a href="javascript:;" class="view_old_profile" rel="<?php echo $profile->id;?>">View</a></td>
+		</tr>
+		<?php }?>
+	</table>
+</div>
 
 <style type="text/css">
     #city,#state,#zip,#sal{
@@ -139,11 +159,19 @@ $this->placeholder('main_side_bar')->captureEnd();
         width: 30px !important;
     }
     #validate_new_contact{font-size: 11px; color: red;}
+    #oldProfTable{background: white;}
+	.oldTR:nth-child(odd){background: #DDD;}
 </style>
 
 <script type="text/javascript">
 
     $(document).ready(function() {
+		$(".view_old_profile").on("click", function(){
+		    var link = site_url+"/admin/vendors/old-contact/id/"+ $(this).attr('rel')+"/";
+            loadPopView(link);
+            return false;
+		});
+		
         var flag = true;
 
         if(('<?php echo $this->success; ?>') !=""){

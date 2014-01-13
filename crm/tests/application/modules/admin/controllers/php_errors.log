@@ -1,0 +1,1 @@
+[30-May-2013 12:16:17] PHP Fatal error:  Class 'Zend_Test_PHPUnit_ControllerTestCase' not found in /var/www/vhosts/greeklicensing.com/httpdocs/crm/tests/application/modules/admin/controllers/NotificationsControllerTest.php on line 4

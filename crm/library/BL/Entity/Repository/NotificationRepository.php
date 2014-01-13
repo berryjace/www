@@ -170,7 +170,8 @@ class NotificationRepository extends EntityRepository {
         $prec = array();
         foreach ($records as $key=>$n) {            
             $replace   = array("<br>", "<br />", "<br/>");
-            $message = str_replace($replace, " ", $n['message']);
+            $message = html_entity_decode($n['message']);
+            $message = str_replace($replace, " ", $message);
             $message = strip_tags($message);
 
             if(strlen($message)>72){
@@ -182,7 +183,7 @@ class NotificationRepository extends EntityRepository {
 //            $link = 'vendor/notification/notification-Details/id/'.$n['id'];
             $prec[] = array(
               date("M d, Y h:i a", strtotime($n['time'])),
-              $n['title'],
+              strip_tags(html_entity_decode($n['title'])),
               $message,
               '<a class="view" href="javascript:;" rel="'.$n['id'].'">Details</a>'
                 );

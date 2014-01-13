@@ -8,13 +8,19 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
 
 <div class="one">
     <div class="leftalign">
-        <?php echo $this->partial('invoice/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status)); ?>
+        <?php
+		$status = $this->partial('invoice/show-invoice-status-partial.phtml', array('invoice_status' => $this->invoice->invoice_status, 'payment_status' => $this->invoice->payment_status));
+		echo $status;
+	?>
     </div>
     <div class="rightalign">
         <div class="one">
             <a href="javascript:;" id="exportaspdf" rel="<?php echo $this->invoice->id; ?>" class="iconlink2"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/pdf.png" class="mgright5" alt="" /><span>Export to PDF</span></a> &nbsp;
-            <?php echo $this->formButton('pay_online', 'Pay Online', array('type' => 'button', 'class' => 'button button_black')); ?> &nbsp;
+            <?php 
+		 if($this->invoice->invoice_status != "Closed"){
+		echo $this->formButton('pay_online', 'Pay Online', array('type' => 'button', 'class' => 'button button_black')); }?> &nbsp;
             <?php echo $this->formButton('send_check', 'Send a Check', array('type' => 'button', 'class' => 'button button_black')); ?>
+	
         </div>
         <div class="clear"></div>
     </div>
@@ -56,8 +62,12 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
                 <tr role="row">
                     <th>Item#</th>
                     <th>Client</th>
+                    <?php if (strpos($this->invoice->invoice_type, "Royalty") !== false) {?>
                     <th>Fiscal Year</th>
                     <th>Quarter</th>
+                    <?php } else {?>
+                    <th>Description</th>
+                    <?php }?>
                     <th>Date</th>
                     <th>Payment #</th>
                     <th>Amount Due</th>
@@ -76,8 +86,12 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
                     <tr class="<?php echo ($alt = !$alt) ? "odd" : "even"; ?>">
                         <td><?php echo $i; ?></td>
                         <td><?php echo $item->client_id->organization_name; ?></td>
+                        <?php if (strpos($this->invoice->invoice_type, "Royalty") !== false){?>
                         <td><?php echo $item->fiscal_year; ?></td>
                         <td><?php echo $quarters[$item->quarter]; ?></td>
+                        <?php } else {?>
+                        <td><?php echo $item->description;?></td>
+                        <?php }?>
                         <td><?php echo ( (int) $item->created_at->format("Y") > 0 ? $item->created_at->format("m/d/Y") : 'N/A'); ?></td>
                         <td><?php echo $item->check_number; ?></td>
                         <td><?php echo $currency->toCurrency($item->amount_due); ?></td>
@@ -87,7 +101,7 @@ $isAdmin = ($user->account_type == 1) ? 1 : 0;
                 <?php endforeach; ?>
                 <tr>
                     <td>&nbsp;</td>
-                    <td>&nbsp;</td>
+                    <?php if (strpos($this->invoice->invoice_type, "Royalty") !== false){?><td>&nbsp;</td><?php }?>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
@@ -169,6 +183,7 @@ echo $this->partial('invoice/show-invoice-status-partial.phtml', array('invoice_
         },
         pay_online : function(){
             var $url = site_url+"/vendor/invoice/online-payment/inv_id/"+$("a#exportaspdf").attr("rel");
+
             loadPopupView($url, 650, 410);
         },
         send_check : function(){
@@ -178,6 +193,7 @@ echo $this->partial('invoice/show-invoice-status-partial.phtml', array('invoice_
     }
 
     function loadPopupView(url, w, h){
+        
         $.fancybox({
             'width'                 : w,
             'height'                : h,

@@ -184,7 +184,18 @@ $this->headScript()->appendFile($this->baseUrl("assets/js/jquery/jquery.populate
                     '<div class="one_fourth">'+
                     '<select name="greek_org[]" id="greek_org">';
 
-//                greek_org = result.clients;     
+                if (result.affinity != null){
+					line_items += '<option value="' + result.affinity.id + '">' + result.affinity.name+'</option>';
+				}
+
+                if (result.affinity2 != null){
+					line_items += '<option value="' + result.affinity2.id + '">' + result.affinity2.name+'</option>';
+				}
+
+				if (result.bank != null){
+					line_items += '<option value="' + result.bank.id + '">' + result.bank.name+'</option>';
+				}
+				  
                 for(var c in result.clients){                    
                     line_items +='<option value="'+c+'">'+ result.clients[c]+'</option>';
                 }

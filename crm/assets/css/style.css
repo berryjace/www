@@ -167,6 +167,9 @@ h2.prize { font-size: 20px; color: #000; font-family: Arial, Helvetica, sans-ser
 .mainmenu ul li a.artwork span { background: url(../images/icons/artwork.png) no-repeat 15px 14px; }
 .mainmenu ul li.current a.artwork span { background: url(../images/icons/artwork.png) no-repeat 15px -59px; }
 
+.mainmenu ul li a.payments span { background: url(../images/icons/report.png) no-repeat 15px 14px; }
+.mainmenu ul li.current a.payments span { background: url(../images/icons/report.png) no-repeat 15px -59px; }
+
 
 .mainmenu ul li a.report span { background: url(../images/icons/report.png) no-repeat 15px 14px; }
 .mainmenu ul li.current a.report span { background: url(../images/icons/report.png) no-repeat 15px -59px; }
@@ -174,6 +177,9 @@ h2.prize { font-size: 20px; color: #000; font-family: Arial, Helvetica, sans-ser
 
 .mainmenu ul li a.invoice2 span { background: url(../images/icons/invoice.png) no-repeat 15px 14px; }
 .mainmenu ul li.current a.invoice2 span { background: url(../images/icons/invoice.png) no-repeat 15px -59px; }
+
+.mainmenu ul li a.help span { background: url(../images/icons/help.png) no-repeat 15px 14px; }
+.mainmenu ul li.current a.help span { background: url(../images/icons/help.png) no-repeat 15px -57px; }
 
 
 .mainmenu ul li a.reports span { background: url(../images/icons/reports.png) no-repeat 15px 12px; }
@@ -907,3 +913,5 @@ span.desc{
 
 .colorBlack { color: #000000 !important}
 .design-view { height: 164px;}
+.dtext { background:silver; height:22px; width:390px;}
+.disableddd{ background:silver; width:400px;}

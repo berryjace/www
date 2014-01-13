@@ -95,7 +95,7 @@ $type = isset($this->type) ? $this->type : 'vendor';
                             <li><a href="<?php echo $this->baseUrl(); ?>/../our-clients" class="ourclients">About Us</a></li>
                             <li><a href="<?php echo $this->baseUrl(); ?>/../about-us" class="about">About Us</a></li>
                             <li><a href="<?php echo $this->baseUrl(); ?>/../find-licensed-products" class="find">Find Licensed Products</a></li>
-                            <li><a href="<?php echo $this->baseUrl() . '/signup/index/type/vendor'; ?>" class="become">Become a Licensed Vendor  </a></li>
+                            <li><a href="<?php echo $this->baseUrl() . '/../become-a-licensed-vendor/'; ?>" class="become">Become a Licensed Vendor  </a></li>
                             <li class="<?php echo $type ?>"><a href="<?php echo $this->baseUrl(); ?>/login/index/type/vendor" class="vendor">Vendor  Login</a></li>
                             <li class="<?php echo $type ?>"><a href="<?php echo $this->baseUrl(); ?>/login/index/type/client" class="client">Client Login</a></li>
                             <li><a href="<?php echo $this->baseUrl(); ?>/../contact" class="contact">Contact Us</a></li>
@@ -127,6 +127,31 @@ $type = isset($this->type) ? $this->type : 'vendor';
             <div class="clear">&nbsp;</div>
 
             <!-- footer -->
+            <div style="width:100%;" id="sslBadgeContainer">
+				<table id="sslBadgeTable" style="" width="135" border="0" cellpadding="2" cellspacing="0" title="Click to Verify - This site chose Symantec SSL for secure e-commerce and confidential communications.">
+				<tr>
+				<td width="135" align="center" valign="top"><script type="text/javascript" src="https://seal.verisign.com/getseal?host_name=greeklicensing.com&amp;size=L&amp;use_flash=NO&amp;use_transparent=NO&amp;lang=en">
+					
+				</script>
+				<script type="text/javascript">
+					$(document).ready(function(){
+						var width = $(window).width();
+						var height = $("#sslBadgeTable").height();
+						var pageHeight = $(document).height();
+			
+						$("#sslBadgeContainer").height(height);
+						$("#sslBadgeContainer").css("top", (pageHeight - height - 50) + "px");
+						
+						width -= 135;
+						width /= 2;
+						
+						$("#sslBadgeTable").css("left", width + "px");
+					});
+				</script><br />
+				<a href="http://www.symantec.com/verisign/ssl-certificates" target="_blank"  style="color:#000000; text-decoration:none; font:bold 7px verdana,sans-serif; letter-spacing:.5px; text-align:center; margin:0px; padding:0px;">ABOUT SSL CERTIFICATES</a></td>
+				</tr>
+				</table>
+			</div>
             <div class="footer_wrapper">
                 <div class="container_12">
 

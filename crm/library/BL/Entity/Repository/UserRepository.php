@@ -33,7 +33,7 @@ class UserRepository extends EntityRepository {
     }
 
     public function getUserByUsername($username) {
-        $q = $this->_em->createQuery("SELECT u, ur FROM BL\Entity\User u LEFT JOIN u.roles ur where u.username='" . $username . "' and u.reg_status='activated'");
+        $q = $this->_em->createQuery("SELECT u, ur FROM BL\Entity\User u LEFT JOIN u.roles ur where u.username='" . $username . "'");
         return $q->getArrayResult();
     }
 
@@ -141,12 +141,12 @@ class UserRepository extends EntityRepository {
     }
 
     public function getClientNames() {
-        $q = $this->_em->createQuery("SELECT u.id, u.organization_name as client_greek_name,cp.greek_name FROM BL\Entity\User u, BL\Entity\ClientProfile cp where cp.user_id = u.id and u.account_type=" . ACC_TYPE_CLIENT . " and u.user_status != 'Cancelled' and cp.greek_name !=''");
+        $q = $this->_em->createQuery("SELECT u.id, u.organization_name as client_greek_name, u.user_status,cp.greek_name FROM BL\Entity\User u, BL\Entity\ClientProfile cp where cp.user_id = u.id and u.account_type=" . ACC_TYPE_CLIENT . " and u.user_status != 'Cancelled' and cp.greek_name !='' order by u.organization_name");
         return $q->getResult();
     }
 
     public function getVendorNames() {
-        $q = $this->_em->createQuery("SELECT u.id, u.organization_name FROM BL\Entity\User u where u.account_type=" . ACC_TYPE_VENDOR . " and u.user_status != 'Cancelled'");
+        $q = $this->_em->createQuery("SELECT u.id, u.organization_name, u.user_status FROM BL\Entity\User u where u.account_type=" . ACC_TYPE_VENDOR . " and u.user_status != 'Cancelled'");
         return $q->getResult();
     }
 
@@ -184,196 +184,237 @@ class UserRepository extends EntityRepository {
         return $q->getResult();
     }
 
-    /**
-     * Function to get ALl Vendors with status to show in the admin dashboard
-     * @author Mahbub
-     * @copyright Blueliner Marketing
-     * @version 0.1
-     * @access public
-     * @return String
-     */
-    public function getAllVendors($params=array()) {
-        $itemPerPage = isset($params['per_page']) ? $params['per_page'] : 10;
-        $currentPage = isset($params['page_start']) ? $params['page_start'] : 1;
+    	/**
+     	* Function to get ALl Vendors with status to show in the admin dashboard
+     	* @author Mahbub
+     	* @copyright Blueliner Marketing
+     	* @version 0.1
+     	* @access public
+	* @return String
+     	*/
+    	public function getAllVendors($params=array()) 
+	{
+        	$itemPerPage = isset($params['per_page']) ? $params['per_page'] : 10;
+        	$currentPage = isset($params['page_start']) ? $params['page_start'] : 1;
 
-        $searchStr = isset($params['search']) ? $params['search'] : '';
-        $sort_by = isset($params['sort_key']) ? $params['sort_key'] : '';
-        $sort_dir = isset($params['sort_dir']) ? $params['sort_dir'] : '';
+        	$searchStr = isset($params['search']) ? $params['search'] : '';
+        	$sort_by = isset($params['sort_key']) ? $params['sort_key'] : '';
+        	$sort_dir = isset($params['sort_dir']) ? $params['sort_dir'] : '';
 
-        $conditions = "WHERE u.organization_name !='' AND u.account_type=" . ACC_TYPE_VENDOR;
-        $search_clause = !empty($searchStr) ? " AND u.organization_name like '%$searchStr%'" : "";
-        $order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir" : "";
+		$newsearch = str_replace(" ","%",$searchStr); //added by softura to fix bug in search where "ink people" would not expand to "ink to the people"
 
-        if (isset($params['status']) && ($params['status'] != 'all')) {
+        	$conditions = "WHERE u.organization_name !='' AND u.account_type=" . ACC_TYPE_VENDOR;
+        	$search_clause = !empty($searchStr) ? " AND u.organization_name like '%$newsearch%'" : "";
+        	$order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir" : "";
 
-            $status = explode(',', $params['status']);
-            $conditions .= " AND ( ";
-            $count = 1;
-            foreach ($status as $s) {
-                $conditions .= " u.user_status='" . $s . "'";
-                if ($count < count($status)) {
-                    $conditions .= " OR";
-                }
-                $count++;
-            }
+        	if (isset($params['status']) && ($params['status'] != 'all')) 
+		{
 
-            $conditions .=")";
-        }
+            		$status = explode(',', $params['status']);
+            		$conditions .= " AND ( ";
+            		$count = 1;
+	            	foreach ($status as $s) 
+			{
+                		$conditions .= " u.user_status='" . $s . "'";
+                		if ($count < count($status)) 
+				{
+                    			$conditions .= " OR";
+	                	}
+        	        	$count++;
+            		}
 
-        /**
-         * We have to build the query here
-         */
-        $q = $this->_em->createQuery("
-            SELECT partial u.{id,organization_name,user_status,created_at}
+	            	$conditions .=")";
+        	}
+
+        	$q = $this->_em->createQuery("
+            	SELECT partial u.{id,organization_name,user_status,created_at}
                 FROM BL\Entity\User u
-            $conditions
-            $search_clause
-            $order_clause
-       ");
+            	$conditions
+            	$search_clause
+            	$order_clause
+       		");
 
-        if (isset($params['show_total']) AND $params['show_total'] === true) {
-            return \DoctrineExtensions\Paginate\Paginate::getTotalQueryResults($q);
-        } else {
-            $records = $q->setFirstResult($currentPage)->setMaxResults($itemPerPage); // Step 2
-            return $records;
-        }
-    }
+        	if (isset($params['show_total']) AND $params['show_total'] === true) 
+		{
+        	    return \DoctrineExtensions\Paginate\Paginate::getTotalQueryResults($q);
+        	} 
+		else 
+		{
+       	 	    $records = $q->setFirstResult($currentPage)->setMaxResults($itemPerPage); // Step 2
+        	    return $records;
+        	}
+	}
 
-    /**
-     * Function to get ALl Vendors with status to show in the admin dashboard
-     * @author Mahbub
-     * @copyright Blueliner Marketing
-     * @version 0.1
-     * @access public
-     * @return String
-     */
-    public function getLicensedVendors($params=array()) {
-        $itemPerPage = isset($params['per_page']) ? $params['per_page'] : 10;
-        $currentPage = isset($params['page_start']) ? $params['page_start'] : 1;
+    	/**
+     	* Function to get All Vendors with status to show in the admin dashboard
+     	* @access public
+     	* @return String
+     	*/
+    	public function getLicensedVendors($params=array()) 
+	{
+        	$itemPerPage = isset($params['per_page']) ? $params['per_page'] : 10;
+        	$currentPage = isset($params['page_start']) ? $params['page_start'] : 1;
 
-        $searchStr = isset($params['search']) ? $params['search'] : '';
-        $sort_by = isset($params['sort_key']) ? $params['sort_key'] : '';
-        $sort_dir = isset($params['sort_dir']) ? $params['sort_dir'] : '';
+	        $searchStr = isset($params['search']) ? $params['search'] : '';
+	        $sort_by = isset($params['sort_key']) ? $params['sort_key'] : '';
+	        $sort_dir = isset($params['sort_dir']) ? $params['sort_dir'] : '';
 
-        $search_clause = !empty($searchStr) ? "WHERE v.organization_name like '$searchStr%'" : "";
-        $order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir" : "";
-        /**
-         * We have to build the query here
-         */
-        $q = $this->_em->createQuery("
-            SELECT partial l.{id,applied_date,status} ,
-                   partial v.{id,organization_name},
-                   partial c.{id,organization_name, username}
-            FROM BL\Entity\License l
-                   JOIN l.vendor_id v
-                   JOIN l.client_id c
-            $search_clause
-            $order_clause
-       ");
-        if (isset($params['show_total']) AND $params['show_total'] === true) {
-            return \DoctrineExtensions\Paginate\Paginate::getTotalQueryResults($q);
-        } else {
-            $records = $q->setFirstResult($currentPage)->setMaxResults($itemPerPage); // Step 2
-            return $records;
-        }
-    }
+	        $search_clause = !empty($searchStr) ? "WHERE v.organization_name like '$searchStr%'" : "";
+        	$order_clause = !empty($sort_by) ? "ORDER BY $sort_by $sort_dir" : "";
 
-    /**
-     * Function to Search Vendors By Contact Information
-     * @author Mahbub
-     * @copyright Blueliner Marketing
-     * @version 0.1
-     * @access public
-     * @return String
-     */
-    public function searchVendorByContact($search_params=array(), $limit_fields=array()) {
-        $sorting_cols = array('0' => 'u.organization_name', '1' => 'u.organization_name', '2' => 'l.applied_date', '3' => 'l.status');
-	$search_params['iSortCol_0'] = isset($search_params['iSortCol_0']) ? $search_params['iSortCol_0'] : 0;
+	        $q = $this->_em->createQuery("
+        	    SELECT partial l.{id,applied_date,status} ,
+                	   partial v.{id,organization_name},
+               		   partial c.{id,organization_name, username}
+	            FROM BL\Entity\License l
+        	        JOIN l.vendor_id v
+                   	JOIN l.client_id c
+            		$search_clause
+            		$order_clause
+       		");
 
-        $params = array(
-            'search' => isset($search_params['sSearch']) ? $search_params['iDisplayStart'] : '',
-            'current_page' => isset($search_params['iDisplayStart']) ? $search_params['iDisplayStart'] : 1,
-            'draw_count' => isset($search_params['sEcho']) ? $search_params['sEcho'] : "",
-            'per_page' => isset($search_params['iDisplayLength']) ? $search_params['iDisplayLength'] : 10,
-            'sort_key' => isset($sorting_cols[$search_params['iSortCol_0']]) ? $sorting_cols[$search_params['iSortCol_0']] : '',
-            'search_op' => isset($search_params['search_op']) ? $search_params['search_op'] : 'AND',
-            'sort_dir' => isset($search_params['sSortDir_0']) ? $search_params['sSortDir_0'] : 'ASC',
-        );
+        	if (isset($params['show_total']) AND $params['show_total'] === true) {
+            		return \DoctrineExtensions\Paginate\Paginate::getTotalQueryResults($q);
+        	} 
+		else 
+		{
+            		$records = $q->setFirstResult($currentPage)->setMaxResults($itemPerPage); // Step 2
+            		return $records;
+        	}
+    	}
 
-        $field_map = array(
-            "username" => "u.username",
-            "email" => "u.email",
-            "company_name" => "u.organization_name",
-            "company_email" => "u.company_email",
-            "address_line_1" => "u.address_line1",
-            "address_line_2" => "u.address_line2",
-            "city" => "u.city",
-            "state" => "u.state",
-            "zip" => "u.zipcode",
-            "phone_1" => "u.phone",
-            "phone_2" => "u.phone2",
-            "fax" => "u.fax",
-            "web_page" => "u.website",
-            "sal" => "u.title",
-            "first_name" => "u.first_name",
-            "last_name" => "u.last_name",
-            "job_title" => "u.title",
-            "work_phone" => "u.phone2",
-            "mobile" => "u.phone2",
-            "user_code" => "u.user_code"
-        );
+    	/**
+     	* Function to Search Vendors By Contact Information
+     	*/
+    	public function searchVendorByContact($search_params=array(), $limit_fields=array()) 
+	{
+        	$sorting_cols = array('0' => 'u.organization_name', '1' => 'u.organization_name', '2' => 'l.applied_date', '3' => 'l.status');
+		$search_params['iSortCol_0'] = isset($search_params['iSortCol_0']) ? $search_params['iSortCol_0'] : 0;
+
+	        $params = array(
+	        	'search' => isset($search_params['sSearch']) ? $search_params['iDisplayStart'] : '',
+	            	'current_page' => isset($search_params['iDisplayStart']) ? $search_params['iDisplayStart'] : 1,
+	            	'draw_count' => isset($search_params['sEcho']) ? $search_params['sEcho'] : "",
+	            	'per_page' => isset($search_params['iDisplayLength']) ? $search_params['iDisplayLength'] : 10,
+	            	'sort_key' => isset($sorting_cols[$search_params['iSortCol_0']]) ? $sorting_cols[$search_params['iSortCol_0']] : '',
+	            	'search_op' => isset($search_params['search_op']) ? $search_params['search_op'] : 'AND',
+	            	'sort_dir' => isset($search_params['sSortDir_0']) ? $search_params['sSortDir_0'] : 'ASC',
+	        );
+
+        	$field_map = array(
+        	    	"username" => "u.username",
+					"status" => "u.status",
+            		"email" => "u.email",
+            		"company_name" => "u.organization_name",
+            		"company_email" => "u.company_email",
+            		"address_line_1" => "u.address_line1",
+            		"address_line_2" => "u.address_line2",
+            		"city" => "u.city",
+            		"state" => "u.state",
+            		"zip" => "u.zipcode",
+            		"phone_1" => "u.phone",
+            		"phone_2" => "u.phone2",
+            		"fax" => "u.fax",
+            		"web_page" => "u.website",
+            		"user_code" => "u.user_code"
+        	);
+			
+        	$contact_map = array(
+        			"sal" => "c.sal",
+        			"first_name" => "c.first_name",
+        			"last_name" => "c.last_name",
+        			"job_title" => "c.title",
+        			"work_phone" => "c.phone",
+        			"mobile" => "c.mobile",
+        			"contact_type" => "c.contact_type"
+        	);
+
+        	$search_clause = "WHERE u.account_type=" . ACC_TYPE_VENDOR;
+
+        	foreach ($field_map as $k => $val) 
+			{
+            	if (isset($search_params[$k]) AND $search_params[$k] <> "") 
+				{
+               		$search_clause.= $params['search_op'] . " " . $val . " like '%" . $search_params[$k] . "%' ";
+           		}
+        	}
+        	
+        	foreach($contact_map as $k => $val){
+        		if (isset($search_params[$k]) AND $search_params[$k] <> ""){
+        		error_log("\nvisited contact map", 3, "./errorLog.log");
+        			$search_clause .= $params['search_op'] . " " . $val . " like '%" . $search_params[$k] . "%' ";
+        		}
+        	}
+
+	        $status_conditions = "";
+        	if (isset($search_params['vendor_status']) && ($search_params['vendor_status'] != 'all' )) {
+            		$status = explode(',', $search_params['vendor_status']);
+	            	$status_conditions .= " AND (";
+	            	$count = 1;
+            		foreach ($status as $s) 
+			{
+                		$status_conditions .= " u.user_status='" . $s . "'";
+                		if ($count < count($status)) 
+				{
+                    			$status_conditions .= " OR";
+                		}
+                		$count++;
+            		}
+            		$status_conditions .=") ";
+        	}
+
+        	$order_clause = !empty($params['sort_key']) ? " ORDER BY " . $params['sort_key'] . " " . $params['sort_dir'] . "" : "";
+        	$q = $this->_em->createQuery("
+            	SELECT u.id
+            	FROM BL\Entity\UserContact c
+        		JOIN c.user_id u 
+            	$search_clause
+            	$status_conditions
+            	$order_clause 
+       		");
+
+        	$results = $q->getResult();
+        	 
+        	$search_items = "";
+        	 
+        	$first = true;
+        	 
+        	foreach($results as $result){
+        		if ($first){
+        			$search_items .= " u.id = " . $result['id'];
+        			$first = false;
+        		} else {
+        			$search_items .= " OR u.id = " . $result['id'];
+        		}
+        	}
+        	 
+        	error_log("\n query: SELECT DISTINCT u FROM BL\Entity\User u WHERE $search_items", 3, "./errorLog.log");
+        	 
+        	$q = $this->_em->createQuery("SELECT DISTINCT u FROM BL\Entity\User u WHERE $search_items");
+        	
+        	$paginator = new Paginator($q);
+        	$records_total = $paginator->count();
+        	$records = $q->setFirstResult($params['current_page'])->setMaxResults($params['per_page'])->getArrayResult();
 
 
-        $search_clause = "WHERE u.account_type=" . ACC_TYPE_VENDOR;
+        	$json = '{"iTotalRecords":' . $records_total . ',
+        	 "iTotalDisplayRecords": ' . $records_total . ',
+        	 "aaData":[';
+		$is_limited_fields = count($limit_fields);
 
-        foreach ($field_map as $k => $val) {
-            if (isset($search_params[$k]) AND $search_params[$k] <> "") {
-                $search_clause.= $params['search_op'] . " " . $val . " like '%" . $search_params[$k] . "%' ";
-            }
-        }
+		$prec = array();
+        	$AllRecords = array();
+		$UserArray = array();
+		$max = 1;
 
-        $status_conditions = "";
-        if (isset($search_params['vendor_status']) && ($search_params['vendor_status'] != 'all' )) {
-            $status = explode(',', $search_params['vendor_status']);
-            $status_conditions .= " AND (";
-            $count = 1;
-            foreach ($status as $s) {
-                $status_conditions .= " u.user_status='" . $s . "'";
-                if ($count < count($status)) {
-                    $status_conditions .= " OR";
-                }
-                $count++;
-            }
-            $status_conditions .=") ";
-        }
-
-        $order_clause = !empty($params['sort_key']) ? " ORDER BY " . $params['sort_key'] . " " . $params['sort_dir'] . "" : "";
-        $q = $this->_em->createQuery("
-            SELECT u
-            FROM BL\Entity\User u
-            $search_clause
-            $status_conditions
-            $order_clause
-       ");
-
-
-        $paginator = new Paginator($q);
-        $records_total = $paginator->count();
-        $records = $q->setFirstResult($params['current_page'])->setMaxResults($params['per_page'])->getArrayResult();
-
-
-        $json = '{"iTotalRecords":' . $records_total . ',
-         "iTotalDisplayRecords": ' . $records_total . ',
-         "aaData":[';
-	$is_limited_fields = count($limit_fields);
-
-	$prec = array();
-        $AllRecords = array();
-        if ($is_limited_fields) {
-
-            foreach ($records as $rec) {
-                    $UserArray = array('user_first_name' => '', 'user_last_name' => '', 'user_title' => '', 'user_address' => '', 'user_city' => '', 'user_state' => '', 'user_zip' => '', 'user_phone' => '', 'user_mobile' => '', 'user_fax' => '');
-                    $query = $this->_em->createQuery("SELECT
+        	if ($is_limited_fields) 
+		{
+			$count = 0;
+        	    	foreach ($records as $rec) 
+			{
+                    		$fields = array('contact_type','user_first_name', 'user_last_name', 'user_title', 'user_address', 'user_city', 'user_state', 'user_zip', 'user_phone', 'user_mobile', 'user_fax', 'count');
+				$UserArray = array();
+                    		$query = $this->_em->createQuery("SELECT
                                                     uc.first_name AS user_first_name,
                                                     uc.last_name AS user_last_name,
                                                     uc.title AS user_title,
@@ -383,120 +424,152 @@ class UserRepository extends EntityRepository {
                                                     uc.zipcode AS user_zip,
                                                     uc.phone AS user_phone,
                                                     uc.mobile AS user_mobile,
-                                                    uc.fax AS user_fax
+                                                    uc.fax AS user_fax,
+						    uc.contact_type AS contact_type
                                                     FROM BL\Entity\UserContact uc
                                                     WHERE uc.user_id = :id");
-                    $query->setParameter('id', $rec['id']);
-                    $UserContactList = $query->getResult();
-                    foreach ($UserContactList as $User) {
-                        foreach ($User as $key => $value) {
-                            $UserArray[$key] = (($UserArray[$key] == '') ? $value : '; ' . $value);
-                        }
-                    }
-                    array_push($AllRecords, array_merge($rec, $UserArray));
-            }
-            return $AllRecords;    // Calling from export
-        }
+                    		$query->setParameter('id', $rec['id']);
+                    		$UserContactList = $query->getResult();
+		    		$count = 0;
+                    		foreach ($UserContactList as $User) 
+				{
+					$count++;
+					$tempUserArray = array();
+					$addon = '';
+					if($count >1)
+					$addon = $count;
+					if($count > $max)
+						$max = $count;
+                        		foreach ($User as $key => $value) 
+					{
+                           	 		$tempUserArray[$key.$addon] = $value;
+			    			//$tempUserArray['count'] = implode("|",array_keys($UserArray));
+                        		}
+					if($count<$max)
+					{
+						for($i=$count+1;$i<=$max;$i++)
+						{
+							foreach($fields as $key)
+							$tempUserArray[$key.$i] = '';
+						}
+					}
+					$UserArray = array_merge($UserArray, $tempUserArray);
+                    		}
+                    		array_push($AllRecords, array_merge($rec, $UserArray));
+            		}
+            		return $AllRecords;    // Calling from export
+        	}
 
+		$records = $q->setFirstResult($params['current_page'])->setMaxResults($params['per_page'])->getResult();
+        	$first = 0;
+        	foreach ($records as $v) 
+		{
+        		if ($first++) 
+			{
+                		$json .= ',';
+            		}
+            		$json .= '["<a href=\"javascript:;\" class=\"vendor_link\" rel=\"m:contact,v:' . $v->id . ',c:' . $v->id . '\">' . str_replace(chr(13), '', str_replace(chr(10), "", $v->organization_name)) . '</a>",
+              		"' . (!is_null($v->created_at) ? $v->created_at->format("M d, Y H:i A") : "N/A") . '","' . (!is_null($v->user_status) ? $v->user_status : "-") . '"]';
+        	}
+        	$json .= ']}';
+        	return $json;
+    	}
 
-	$records = $q->setFirstResult($params['current_page'])->setMaxResults($params['per_page'])->getResult();
-        $first = 0;
-        foreach ($records as $v) {
-            if ($first++) {
-                $json .= ',';
-            }
-            $json .= '["<a href=\"javascript:;\" class=\"vendor_link\" rel=\"m:contact,v:' . $v->id . ',c:' . $v->id . '\">' . str_replace(chr(13), '', str_replace(chr(10), "", $v->organization_name)) . '</a>",
-              "' . (!is_null($v->created_at) ? $v->created_at->format("M d, Y H:i A") : "N/A") . '","' . (!is_null($v->user_status) ? $v->user_status : "-") . '"]';
-        }
-        $json .= ']}';
-        return $json;
-    }
+    	public function getEmailById($client_id) 
+	{
+        	$q = $this->_em->createQuery("SELECT u.id, u.email, u.organization_name FROM BL\Entity\User u where u.id = '" . $client_id . "'");
+        	return $q->getResult();
+    	}
 
-    public function getEmailById($client_id) {
-        $q = $this->_em->createQuery("SELECT u.id, u.email, u.organization_name FROM BL\Entity\User u where u.id = '" . $client_id . "'");
-        return $q->getResult();
-    }
+    	/**
+     	* Function to Export data based on search query and type of search performed
+     	* @access public
+     	* @return String
+	*/
+	public function exportVendorInformation($search_params, $fields_to_export, $labels='') 
+	{
 
-    /**
-     * Function to Export data based on search query and type of search performed
-     * @author Mahbub
-     * @copyright Blueliner Marketing
-     * @version 0.1
-     * @access public
-     * @return String
-     */
-    public function exportVendorInformation($search_params, $fields_to_export, $labels='') {
-        /**
-         * Let's parse the ugly string into Label array like
-         * Array('organization_name'=>"Company Name");
-         */
-        $labels = rtrim($labels, "||");
-        $labels = explode("||", $labels);
-        $label_array = array();
-        foreach ($labels as $label) {
-            $exploded = explode("~", $label);
-            if (reset($exploded) == 'id' && end($exploded) == 'Secondary Contacts') {
-                $label_array['user_first_name'] = 'User First Name';
-                $label_array['user_last_name'] = 'User Last Name';
-                $label_array['user_title'] = 'User Title';
-                $label_array['user_address'] = 'User Address';
-                $label_array['user_city'] = 'User City';
-                $label_array['user_state'] = 'User State';
-                $label_array['user_zip'] = 'User Zip';
-                $label_array['user_phone'] = 'User Phone';
-                $label_array['user_mobile'] = 'User Mobile';
-                $label_array['user_fax'] = 'User Fax';
-            } else {
-                $label_array[reset($exploded)] = end($exploded);
-            }
-        }
-        switch ($search_params['search_type']) {
-            case "contact":
-                $search_params['iDisplayStart'] = 0;
-                $search_params['iDisplayLength'] = 500;
-                $recs = $this->_em->getRepository("BL\Entity\User")
-                        ->searchVendorByContact($search_params, $fields_to_export);
-                return array('title' => 'Contact', 'labels' => $label_array, 'data' => $recs);
-                break;
-            case "correspondence":
-                $search_params['iDisplayStart'] = 0;
-                $search_params['iDisplayLength'] = 500;
-                $recs = $this->_em->getRepository("BL\Entity\VendorCorrespondence")
-                        ->searchVendorByCorrespondence($search_params, $fields_to_export);
-                return array('title' => 'Correspondence', 'labels' => $label_array, 'data' => $recs);
-                break;
-            case "operations":
-                $search_params['iDisplayStart'] = 0;
-                $search_params['iDisplayLength'] = 500;
-                $recs = $this->_em->getRepository("BL\Entity\VendorOperation")
-                        ->searchVendorByOperations($search_params, $fields_to_export);
-                return array('title' => 'Operations', 'labels' => $label_array, 'data' => $recs);
-                break;
-            case "clients":
-                $search_params['iDisplayStart'] = 0;
-                $search_params['iDisplayLength'] = 500;
-                $recs = $this->_em->getRepository("BL\Entity\License")
-                        ->searchVendorByClients($search_params, $fields_to_export);
-                return array('title' => 'Clients', 'labels' => $label_array, 'data' => $recs);
-                break;
-            case "lisc-agreements":
-                $search_params['iDisplayStart'] = 0;
-                $search_params['iDisplayLength'] = 500;
-                $recs = $this->_em->getRepository("BL\Entity\License")
-                        ->searchVendorByLiscAgreements($search_params, $fields_to_export);
-                return array('title' => 'Lisc-Agreements', 'labels' => $label_array, 'data' => $recs);
-                break;
-            case "web-profile":
-                $search_params['iDisplayStart'] = 0;
-                $search_params['iDisplayLength'] = 500;
-                $recs = $this->_em->getRepository("BL\Entity\VendorProfile")
-                        ->searchVendorByWebProfile($search_params, $fields_to_export);
-                return array('title' => 'Web Profile', 'labels' => $label_array, 'data' => $recs);
-                break;
-            default:
-                break;
-        }
-    }
+        	$labels = rtrim($labels, "||");
+        	$labels = explode("||", $labels);
+        	$label_array = array();
+		$secondary = false;
+		foreach ($labels as $label) 
+		{
+			$exploded = explode("~", $label);
+
+			if (reset($exploded) == 'id' && end($exploded) == 'All Contacts') 
+			{
+				$label_array['contact_type'] = 'Contact Type';
+        	        	$label_array['user_first_name'] = 'User First Name';
+        	        	$label_array['user_last_name'] = 'User Last Name';
+        	        	$label_array['user_title'] = 'User Title';
+				$label_array['user_phone'] = 'User Phone';
+				$label_array['user_mobile'] = 'User Mobile';
+				$label_array['user_fax'] = 'User Fax';
+        	        	//$label_array['count'] = 'count'; // field that was used for debugging puposes
+				$secondary = true;
+			} 
+			else 
+			{
+                		$label_array[reset($exploded)] = end($exploded);
+			}
+        	}
+		$search_params['iDisplayStart'] = 0;
+		$search_params['iDisplayLength'] = 50000000000000;//ugly kludge to make row limit unreachable
+
+        	switch ($search_params['search_type']) 
+		{
+		case "contact":
+        		$recs = $this->_em->getRepository("BL\Entity\User")->searchVendorByContact($search_params, $fields_to_export);
+			foreach ($recs as $t) 
+			{
+				//echo ((count(array_keys($t))-37)/10).",\n";// getting the number of contacts
+				$numcontacts = (count(array_keys($t))-37)/10;
+			}
+			for($i=2;$numcontacts >= $i && $secondary ;$i++)// this creates a column for each contacts information
+			{
+				//echo $i." contact".",";
+				$label_array['user_first_name'.$i] = 'User First Name'.$i;
+                	        $label_array['user_last_name'.$i] = 'User Last Name';
+                	        $label_array['user_title'.$i] = 'User Title';
+                	        $label_array['user_phone'.$i] = 'User Phone';
+                	        $label_array['user_mobile'.$i] = 'User Mobile';
+                	        $label_array['user_fax'.$i] = 'User Fax';
+				$label_array['contact_type'.$i] = 'Contact Type'.$i;
+                	        //$label_array['count'] = 'count';
+			}
+                	return array('title' => 'Contact', 'labels' => $label_array, 'data' => $recs);
+                	break;
+
+		case "correspondence":
+			$recs = $this->_em->getRepository("BL\Entity\VendorCorrespondence")->searchVendorByCorrespondence($search_params, $fields_to_export);
+	                return array('title' => 'Correspondence', 'labels' => $label_array, 'data' => $recs);
+	                break;
+
+	        case "operations":
+	                $recs = $this->_em->getRepository("BL\Entity\VendorOperation")->searchVendorByOperations($search_params, $fields_to_export);
+                	return array('title' => 'Operations', 'labels' => $label_array, 'data' => $recs);
+                	break;
+
+	        case "clients":
+	                $recs = $this->_em->getRepository("BL\Entity\License")->searchVendorByClients($search_params, $fields_to_export);
+	                return array('title' => 'Clients', 'labels' => $label_array, 'data' => $recs);
+	                break;
+
+	        case "lisc-agreements":
+        	        $recs = $this->_em->getRepository("BL\Entity\License")->searchVendorByLiscAgreements($search_params, $fields_to_export);
+        	        return array('title' => 'Lisc-Agreements', 'labels' => $label_array, 'data' => $recs);
+        	        break;
+        
+		case "web-profile":
+        	        $recs = $this->_em->getRepository("BL\Entity\VendorProfile")->searchVendorByWebProfile($search_params, $fields_to_export);
+        	        return array('title' => 'Web Profile', 'labels' => $label_array, 'data' => $recs);
+        	        break;
+        	
+		default:
+                	break;
+        	}
+	}
 
     /**
      * Function to get All Clients with status to show in the admin dashboard
@@ -628,7 +701,7 @@ class UserRepository extends EntityRepository {
         }
     }
     public function getVendors($client_id, $city, $vendor_name, $zip_code, $product, $services) {
-        $condition=" WHERE a.client_id =$client_id";
+        $condition=" WHERE a.client_id =$client_id AND a.status = 4";
         $join_tables = '';
         $order_by = "  order by u.organization_name ASC ";
         $group_by = "  group by u.id ";

@@ -1,10 +1,30 @@
-<?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>
+<?php $action = Zend_Controller_Front::getInstance()->getRequest()->getActionName(); 
+
+
+
+$current_month = Date("m");
+ 
+$current_month -=1;
+ 
+if ($current_month <=  0) $current_month = 12;
+ 
+$current_quarter=  ($current_month-1)/12 * 4;
+ 
+$current_quarter = (($current_quarter + 2) % 4) + 1;
+ 
+$sales = array("1" => "(Sales July 1st - September 30th)", "2" => "(Sales October 1st - December 31st)", "3" => "(Sales January 1st - March 31st)", "4" => "(Sales April 1st - June 30th)");
+$dueDates = array("1" => "October 30th", "2"=>"January 31st", "3"=>"April 30th", "4"=>"July 31st");
+ 
+$year = Date("Y");
+$current_year = Date("Y");
+?>
+
+<!--  
 <div class="leftalign">
     <a href="<?php echo $this->baseUrl("vendor/royalty/history"); ?>" class="iconlink<?php echo ($action === "history") ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "history" ? 'white' : 'black'; ?>/settings.png" class="mgright5" alt="" /><span>Royalty Report History</span></a> &nbsp;
-    <!-- <a href="<?php echo $this->baseUrl("vendor/royalty/sale-revenue"); ?>" class="iconlink<?php echo ($action === "sale-revenue") ? '' : '2'; ?>"><img src="<?php echo $this->baseUrl(); ?>/assets/images/icons/small/<?php echo $action === "sale-revenue" ? 'white' : 'black'; ?>/plus.png" class="mgright5" alt="" /><span>Add Sale Revenue</span></a> -->
 </div>
 <div class="spacer clear"></div>
-
+-->
 <?php
 /**
  * procedures/
@@ -56,15 +76,37 @@ if (sizeof($this->last_quarter_submissions)) {
 /**
  *
   Show this alert if the Vendor has a royalty report due for the previous quarter. Again, every Vendor has 37 days after the end of their quarter to submit their royalty report.
-  So for Q1, the quarter ends on Sept 31. All Vendors must submit  Q1 royalty report by November 7.
-  For Q2, the quarter ends on December 31. All Vendors must submit  Q2 royalty report by Feb 6.
-  For Q3, the quarter ends on March 31. All Vendors must submit  Q3 royalty report by May 7.
-  For Q4, the quarter ends on June 30. All Vendors must submit  Q4 royalty report by August  6.
+  So for Q1, the quarter ends on Sept 31. All Vendors must submit  Q1 royalty report by October 30.
+  For Q2, the quarter ends on December 31. All Vendors must submit  Q2 royalty report by Jan 31.
+  For Q3, the quarter ends on March 31. All Vendors must submit  Q3 royalty report by April 30.
+  For Q4, the quarter ends on June 30. All Vendors must submit  Q4 royalty report by July 31.
   So the alert shows up:
   if (Vendor status is current) & (Vendor has not submitted royalty report for previous quarter) & (Current date is < submission cut off date for the quarter).
  */
+
 ?>
 
+Q<?php echo $current_quarter; ?> <?php echo $current_year; ?> <?php echo $sales[$current_quarter];?> reports are due <?php echo $dueDates[$current_quarter]; ?>.<br/>
+If you report using our template, be sure to use the most up-to-date version <a href="<?php echo $this->baseUrl("assets/files/royaltyreport.pdf"); ?>" target="_blank">here</a>.<br/>
+<br/>
+For this quarter, you now have two options to report.<br/>
+<br/>
+<b>Option 1: SECURE ONLINE REPORT AND PAYMENT(no transaction fee, no postage fee) - watch the tutorial <a href="http://www.screencast.com/t/Nvnq7hregKPg" target="_blank">here</a></b><br/>
+<br/>
+<button type="button" class="button_blue fancybox-pop" id="" style="margin-left:30px;" href="<?php echo $this->baseUrl("vendor/royalty/popup-upload"); ?>">Upload Sales Detail</button><br/><br/>
+
+<b>Option 2: REPORT AND PAY BY MAIL</b><br/>
+<br/>
+<div style="padding-left:30px;">
+Affinity Consultants<br/>
+3231-C Business Park Drive #300<br/>
+Vista, CA 92081<br/><br/>
+
+Fax: 707-202-0532<br/>
+</div>
+<br/>
+<b>Questions? Email us at accounting@affinity-consultants.com</b>
+<!--  
 <h4>
     You can submit a report in one of three ways. Please select one of the options below:
 </h4>
@@ -79,14 +121,14 @@ if (sizeof($this->last_quarter_submissions)) {
     <li><a href="<?php echo $this->baseUrl("assets/files/royaltyreport.pdf"); ?>" target="_blank">Download</a> our standard reporting PDF template, fill it out and upload the completed file back <a class="fancybox-pop"  href="<?php echo $this->baseUrl("vendor/royalty/popup-upload"); ?>">here</a>. </li>
     <li>Upload your own sales revenue report for the quarter <a class="fancybox-pop" href="<?php echo $this->baseUrl("vendor/royalty/popup-upload"); ?>">here</a></li>
 </ol>
-<br />
+<br />-->
 
+<!--  
 <form class="form" id="history_form">
     <h4>The following are all the royalty reports that were submitted to Greek Licensing for fiscal year <span id="fiscal_year_cont"></span>.</h4><br />
     <div class="form_default">
         <div class="four_fifth">
             <?php
-            $current_year = Date("Y");
             $current_month = Date("m");
             
            // if ($current_month < 7) $current_year --;
@@ -106,7 +148,7 @@ if (sizeof($this->last_quarter_submissions)) {
 </form>
 <br />
 <div class="one_half" id="report_history_container"></div><div class="clear"></div>
-
+-->
 <style type="text/css">
     div.jGrowl div.jGrowl-notification
     {
@@ -123,6 +165,11 @@ if (sizeof($this->last_quarter_submissions)) {
 <script type="text/javascript">
 	$(document).on('ready', function(){
 		$('#fiscal_year>option[value="<?php echo ($current_month<7)? $current_year-1 . "-" . substr($current_year, 2):$current_year . "-" . substr($current_year + 1, 2)?>"]').attr("selected", true);
+
+
+		$("#uploadSalesReport").on("click", function(){
+			
+		});
 	});
 
             
@@ -185,3 +232,85 @@ if (sizeof($this->last_quarter_submissions)) {
     }
 
 </script>
+<!-- -->
+            <!-- 
+            <?php 
+
+
+            	
+            	?>
+            <b>
+			<p>Online Royalty Reporting Coming Soon!</p> 
+            <br>
+            <p>Your Q<?php echo $current_quarter;?> <?php echo ($current_quarter > 1)? $year . "-" . substr($year+1, 2) : ($year-1) . '-' . substr($year, 2);?> <?php echo $sales[$current_quarter];?> reports are due <?php echo $dueDates[$current_quarter];?>.</p>
+            
+            <br>
+            <p>For this quarter, please report as you have done in teh past - by mailing, faxing, or emailing your reports into our offices:</p>
+            <br>
+            <div style="margin-left: 40px">
+            	Affinity Consultants<br>
+            	3231-C Business Park Drive #300<br>
+            	Vista, Ca 92081<br>
+            	<br>
+            	Fax: 707-202-0532<br>
+            	accounting@affinity-consultants.com<br>
+            </div>
+            <br>
+            <p>* Please note: Greek Licensing royalty reports no longer use advance ballance credits. If you report using our template, be sure to use the most up-to-date version <a href="http://e2.ma/click/hq1ce/poh6gh/l9y28" target="_blank">here</a>.</p>
+            
+            </b>
+            
+            <br>
+            
+            Please be reminded of these important facts while preparing your royalty report:
+            <br>
+            <br>
+            <table style="border:1px solid black;" border = "1">
+	            <thead>
+	            	<tr">
+	            		<td style="background-color:#6A0;text-align:left;" style="width:50%"><b>&nbsp;DO:</b></td>
+	            		<td style="background-color:#C00;text-align:left;" style="width:50%"><b>&nbsp;DON'T:</b></td>
+	            	</tr>
+	            </thead>
+	            <tbody>
+	            	<tr>
+	            		<td style="width:50%">
+	            		Use our <a href="http://e2.ma/click/hq1ce/poh6gh/l9y28" target="_blank">new report template</a> or, as a substitution, use a QuickBooks report or Excel spreadsheet with sales detail included
+	            		</td>
+	            		<td style="width:50%">
+	            			Apply advances to your royalties, this is no longer the model used
+	            		</td>
+	            	</tr>
+	            	<tr>
+	            		<td style="width:50%">
+	            			Report for every group you have a license agreement with, including zero sales
+	            		</td>
+	            		<td style="width:50%">
+	            			Submit roalty report without required sales detail
+	            		</td>
+	            	</tr>
+	            	<tr>
+	            		<td style="width:50%">
+	            			Send your payment into the California office before the dedline
+	            		</td>
+	            		<td style="width:50%">
+	            			Incur a $15 late fee per group for each missing/late report
+	            		</td>
+	            	<tr>
+	            	</tr>
+	            </tbody>
+            </table>
+            
+            
+            <style type="text/css">
+				table, tr, td{
+					border: 1px solid black;
+					text-align: center;
+				}
+				
+				table{
+					margin: 0px auto;
+					width: 50%;
+				}
+			</style>
+            -->

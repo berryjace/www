@@ -41,7 +41,7 @@ $this->type == 'vendor' ? $type="Vendor": '';
                     If you don&acute;t have an account, <a href="<?php echo $this->baseUrl("signup/index/".($this->type!=''?'type/'.$this->type:'type/vendor')); ?>">click here to request access to the Vendor Gateway.</a>
                      <?php }?>
                      <?php if($type == 'Client'){?>
-                        If you are not yet a client, but would like information on how to protect your organization&acute;s trademarks, please <a href="<?php echo $this->BUrl()->last_slahs_omit().'/crm/contact/'?>">contact us</a> to learn more
+                        If you are not yet a client, but would like information on how to protect your organization&acute;s trademarks, please <a href="<?php echo $this->BUrl()->last_slahs_omit().'/contact/'?>">contact us</a> to learn more
                      <?php }?>
                    <!-- <label for="signup" class="left">If you dont have an account, <a href="<?php echo $this->baseUrl("signup/index/".($this->type!=''?'type/'.$this->type:'type/vendor')); ?>">click here</a> to create an account.</label>-->
                 <?php endif; ?>

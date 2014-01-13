@@ -55,9 +55,11 @@
         $('#wait').show();
     });
     
-    if('<?php echo $this->success; ?>' != ''){
+    if('<?php echo $this->success; ?>' != '' && '<?php echo $this->type?>' == 'Approved'){
         //window.parent.execute_refresh('<?php echo $this->success; ?>');
         window.parent.location.href = site_url+'/admin/vendors/show-invoice/inv_id/<?php echo $this->invoice_id?>';
+    } else if ('<?php echo $this->success;?>' != '') {
+	   window.parent.location.href = site_url+"/admin/reports";
     }
 </script>
 

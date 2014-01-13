@@ -57,7 +57,7 @@ class Vendor_Form_VendorProfile extends Zend_Form {
                 ->setDisableLoadDefaultDecorators(true)
                 ->setDecorators(array('ViewHelper'))
                 ->setValidators(array(array('NotEmpty', true, array('messages' => 'Please add product from product list'))))
-                ->setRequired(true)
+                ->setRequired(false)
                 ->addFilter('StripTags')
                 ->addFilter('StringTrim');
 

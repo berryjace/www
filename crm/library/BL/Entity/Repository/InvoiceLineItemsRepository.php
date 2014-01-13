@@ -15,11 +15,11 @@ class InvoiceLineItemsRepository extends EntityRepository {
 
     public function getLineItemsByInvoice($inv_id) {
         $q = $this->_em->createQuery("
-	    SELECT partial t.{id, amount_due, amount_paid, check_number, payment_status, invoice_status, fiscal_year, description, quarter, created_at, updated_at},
+	    SELECT partial t.{id, amount_due, amount_paid, check_number, payment_status, invoice_status, fiscal_year, description, quarter, created_at, updated_at, license_status},
                    partial u.{id, organization_name, first_name}
             FROM BL\Entity\InvoiceLineItems t
             JOIN t.client_id u
-            WHERE t.invoice_id='{$inv_id}'");
+            WHERE t.invoice_id='{$inv_id}' ORDER BY u.organization_name");
         return $q->getResult();
     }
 
@@ -34,11 +34,12 @@ class InvoiceLineItemsRepository extends EntityRepository {
      */
     public function getLineItemsForPDF($inv_id) {
         $q = $this->_em->createQuery("
-            SELECT partial t.{id, amount_due, amount_paid, check_number, payment_status, invoice_status, fiscal_year, description, quarter, created_at, updated_at},
+            SELECT partial t.{id, amount_due, amount_paid, check_number, payment_status, invoice_status, fiscal_year, description, quarter, created_at, updated_at, license_status},
                    partial u.{id, organization_name, first_name}
             FROM BL\Entity\InvoiceLineItems t
             JOIN t.client_id u
             WHERE t.invoice_id='{$inv_id}'
+            ORDER BY u.organization_name
        ");
         return $q->getResult();
     }

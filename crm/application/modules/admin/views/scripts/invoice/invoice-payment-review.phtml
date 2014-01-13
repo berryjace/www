@@ -156,12 +156,10 @@ $this->placeholder('main_side_bar')->captureEnd();
     $(window).bind('load', function(){
         $('input.paidClass').on('change', function(){
 
-        	 console.log('doop');
-
         	 if ($(this).val().length <= 0){
             	  $(this).val('0');
         	 }
-        	 if (! /^[0-9]+$/.test($(this).val())){
+        	 if (! /^[0-9,/.]+$/.test($(this).val())){
             	 $(this).val('0');
         	 }
         	 
@@ -208,7 +206,9 @@ $this->placeholder('main_side_bar')->captureEnd();
 				data += "client_id%5B%5D="+$(this).find("td.org").attr('id')+"&ref_number%5B%5D="+$(this).find(".checkClass").val()+"&amt_paid%5B%5D="+$(this).find(".paidClass").val();
 			});
 
-			data += "&total_paid=" + $('.total_paid').text().substring(1) + "&total_remaining=" + $('.total_due').text().substring(1);
+			var type = encodeURIComponent($("#inv_type").val());
+			
+			data += "&total_paid=" + $('.total_paid').text().substring(1) + "&total_remaining=" + $('.total_due').text().substring(1) + "&type=" + type;
 
 			console.log("clicky 2");
             

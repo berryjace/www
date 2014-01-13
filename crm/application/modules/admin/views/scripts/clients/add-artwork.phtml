@@ -4,6 +4,15 @@ echo $this->partial('clients/sidebar-menus.phtml',array('selected'=>'artwork','i
 $this->placeholder('main_side_bar')->captureEnd();
 ?>
 <div class="sample_div">
+    <div  class="notification msginfo" style="margin-left: 0px;">
+        You can share official artwork with your licensed vendors in three easy steps.
+</br>
+&nbsp;&nbsp;&nbsp;      First, upload files by clicking on the "Upload Artwork" button.
+</br>
+&nbsp;&nbsp;&nbsp; Second, give each file a title (note: the file type will automatically be added to the end of each title).
+</br>
+&nbsp;&nbsp;&nbsp;      Third, click "Share Artwork."
+    </div>
     <a href="javascript:;" onclick="add_picture()" class="addNewButton" style="margin-left: 0px; float: left;">Upload Artwork</a>
     <div class="spacer"></div>
 </div>
@@ -62,14 +71,21 @@ $this->placeholder('main_side_bar')->captureEnd();
         if($("#uploaded_pics").find("img").size()<5){
             $("#uploaded_pics").append('<div><input type="text" name="title[]" />\n\
                                         <input type="hidden" name="pics[]" value="'+pic+'" /><div class="spacer"></div>\n\
-                                        <img src="'+site_url+'/assets/files/artworks/thumbs/<?php echo base64_encode('_thumb')?>'+pic+'" /></div>');
-            $(".btn_container").html() == '' ? $(".btn_container").html('<input type="submit" id="submit_artwork" value="Submit" class="button button_blue detail_button" />') : '';
+                                        <img src="'+site_url+'/assets/files/artworks/thumbs/<?php echo base64_encode('_thumb')?>'+pic+'" onerror="this.src=\''+site_url+'/assets/images/'+pic.split('.').pop()+'_75.png\'"/></div>');
+            $(".btn_container").html() == '' ? $(".btn_container").html('<input type="submit" id="submit_artwork" value="Share Artwork" class="button button_blue detail_button" />') : '';
         }else{
             alert("Maximum 5 pictures can be added");
         }
     }
 </script>
 <style type="text/css">
+    .infobox {
+float: right;
+border: 1px solid #666666;
+color: #fff;
+padding: 5px 20px;
+background: #005681 url(../images/buttonbg3.png) repeat-x;
+}
     .sample_div .errors {color:red}
     .sample_div .success {color:green}
     .sample_div {width:65%;}

@@ -33,6 +33,10 @@ class ProductRepository extends EntityRepository{
         $q = $this->_em->createQuery("SELECT p FROM BL\Entity\Product p WHERE p.product_category_id = ".$category_id ." and p.product_name = '".$product_name."'");
         return $q->getResult();
     }
+    public function findByid($id){
+        $q = $this->_em->createQuery("SELECT p.id,p.product_name FROM BL\Entity\Product p WHERE p.id =  ".$id);
+        return $q->getResult();
+    }	
 
 }
 ?>

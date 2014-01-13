@@ -3,13 +3,15 @@
 <div class="clear"></div>
 
 <div class="one">    
+	<h3>Recieved:</h3>
+        <?php echo $this->correspondence->update_date->format('Y-m-d H:i:s'); ?>
     <p>
         <b>Subject </b><br />
         <?php echo !is_null($this->correspondence->subject) ? html_entity_decode($this->correspondence->subject) : ''; ?>
     </p>
     <p>
         <b>Note Description </b><br />
-        <pre><?php echo !is_null($this->correspondence->note) ? html_entity_decode($this->correspondence->note) : ''; ?></pre>
+        <pre><?php echo !is_null($this->correspondence->note) ? strip_tags(html_entity_decode($this->correspondence->note), "<br/><br /><br><br >") : ''; ?></pre>
     </p>
 </div>
 
