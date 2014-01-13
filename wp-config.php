@@ -77,8 +77,8 @@ $table_prefix  = 'wp_';
  */
 define('WPLANG', '');
 define('FS_METHOD', 'direct');
-define('WP_HOME', 'http://localhost');
-define('WP_SITEURL', 'http://localhost');
+define('WP_HOME', 'http://centos.softura.com');
+define('WP_SITEURL', 'http://centos.softura.com');
 
 /**
  * For developers: WordPress debugging mode.

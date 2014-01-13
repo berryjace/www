@@ -11,7 +11,7 @@ $wpdb_amcdb->show_errors();
 
 
 get_header(); ?>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 <script type="text/javascript" src="<?php bloginfo('template_url'); ?>/js/jquery.pajinate.js"></script> 
 
 
@@ -99,10 +99,11 @@ padding: 5px
 <div id="paging_container" class="">					
 <ul class="alt_content2">
 <?php
-$myclients = $wpdb_amcdb->get_results("SELECT * FROM `client_profiles` as c, users as u WHERE c.user_id=u.id and c.`greek_org_type`='2' ORDER BY  `u`.`organization_name` ASC ");
+$myclients = $wpdb_amcdb->get_results("SELECT * FROM `client_profiles` as c, users as u WHERE c.user_id=u.id and c.`greek_org_type`='2' and u.`user_status` = 'Current' ORDER BY  `u`.`organization_name` ASC ");
 
-foreach ($myclients as $client) {				
-	echo '<li><p><a href="'.home_url( '/client-profile' ).'?id='.$client->id.'">'.$client->organization_name .'</a></p></li>';					   
+foreach ($myclients as $client) {
+if ($client->organization_name != "Bank Fee" && $client->organization_name != "Affinity Consultants" && $client->organization_name != "Affinity Overpayment Refund")
+		echo '<li><p><a href="'.home_url( '/client-profile' ).'?id='.$client->id.'">'.$client->organization_name .'</a></p></li>';					   
 }
 ?>
 </ul>	
@@ -117,10 +118,11 @@ foreach ($myclients as $client) {
 <div id="paging_container" class="">					
 <ul class="alt_content2">
 <?php
-$myclients = $wpdb_amcdb->get_results("SELECT * FROM `client_profiles` as c, users as u WHERE c.user_id=u.id and c.`greek_org_type`='1' ORDER BY  `u`.`organization_name` ASC ");
+$myclients = $wpdb_amcdb->get_results("SELECT * FROM `client_profiles` as c, users as u WHERE c.user_id=u.id and c.`greek_org_type`='1' and u.`user_status` = 'Current' ORDER BY  `u`.`organization_name` ASC ");
 
-foreach ($myclients as $client) {				
-	echo '<li><p><a href="'.home_url( '/client-profile' ).'?id='.$client->id.'">'.$client->organization_name .'</a></p></li>';					   
+foreach ($myclients as $client) {
+if ($client->organization_name != "Bank Fee" && $client->organization_name != "Affinity Consultants" && $client->organization_name != "Affinity Overpayment Refund")
+		echo '<li><p><a href="'.home_url( '/client-profile' ).'?id='.$client->id.'">'.$client->organization_name .'</a></p></li>';					   
 }
 ?>
 </ul>	
@@ -135,10 +137,11 @@ foreach ($myclients as $client) {
 <div id="paging_container" class="">					
 <ul class="alt_content2">
 <?php
-$myclients = $wpdb_amcdb->get_results("SELECT * FROM `client_profiles` as c, users as u WHERE c.user_id=u.id and c.`greek_org_type`='3' ORDER BY  `u`.`organization_name` ASC");
+$myclients = $wpdb_amcdb->get_results("SELECT * FROM `client_profiles` as c, users as u WHERE c.user_id=u.id and c.`greek_org_type`='3' and u.`user_status` = 'Current' ORDER BY  `u`.`organization_name` ASC");
 
-foreach ($myclients as $client) {				
-	echo '<li><p><a href="'.home_url( '/client-profile' ).'?id='.$client->id.'">'.$client->organization_name .'</a></p></li>';					   
+foreach ($myclients as $client) {
+if ($client->organization_name != "Bank Fee" && $client->organization_name != "Affinity Consultants" && $client->organization_name != "Affinity Overpayment Refund")
+		echo '<li><p><a href="'.home_url( '/client-profile' ).'?id='.$client->id.'">'.$client->organization_name .'</a></p></li>';					   
 }
 ?>
 </ul>	

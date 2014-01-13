@@ -63,15 +63,26 @@ $client_banner_sql = "select b.image,b.link,b.start_date,b.end_date from banners
 INNER JOIN banners_clients bc ON b.id = bc.banner_id
 WHERE bc.client_id ='". $client_id ."'
 AND b.is_active = 1";
+//echo $client_banner_sql;
+//$banner = $wpdb_amcdb->get_row($client_banner_sql);
 $banner = $wpdb_amcdb->get_results($client_banner_sql);
 
-$sql_vendor = "SELECT  a . * , u . *,(select logo_url from vendor_profiles vpf where vpf.user_id = u.id and active = '1' order by update_date DESC limit 1) logo_url 
+/*
+$sql_vendor = "SELECT  a . * , u . *, vpf.logo_url
 FROM  users AS u
-INNER JOIN licenses a ON u.id = a.vendor_id
-LEFT JOIN vendor_profiles vpf ON u.id = vpf.user_id and active = '1'";
+INNER JOIN category_association a ON u.id = a.vendor_id
+LEFT JOIN vendor_profiles vpf ON u.id = vpf.user_id";
 $join_tables = '';
 $condition = " WHERE  u.id=a.vendor_id
 AND a.`client_id` ='" . $client_id . "'";
+*/
+$sql_vendor = "SELECT  a . * , u . *, vpf.logo_url
+FROM  users AS u
+INNER JOIN licenses a ON u.id = a.vendor_id
+LEFT JOIN vendor_profiles vpf ON u.id = vpf.user_id and vpf.id = ( select max(vpf2.id) from vendor_profiles vpf2 where vpf2.user_id = u.id and vpf2.active = 1 order by vpf2.update_date desc)";
+$join_tables = '';
+$condition = " WHERE  u.id=a.vendor_id
+AND a.`client_id` ='" . $client_id . "' and status = 4";
 
 $order_by = "  order by u.organization_name ASC ";
 $group_by = "  group by u.id ";
@@ -171,10 +182,10 @@ else
 ?>
 
 <script type="text/javascript">
-/*                                                                                        */
+/*
     var white_label_props=<?php echo json_encode($white_label); ?>;
     $(document).ready(function(){
-       $('body').css('background-color',white_label_props.bg_color);
+       //$('body').css('background-color',white_label_props.bg_color);
        $("#whitelabel-footer").css("background-color",white_label_props.footer_color);
 
        $(".resized_img").each(function(){
@@ -185,27 +196,28 @@ else
 
            if (bWide){
 				$(this).width("150px");
-				$(this).height(150/dim + "px");
+				$(this).height(150 + "px");
 
            } else {
-				$(this).width(150/dim + "px");
+				$(this).width(150 + "px");
 				$(this).height("150px");
            }
     	   
        });
-    }); //*/
+    }); */
+    
 </script>
 
 <style type="text/css">
     #searchfilter td{ padding:5px}
     .outer_b{float:left; background:#ececec; margin-right:15px; margin-bottom:18px;-webkit-border-radius: .54em;
-             -moz-border-radius: .5em;}
+             -moz-border-radius: .5em; }
     .logo_b{background:#fff; height:111px; width:210px; text-align:center;  border:1px solid #cfcfcf;-webkit-border-radius: .4em;
             -moz-border-radius: .4em; display:table-cell; vertical-align:middle}
-    .logo_b li{ list-style:none; display:inline-block}
-    .logo_b ul{ padding:0; margin:0; width:210px ;height:164px}
+    .logo_b li{ list-style:none;}
+    .logo_b ul{ padding:0; margin:0}
     .logo_b li a{ display:block}
-    .logo_b img { max-width:150px;max-height:150px ;}
+
     .info_b{padding:5px; text-align:center;}
     .info_b span{ font-size:11px}
     #featured_vendor_banner{ text-align:center; padding:10px 0px 10px 10px;}
@@ -303,7 +315,39 @@ else
     	max-height: 100px;
     	overflow: hidden;
     }
+    .resized_img{
+    	max-width: 150px;
+    	max-height: 150px;
+    }
+    .img_container{
+    	height : 150px;
+    }
 </style>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+	    console.log("ready");
+	    $(".resized_img").each(function(){
+	
+			var height = $(this).height();
+	
+			console.log("height: " + height + " src: " + $(this).attr("src"));
+	
+			$(this).css("margin-top", (75 - (height/2)) + "px");
+	    });//*/
+	
+	    $("a.next_link,a.last_link,a.page_link,a.first_link,a.previous_link").on("click", function(){
+	        $(".resized_img").each(function(){
+	
+				var height = $(this).height();
+	
+				console.log("height: " + height + " src: " + $(this).attr("src"));
+	
+				$(this).css("margin-top", (75 - (height/2)) + "px");
+	        });
+	    });
+	});
+</script>
 
 
 <script type="text/javascript" src="<?php bloginfo('template_url'); ?>/js/jquery.pajinate.js"></script>
@@ -406,11 +450,12 @@ else
                             <div class="logo_b">
                                 <ul>
                                     <li>
+                                    	<div class="img_container">
                                         <a href="vendor-profile/?vid=<?php echo $vendor->id; ?>">
                                             <?php
                                             if (trim($vendor->logo_url) != '') {
                                                 ?>
-                                                <img class="resized_img" src="<?php echo esc_url(home_url('/')); ?>crm/assets/files/vendor_profile/thumbs/<?php echo $vendor->logo_url; ?>" />
+                                                <img class="resized_img" src="<?php echo esc_url(home_url('/')); ?>crm/assets/files/vendor_profile/<?php echo $vendor->logo_url; ?>" />
                                                 <?php
                                             } else {
                                                 ?>
@@ -421,6 +466,7 @@ else
                                             ?>
 
                                         </a>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>

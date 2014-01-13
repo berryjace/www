@@ -26,6 +26,21 @@ get_header(); ?>
 
 				<?php comments_template( '', true ); ?>
 
+				<div>
+					<h2><b>How to request access to the Vendor Gateway: <a href="javascript:void(0);" rel=" http://www.screencast.com/t/pcVLORrUXb4Z" class="tutorialLink" target="_blank">Watch Video</a></b></h2>
+				</div>
+				
+				<script type="text/javascript">
+					$(document).on("ready", function(){
+						$(".tutorialLink").each(function(){
+							$(this).on("click", function(){
+								var url = $(this).prop('rel');
+				
+								window.open(url, "_blank", "height="+$(window).height()+",width="+$(window).width());
+							});
+						});
+					});
+				</script>
 			</div><!-- #content -->
 		</div><!-- #primary -->
  <div id="col3">

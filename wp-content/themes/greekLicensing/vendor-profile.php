@@ -10,9 +10,26 @@ $wpdb_amcdb->show_errors();
 
 $vendor = $wpdb_amcdb->get_row("select * from users where id='".$_GET['vid']."'");
 $vendor_profile = $wpdb_amcdb->get_row("select * from vendor_profiles where user_id='".$_GET['vid']."' and active = 1 order by update_date DESC");
-$vendor_sample_product = $wpdb_amcdb->get_results("select * from vendor_sample_files where vendor_id='".$_GET['vid']."' AND use_for LIKE 'web_profile' and active = 1");
+$vendor_sample_product = $wpdb_amcdb->get_results("select * from vendor_sample_files where vendor_id='".$_GET['vid']."' AND use_for LIKE 'web_profile' AND active = 1");
 $vendor_service = $wpdb_amcdb->get_results("select s.title from vendor_services vs INNER JOIN services s ON vs.service_id = s.id where vs.vendor_id='".$_GET['vid']."'");
-$vendor_offered_product = $wpdb_amcdb->get_results("select p.product_name from vendor_web_profile_products vp INNER JOIN products p ON vp.product_id = p.id where vp.vendor_id='".$_GET['vid']."'");
+//$vendor_offered_product = $wpdb_amcdb->get_results("select p.product_name from vendor_web_profile_products vp INNER JOIN products p ON vp.product_id = p.id where vp.vendor_id='".$_GET['vid']."'");
+
+$vendor_profile_products = $wpdb_amcdb->get_results("select product_offered from vendor_profiles where user_id=".$_GET['vid'] . " and active = 1 order by update_date desc");
+
+$vendor_profile_products = explode(",", $vendor_profile_products['0']->product_offered);
+
+$vendor_offered_product = array();
+
+foreach($vendor_profile_products as $vpp){
+	error_log("\nvpp: " . $vpp, 3, "./errorLog.log");
+	
+	if ($vpp == '' || $vpp == null) continue;
+	$p = $wpdb_amcdb->get_results("select product_name from products where id=".$vpp);
+	
+	$vendor_offered_product[] = $p['0'];
+	
+}
+
 $vendor_operation = $wpdb_amcdb->get_row("select * from vendor_operations where user_id='".$_GET['vid']."'");
 get_header(); 
 ?>
@@ -76,6 +93,10 @@ h1{ color: #662219;
 		top: -10px;
 		right: -10px;
 	}
+	.resized_img{
+		max-width: 250px;
+		max-height: 250px;
+	}
 </style>
 
 <script type="text/javascript" src="<?php bloginfo('template_url'); ?>/js/jquery.jcarousel.min.js"></script> 
@@ -96,7 +117,7 @@ h1{ color: #662219;
     <?php
 	if(sizeof($vendor_profile) && $vendor_profile->logo_url!='')
 	{
-        echo '<div class="vendor_logo"><div><img src="'.
+        echo '<div class="vendor_logo"><div><img class="resized_img" src="'.
 		esc_url( home_url( '/' ) ).
 		'crm/assets/files/vendor_profile/'.
 		$vendor_profile->logo_url.'"/></div></div>';
@@ -114,6 +135,23 @@ h1{ color: #662219;
     if(sizeof($vendor_profile)){
     ?>
         <h1><?php echo $vendor_profile->organization_name; ?></h1>
+        <small>
+    <?php 
+    $first = true;
+    
+    if (sizeof($vendor_service)){
+		foreach($vendor_service as $service){
+			if (!$first) echo ", ";
+			
+			$first = false;
+			
+			echo $service->title;
+		}
+	}
+    ?>
+    </small>
+    <br/>
+    <br/>
         <?php echo '<a href="http://' . $vendor_profile->web_page . '">' . $vendor_profile->web_page . '</a>'; ?><br />        
         <?php echo $vendor_profile->address1; ?><br />
         <?php echo $vendor_profile->city.'&nbsp;'.$vendor_profile->state.'&nbsp;'.$vendor_profile->zip; ?><br />
@@ -128,7 +166,7 @@ h1{ color: #662219;
     
 
     <br />
-<!--    <h2>Services</h2>-->
+    <!--  <h2>Services</h2>-->
     <?php
     /*
     if(sizeof($vendor_service)){        
@@ -142,14 +180,14 @@ h1{ color: #662219;
     }else{
         echo "The vendor is yet to add this information to their profile.";
     } 
-*/   
+//*/   
     ?>
 
     
 
     <h2>Products Offered</h2>
     <?php
-    $products = explode(",",$vendor_profile->product_offered);
+/*    $products = explode(",",$vendor_profile->product_offered);
     foreach($products as $product){
 	if($product="")
 	{
@@ -161,8 +199,9 @@ h1{ color: #662219;
 	}
 	}
     }
-    echo implode(', ', $disp);
-/*
+    echo implode(', ', $disp);*/
+//*
+	error_log("\nvendor_offered_product count: " . count($vendor_offered_product), 3, "./errorLog.log");
     if(empty($vendor_operation->vendor_products) && count($vendor_offered_product) == 0) {
 	echo "";
     
@@ -177,7 +216,7 @@ h1{ color: #662219;
     } else {
 	echo $vendor_operation->vendor_products;
     }
-  */  
+ // */  
     /*
     if(sizeof($vendor_offered_product)){
         $products = '';
@@ -222,6 +261,11 @@ h1{ color: #662219;
         echo "The vendor is yet to add product samples to their profile.";
     }
     ?>    
+    <div style="display:none;">
+    	<?php foreach($vendor_sample_product as $sample){?>
+    		<span class="links"><?php echo esc_url( home_url('/'));?>crm/assets/files/samples/products/large/<?php echo $sample->file_url;?></span>
+    	<?php }?>
+    </div>
 </div><!-- #primary -->
 <div id="col3">
 
@@ -229,9 +273,15 @@ h1{ color: #662219;
 <?php get_footer(); ?>
 
 <div id="overlay">
-	<div>
+	<div id="leftArrow" style="display:none; position:fixed;">
+		<a href="javascript:void(0)" onclick="previousImage()"><img src="<?php echo esc_url(home_url('/'));?>crm/assets/images/arrow_left.png" alt="left" /></a>
+	</div>
+	<div id="imgContainer">
 		<a href="javascript:void(0)" onclick="hideOverlay()" title="click to close"><img id="xButton" alt="X" src="<?php echo esc_url(home_url('/')); ?>crm/assets/css/fancy_close.png"/></a>
-		<img id="lrgPrev"alt="large preview" src="http://poweros.softura.com/crm/assets/files/samples/products/large/p17enkt4kfvnicc51st51esdsjj5.png"/>
+		<img id="lrgPrev"alt="large preview" src=""/>
+	</div>
+	<div id="rightArrow" style="display:none; position:fixed;">
+		<a href="javascript:void(0)" onclick="nextImage()"><img src="<?php echo esc_url(home_url('/'));?>crm/assets/images/arrow_right.png" alt="right"/></a>
 	</div>
 </div>
 
@@ -246,34 +296,59 @@ jQuery(document).ready(function() {
 		}
 
 	);
-        
-        $(".vendor_logo>div>img").each(function(){
 
-            //alert("found company logo image");
-	    /*
-            var dim = $(this).width()/$(this).height();
+	$("#lrgPrev").on("load", function(){
 
-            var bWide = $(this).width() < $(this).height();
+		
+		var src = $(this).attr('src');
 
-            if (bWide){
- 				$(this).width("250px");
- 				$(this).height(dim*250 + "px");
+		var width = $(this).width();
 
-            } else {
- 				$(this).width(dim*250 + "px");
- 				$(this).height("250px");
-            }
-     	   //*/
-        });
+		//width = ($(document).width() - width)/2;
+		
+		var centerOffset = width/2;
+
+		$("#leftArrow").css("left", ($(document).width()/2 - centerOffset - 100) + "px");
+		$("#rightArrow").css("right", ($(document).width()/2 - centerOffset - 100) + "px");
+		$("#leftArrow").css("top", ($(window).height()/3) + "px");
+		$("#rightArrow").css("top", ($(window).height()/3) + "px");
+
+		$(this).parent().css("top", ($(window).height()/3 - $(this).height()/2) + "px");
+		$(this).parent().css("left", ($(window).width()/2 - $(this).width()/2) + "px");
+		$(this).parent().css("position", "absolute");
+		
+		if ($("span.links").first().text() == src){
+			$("#leftArrow").hide();
+		} else {
+			$("#leftArrow").show();
+		}
+
+		if ($("span.links").last().text() == src){
+			$("#rightArrow").hide();
+		} else {
+			$("#rightArrow").show();
+		}
+
+		
+	});
+    
 });
 
 </script>
+<style>
+	#leftArrow #rightArrow{
+		display: none;
+		position: absolute;
+		width: 30px;
+		margin: 0 auto;
+	}
+</style>
 <script>
 function showOverlay(src){
 	
 	if ($("#lrgPrev").attr('src') == src){
 		
-			$("#overlay>div").css("width", $("#lrgPrev").width() + "px");
+			$("#overlay>div#imgContainer").css("width", $("#lrgPrev").width() + "px");
 		
 			$("#overlay").css("visibility", "visible");
 		
@@ -287,12 +362,42 @@ function showOverlay(src){
 	
 		$("#lrgPrev").load(function(){
 		
-			$("#overlay>div").css("width", $("#lrgPrev").width() + "px");
+			$("#overlay>div#imgContainer").css("width", $("#lrgPrev").width() + "px");
 			
 			$("#overlay").css("visibility", "visible");
 	
 		});
 	}
+}
+
+function nextImage(){
+	var changed = false;
+	$("span.links").each(function(){
+		if (!changed){
+		if ($(this).text() == $("#lrgPrev").attr('src')){
+			var src = $(this).next("span.links").text();
+			
+			changed = true;
+
+			showOverlay(src);
+		}
+		}
+	});
+}
+
+function previousImage(){
+	var changed = false;
+	$("span.links").each(function(){
+		if (!changed){
+		if ($(this).text() == $("#lrgPrev").attr('src')){
+			var src = $(this).prev("span.links").text();
+			
+			changed = true;
+
+			showOverlay(src);
+		}
+		}
+	});
 }
 
 function hideOverlay(){

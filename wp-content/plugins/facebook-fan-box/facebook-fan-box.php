@@ -43,7 +43,7 @@ function facebook_fan_box($api_key, $profile_id, $stream = 1, $connections = 10,
       $stream = ($stream == 1) ? 'true' : 'false';
       $header = ($logo == 1) ? 'true' : 'false';        
       $locale = $lang;
-      $output = '<iframe src="http://www.facebook.com/plugins/fan.php?id='.$profile_id.'&amp;width='.$width.'&amp;connections='.$connections.'&amp;stream='.$stream.'&amp;header='.$header.'&amp;locale='.$locale.'" scrolling="no" frameborder="0" allowTransparency="true" style="border:none; overflow:hidden; width:'.$width.'px; height:'.$height.'px"></iframe>';
+      $output = '<iframe src="https://www.facebook.com/plugins/fan.php?id='.$profile_id.'&amp;width='.$width.'&amp;connections='.$connections.'&amp;stream='.$stream.'&amp;header='.$header.'&amp;locale='.$locale.'" scrolling="no" frameborder="0" allowTransparency="true" style="border:none; overflow:hidden; width:'.$width.'px; height:'.$height.'px"></iframe>';
     } else {
       if($iframe != 1) {
         if($lang != '') $lang = '/'.$lang;

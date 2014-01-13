@@ -14,7 +14,7 @@ $wpdb_amcdb->show_errors();
 get_header();
 ?>
 <link rel="stylesheet" type="text/css" href="<?php bloginfo('template_url'); ?>/slider/jquery.ad-gallery.css">
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 <script type="text/javascript" src="<?php bloginfo('template_url'); ?>/slider/jquery.ad-gallery.js"></script>
 <script type="text/javascript">
     $(function() {

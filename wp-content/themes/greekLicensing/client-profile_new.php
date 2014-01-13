@@ -99,10 +99,10 @@ if (empty($client_id)) {
                     <td width="338"><span><?php echo $client->org_founding_year; ?> </span></td>
                 </tr>
                 <tr>
-                    <td class="lebel">Year</td><td>:</td><td><span<?php echo date("Y", strtotime($client->greek_founding_year)); ?></span></td>
+                    <td class="lebel">Year</td><td>:</td><td><span><?php echo date("Y", strtotime($client->greek_founding_year)); ?></span></td>
                 </tr>
                 <tr>
-                    <td class="lebel">Number of collegiate chapters</td><td>:</td><td><?php echo number_format($client->greek_number_of_colg_chapters); ?></td>
+                    <td class="lebel">Number of collegiate chapters</td><td>:</td><td><?php echo number_format($client->greek_total_ug_chapters); ?></td>
                 </tr>
                 <tr>
                     <td class="lebel">Number of alumni/ae chapters</td><td>:</td><td><?php echo number_format($client->greek_number_of_alumni_chapters); ?></td>
@@ -121,9 +121,6 @@ if (empty($client_id)) {
                 </tr>
                 <tr>
                     <td class="lebel">Phone</td><td>:</td><td><?php echo $client->phone; ?></td>
-                </tr>
-                <tr>
-                    <td class="lebel">Email</td><td>:</td><td><?php echo $client->email; ?></td>
                 </tr>
             </tbody>
         </table>           
